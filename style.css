@@ -727,3 +727,124 @@ textarea.form-input {
         gap: 40px;
     }
 }
+
+/* =========================================
+   11. Modal (Ventana Flotante)
+   ========================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    /* Dark backdrop */
+    z-index: 2000;
+    /* Above header */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    padding: 20px;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background-color: #EBE9E4;
+    /* Beige to match theme */
+    width: 100%;
+    max-width: 900px;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(20px);
+    transition: transform 0.4s ease;
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0);
+}
+
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    background: transparent;
+    border: none;
+    font-size: 2rem;
+    color: #1a1a1a;
+    cursor: pointer;
+    z-index: 10;
+    transition: color 0.3s ease;
+}
+
+.close-modal:hover {
+    color: #D99578;
+}
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.modal-image-col {
+    height: 500px;
+    background-color: #dcdcdc;
+    /* Placeholder gray */
+    position: relative;
+}
+
+.modal-img-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: #ccc;
+    /* Slightly darker gray for placeholder effect */
+    display: block;
+}
+
+.modal-text-col {
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.modal-text-col h3 {
+    font-family: var(--heading-font-family);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #1a1a1a;
+}
+
+.modal-text-col p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #4a4a4a;
+    margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+    .modal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-image-col {
+        height: 250px;
+    }
+
+    .modal-text-col {
+        padding: 40px 25px;
+    }
+
+    .modal-text-col h3 {
+        font-size: 1.8rem;
+    }
+}
