@@ -31,6 +31,11 @@ const router = createRouter({
             path: '/login',
             name: 'login',
             component: () => import('../domains/auth/views/AuthView.vue')
+        },
+        {
+            path: '/perfil',
+            name: 'profile',
+            component: () => import('../domains/user/views/ProfileView.vue')
         }
     ],
     scrollBehavior(to, from, savedPosition) {

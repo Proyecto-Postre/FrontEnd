@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 
@@ -7,7 +7,12 @@ const { t, locale } = useI18n();
 const isMenuOpen = ref(false);
 const user = ref(null);
 
-import { onMounted } from 'vue';
+const displayName = computed(() => {
+    if (!user.value) return '';
+    const name = user.value.name ? user.value.name.split(' ')[0] : '';
+    const lastName = user.value.lastName ? user.value.lastName.split(' ')[0] : '';
+    return `${name} ${lastName}`;
+});
 
 onMounted(() => {
     const storedUser = localStorage.getItem('user');
@@ -52,7 +57,7 @@ const toggleLanguage = () => {
                 </button>
                 <RouterLink to="/login" class="icon-btn" title="Cuenta">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    <span v-if="user" style="margin-left: 5px; font-size: 0.8rem; font-weight: 700;">{{ user.name }}</span>
+                    <span v-if="user" style="margin-left: 5px; font-size: 0.8rem; font-weight: 700;">{{ displayName }}</span>
                 </RouterLink>
                 <button class="icon-btn" title="Carrito">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
@@ -78,6 +83,7 @@ const toggleLanguage = () => {
                 <ul class="nav-links">
                     <li><RouterLink to="/" @click="closeMenu">{{ $t('header.home') }}</RouterLink></li>
                     <li><RouterLink to="/nosotros" @click="closeMenu">{{ $t('header.about') }}</RouterLink></li>
+                    <li v-if="user"><RouterLink to="/perfil" @click="closeMenu">Para Ti</RouterLink></li>
                     <li><RouterLink to="/contacto" @click="closeMenu">{{ $t('header.contact') }}</RouterLink></li>
                 </ul>
             </div>
