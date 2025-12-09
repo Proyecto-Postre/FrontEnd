@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elección de Paleta - Dulce Fé</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            color: #666;
+            margin-bottom: 40px;
+        }
+
+        .palette-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .palette-card {
+            background: white;
+            border-radius: 30px;
+            padding: 20px;
+            width: 300px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            text-align: left;
+        }
+
+        .palette-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .color-strip {
+            height: 120px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Mock UI Elements */
+        .mock-ui {
+            background-color: var(--bg-color);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .mock-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .mock-accent {
+            background-color: var(--accent-color);
+            height: 8px;
+            width: 50px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .mock-text {
+            color: var(--text-color);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* PALETA 1: Verde Salvia (La propuesta) */
+        .palette-1 {
+            --primary-color: #558B6E;
+            /* Sage Green */
+            --bg-color: #F7F4EB;
+            /* Soft Cream */
+            --accent-color: #E07A5F;
+            /* Muted Coral */
+            --text-color: #2C3639;
+        }
+
+        /* PALETA 2: Menta Fresca (Más vibrante/pastel) */
+        .palette-2 {
+            --primary-color: #81B29A;
+            /* Mint */
+            --bg-color: #FFFFFF;
+            /* Pure White */
+            --accent-color: #F2CC8F;
+            /* Soft Yellow */
+            --text-color: #3D405B;
+        }
+
+        /* PALETA 3: Bosque (Más sobrio/oscuro) */
+        .palette-3 {
+            --primary-color: #5F6F52;
+            /* Olive/Forest */
+            --bg-color: #FEFAE0;
+            /* Light Beige */
+            --accent-color: #A98467;
+            /* Earthy Brown */
+            --text-color: #1a1a1a;
+        }
+
+        .swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 5px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Propuestas de Color "Dulce Fé"</h1>
+    <p class="subtitle">Verde, divertido y sobrio. ¿Cuál resuena más contigo?</p>
+
+    <div class="palette-container">
+
+        <!-- OPCIÓN 1 -->
+        <div class="palette-card palette-1">
+            <h2 style="margin-top:0">1. Salvia Divertida</h2>
+            <div class="color-strip" style="background-color: var(--primary-color);">Verde Salvia</div>
+
+            <div style="margin-bottom: 15px;">
+                <span class="swatch" style="background-color: #558B6E" title="Salvia"></span>
+                <span class="swatch" style="background-color: #F7F4EB" title="Crema Suave"></span>
+                <span class="swatch" style="background-color: #E07A5F" title="Coral Muted"></span>
+            </div>
+
+            <div class="mock-ui">
+                <div class="mock-accent"></div>
+                <h3 style="margin: 0 0 10px; color: var(--primary-color);">Título de ejemplo</h3>
+                <p class="mock-text">Este estilo es moderno, seguro y muy amigable. El coral le da ese toque de
+                    "diversión" sin ser ruidoso.</p>
+                <button class="mock-btn">Ver Catálogo</button>
+            </div>
+        </div>
+
+        <!-- OPCIÓN 2 -->
+        <div class="palette-card palette-2">
+            <h2 style="margin-top:0">2. Menta Fresca</h2>
+            <div class="color-strip" style="background-color: var(--primary-color);">Menta Pastel</div>
+
+            <div style="margin-bottom: 15px;">
+                <span class="swatch" style="background-color: #81B29A" title="Menta"></span>
+                <span class="swatch" style="background-color: #FFFFFF" title="Blanco"></span>
+                <span class="swatch" style="background-color: #F2CC8F" title="Amarillo"></span>
+            </div>
+
+            <div class="mock-ui">
+                <div class="mock-accent"></div>
+                <h3 style="margin: 0 0 10px; color: var(--primary-color);">Título de ejemplo</h3>
+                <p class="mock-text">Un estilo más ligero y "joven". Se siente muy limpio y pastelero, quizás un poco
+                    menos serio.</p>
+                <button class="mock-btn">Ver Catálogo</button>
+            </div>
+        </div>
+
+        <!-- OPCIÓN 3 -->
+        <div class="palette-card palette-3">
+            <h2 style="margin-top:0">3. Bosque Natural</h2>
+            <div class="color-strip" style="background-color: var(--primary-color);">Verde Oliva</div>
+
+            <div style="margin-bottom: 15px;">
+                <span class="swatch" style="background-color: #5F6F52" title="Oliva"></span>
+                <span class="swatch" style="background-color: #FEFAE0" title="Beige"></span>
+                <span class="swatch" style="background-color: #A98467" title="Tierra"></span>
+            </div>
+
+            <div class="mock-ui">
+                <div class="mock-accent"></div>
+                <h3 style="margin: 0 0 10px; color: var(--primary-color);">Título de ejemplo</h3>
+                <p class="mock-text">La opción más sobria "gourmet". Se siente orgánica y artesanal, pero quizás menos
+                    "divertida".</p>
+                <button class="mock-btn">Ver Catálogo</button>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
