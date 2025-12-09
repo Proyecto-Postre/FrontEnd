@@ -1,0 +1,93 @@
+/* Google Fonts Import: Quicksand for a friendly feel */
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* PALETA 1: Salvia Divertida */
+  --primary-color: #558B6E;
+  /* Sage Green */
+  --primary-dark: #3E6650;
+  /* Darker Sage */
+  --secondary-color: #F7F4EB;
+  /* Soft Cream */
+  --accent-color: #E07A5F;
+  /* Muted Coral */
+  --text-color: #2C3639;
+  /* Dark Green/Grey */
+  --white: #FFFFFF;
+
+  --heading-font-family: 'Quicksand', sans-serif;
+  --body-font-family: 'Quicksand', sans-serif;
+
+  --border-radius: 20px;
+  /* Bubbly/Friendly shape */
+}
+
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--body-font-family);
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Button Styles - Updated for Fun Look */
+.btn-primary {
+  background-color: var(--accent-color);
+  color: var(--white);
+  padding: 12px 30px;
+  border: none;
+  border-radius: 50px;
+  /* Pill shape */
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+  box-shadow: 0 4px 10px rgba(224, 122, 95, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(224, 122, 95, 0.4);
+  background-color: #d66a4e;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--white);
+  padding: 12px 30px;
+  border: 2px solid var(--white);
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-outline:hover {
+  background-color: var(--white);
+  color: var(--primary-color);
+  transform: translateY(-3px);
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Utility */
+.section-title {
+  font-family: var(--heading-font-family);
+  font-weight: 700;
+}

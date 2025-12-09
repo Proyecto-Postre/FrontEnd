@@ -1,0 +1,37 @@
+{
+    "header": {
+        "home": "INICIO",
+        "about": "NOSOTROS",
+        "contact": "CONTACTO",
+        "search_placeholder": "Buscar postres...",
+        "menu_btn": "NUESTRA CARTA"
+    },
+    "hero": {
+        "title": "¡Bienvenidos al mundo dulce de nuestros postres!",
+        "subtitle": "Prepárate para una explosión de sabores deliciosos que te harán sonreír en cada bocado.",
+        "cta": "Leer más"
+    },
+    "catalog": {
+        "title": "Nuestro Menú",
+        "subtitle": "Descubre el sabor de la felicidad",
+        "categories": {
+            "cakes": "Tortas",
+            "desserts": "Postres",
+            "drinks": "Bebidas"
+        },
+        "empty": "Pronto tendremos novedades en {category}.",
+        "order": "Hola, quisiera ordenar: {product}"
+    },
+    "brand": {
+        "title": "Más sobre nuestra marca",
+        "description": "Cuenta quién eres, tus orígenes, tu proceso o lo que te inspira.",
+        "cta": "Leer más"
+    },
+    "contact": {
+        "title": "Contáctanos",
+        "name": "Nombre",
+        "email": "Correo",
+        "message": "Mensaje",
+        "send": "Enviar"
+    }
+}

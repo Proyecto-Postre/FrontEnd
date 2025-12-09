@@ -1,0 +1,37 @@
+{
+    "header": {
+        "home": "HOME",
+        "about": "ABOUT",
+        "contact": "CONTACT",
+        "search_placeholder": "Search desserts...",
+        "menu_btn": "OUR MENU"
+    },
+    "hero": {
+        "title": "Welcome to the sweet world of our desserts!",
+        "subtitle": "Get ready for an explosion of delicious flavors that will make you smile with every bite.",
+        "cta": "Read More"
+    },
+    "catalog": {
+        "title": "Our Menu",
+        "subtitle": "Discover the taste of happiness",
+        "categories": {
+            "cakes": "Cakes",
+            "desserts": "Desserts",
+            "drinks": "Drinks"
+        },
+        "empty": "Coming soon updates in {category}.",
+        "order": "Hi, I would like to order: {product}"
+    },
+    "brand": {
+        "title": "More about our brand",
+        "description": "Tell who you are, your origins, your process or what inspires you.",
+        "cta": "Read More"
+    },
+    "contact": {
+        "title": "Contact Us",
+        "name": "Name",
+        "email": "Email",
+        "message": "Message",
+        "send": "Send"
+    }
+}
