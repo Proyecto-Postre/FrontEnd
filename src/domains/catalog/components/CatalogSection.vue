@@ -20,7 +20,7 @@ const loading = ref(true);
 
 const fetchProducts = async () => {
     try {
-        const response = await fetch('http://localhost:3000/api/products');
+        const response = await fetch('/api/products');
         products.value = await response.json();
     } catch (error) {
         console.error('Error fetching products:', error);
