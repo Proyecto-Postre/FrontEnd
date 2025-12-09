@@ -99,64 +99,64 @@ const handleRegister = async () => {
 <template>
     <div class="auth-container">
         <div class="auth-card">
-            <h2>{{ isLogin ? 'Iniciar Sesión' : 'Crear Cuenta' }}</h2>
+            <h2>{{ isLogin ? $t('auth.login_title') : $t('auth.register_title') }}</h2>
             
             <!-- Login Form -->
             <form v-if="isLogin" @submit.prevent="handleLogin" key="login-form">
                 <div class="form-group">
-                    <label>Correo Electrónico</label>
+                    <label>{{ $t('auth.email') }}</label>
                     <input type="email" v-model="form.email" placeholder="tucorreo@ejemplo.com" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Contraseña</label>
+                    <label>{{ $t('auth.password') }}</label>
                     <input type="password" v-model="form.password" placeholder="••••••••" required>
                 </div>
 
-                <button type="submit" class="btn-primary full-width">Entrar</button>
+                <button type="submit" class="btn-primary full-width">{{ $t('auth.login_btn') }}</button>
             </form>
 
             <!-- Register Form -->
             <form v-else @submit.prevent="handleRegister" key="register-form">
                 <div class="form-row-split">
                     <div class="form-group">
-                        <label>Nombre</label>
-                        <input type="text" v-model="form.firstName" placeholder="Tu nombre" required>
+                        <label>{{ $t('auth.name') }}</label>
+                        <input type="text" v-model="form.firstName" placeholder="Juan" required>
                     </div>
                     <div class="form-group">
-                        <label>Apellido</label>
-                        <input type="text" v-model="form.lastName" placeholder="Tu apellido" required>
+                        <label>{{ $t('auth.lastname') }}</label>
+                        <input type="text" v-model="form.lastName" placeholder="Pérez" required>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Teléfono</label>
+                    <label>{{ $t('auth.phone') }}</label>
                     <input type="tel" v-model="form.phone" placeholder="999 999 999" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Correo Electrónico</label>
+                    <label>{{ $t('auth.email') }}</label>
                     <input type="email" v-model="form.email" placeholder="tucorreo@ejemplo.com" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Contraseña</label>
+                    <label>{{ $t('auth.password') }}</label>
                     <input type="password" v-model="form.password" placeholder="••••••••" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Confirmar Contraseña</label>
+                    <label>{{ $t('auth.confirm_password') }}</label>
                     <input type="password" v-model="form.confirmPassword" placeholder="••••••••" required>
                 </div>
 
-                <button type="submit" class="btn-primary full-width">Registrarse</button>
+                <button type="submit" class="btn-primary full-width">{{ $t('auth.register_btn') }}</button>
             </form>
 
             <div class="auth-footer">
                 <p>
-                    {{ isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?' }}
+                    {{ isLogin ? $t('auth.no_account') : $t('auth.has_account') }}
                     <a href="#" @click.prevent="toggleMode">
-                        {{ isLogin ? 'Regístrate aquí' : 'Inicia sesión' }}
+                        {{ isLogin ? $t('auth.register_btn') : $t('auth.login_btn') }}
                     </a>
                 </p>
             </div>

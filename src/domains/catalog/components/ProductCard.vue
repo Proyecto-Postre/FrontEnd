@@ -1,15 +1,17 @@
 <script setup>
-defineProps({
+import { cart } from '../../cart/store';
+
+const props = defineProps({ // Assign props to variable to use in script if needed
     product: {
         type: Object,
         required: true
     }
 });
 
-const emit = defineEmits(['order']);
-
 const handleOrder = () => {
-    emit('order', 'product'); // In future can pass product ID
+    cart.addToCart(props.product);
+    // Optional: Toast notification could go here
+    // alert("Producto agregado!"); 
 };
 </script>
 
@@ -24,8 +26,8 @@ const handleOrder = () => {
             <h3>{{ product.title }}</h3>
             <p>{{ product.description }}</p>
             <button class="btn-order" @click.stop="handleOrder">
-                Ordenar
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                {{ $t('catalog.add_to_cart') }}
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             </button>
         </div>
     </div>

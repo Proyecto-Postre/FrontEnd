@@ -33,9 +33,19 @@ const router = createRouter({
             component: () => import('../domains/auth/views/AuthView.vue')
         },
         {
-            path: '/perfil',
+            path: '/para-ti',
             name: 'profile',
             component: () => import('../domains/user/views/ProfileView.vue')
+        },
+        {
+            path: '/cuenta',
+            name: 'account',
+            component: () => import('../domains/user/views/UserAccountView.vue')
+        },
+        {
+            path: '/carrito',
+            name: 'cart',
+            component: () => import('../domains/cart/views/CartView.vue')
         }
     ],
     scrollBehavior(to, from, savedPosition) {

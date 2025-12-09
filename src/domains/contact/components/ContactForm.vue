@@ -3,7 +3,7 @@
         <div class="container contact-container">
             <div class="contact-grid">
                 <div class="contact-text">
-                    <h2 class="section-title">Contáctanos</h2>
+                    <h2 class="section-title">{{ $t('contact.title') }}</h2>
                     <p>¿Quieres que trabajemos juntos? Ingresa tus datos y nos pondremos en contacto contigo en
                         breve. Esperamos tener noticias tuyas pronto.</p>
                 </div>
@@ -12,12 +12,12 @@
                     <form action="https://formsubmit.co/jafethworren@gmail.com" method="POST" class="contact-form">
                         <!-- Redirect after submission (optional, stays on page or goes to a thank you page if defined, here we leave default or add a hidden next) -->
                         <input type="hidden" name="_next" value="http://localhost:5173/"> <!-- NOTE: In production this should be the render URL, we can leave it auto or set it to home -->
-                        <input type="hidden" name="_subject" value="Nuevo contacto de Dulce Fé">
+                        <input type="hidden" name="_subject" value="Nuevo contacto de Dulce Fe">
                         <input type="hidden" name="_captcha" value="false">
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="nombre">Nombre <span class="required-text">(obligatorio)</span></label>
+                                <label for="nombre">{{ $t('contact.name') }} <span class="required-text">(obligatorio)</span></label>
                                 <input type="text" name="name" id="nombre" class="form-input" required>
                             </div>
                             <div class="form-group">
@@ -26,14 +26,14 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="email">Correo electrónico <span class="required-text">(obligatorio)</span></label>
+                            <label for="email">{{ $t('contact.email') }} <span class="required-text">(obligatorio)</span></label>
                             <input type="email" name="email" id="email" class="form-input" required>
                         </div>
                         <div class="form-group">
-                            <label for="mensaje">Mensaje <span class="required-text">(obligatorio)</span></label>
+                            <label for="mensaje">{{ $t('contact.message') }} <span class="required-text">(obligatorio)</span></label>
                             <textarea name="message" id="mensaje" class="form-input" rows="4" required></textarea>
                         </div>
-                        <button type="submit" class="btn-primary">Enviar</button>
+                        <button type="submit" class="btn-primary">{{ $t('contact.send') }}</button>
                     </form>
                 </div>
             </div>

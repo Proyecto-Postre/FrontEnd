@@ -13,8 +13,7 @@ onMounted(async () => {
         user.value = JSON.parse(storedUser);
     }
 
-    // 2. Fetch all products to pick "recommendations"
-    // specific logic: pick random 3 products as "Recommendations"
+    // 2. Fetch recommendations
     try {
         const res = await fetch('/api/products');
         const allProducts = await res.json();
@@ -22,7 +21,6 @@ onMounted(async () => {
         // Simple shuffle for simulation
         recommendations.value = allProducts.sort(() => 0.5 - Math.random()).slice(0, 3);
         
-        // Returns empty list for orders initially
         recentOrders.value = []; 
     } catch (e) {
         console.error("Error loading profile data", e);
@@ -33,14 +31,14 @@ onMounted(async () => {
 <template>
     <div class="profile-container container">
         <div class="profile-header" v-if="user">
-            <h2>Hola, <span class="highlight">{{ user.name }}</span> 👋</h2>
-            <p>Bienvenido a tu espacio personal en Dulce Fé.</p>
+            <h2>{{ $t('profile.welcome', { name: user.name }) }}</h2>
+            <p>{{ $t('profile.welcome_sub') }}</p>
         </div>
 
         <!-- Section: Recommendations (Para Ti) -->
         <section class="section-block">
-            <h3 class="section-title">🧡 Para Ti</h3>
-            <p class="subtitle">Seleccionados especialmente para tus gustos.</p>
+            <h3 class="section-title">{{ $t('profile.recommendations_title') }}</h3>
+            <p class="subtitle">{{ $t('profile.recommendations_sub') }}</p>
             
             <div class="products-grid">
                 <ProductCard 
@@ -53,13 +51,13 @@ onMounted(async () => {
 
         <!-- Section: Recent Orders -->
         <section class="section-block">
-            <h3 class="section-title">📜 Tus Pedidos Recientes</h3>
+            <h3 class="section-title">{{ $t('profile.recent_orders') }}</h3>
             <div v-if="recentOrders.length > 0" class="orders-list">
                 <!-- Order items would go here -->
             </div>
             <div v-else class="empty-state">
-                <p>Aún no has realizado pedidos recientes.</p>
-                <RouterLink to="/menu" class="btn-link">Ir al Menú</RouterLink>
+                <p>{{ $t('profile.no_orders') }}</p>
+                <RouterLink to="/menu" class="btn-link">{{ $t('profile.go_menu') }}</RouterLink>
             </div>
         </section>
     </div>

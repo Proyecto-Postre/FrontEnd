@@ -1,5 +1,6 @@
 <script setup>
 import { computed, watch, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     isOpen: Boolean,
@@ -8,26 +9,28 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const modalData = {
+const { t } = useI18n();
+
+const modalData = computed(() => ({
     hero: {
-        title: "Experiencia Dulce",
+        title: t('modal.hero_title'),
         content: `
-            <p>En Dulce Fé, cada postre es una obra de arte diseñada para deleitar tus sentidos. Utilizamos técnicas artesanales combinadas con innovación moderna.</p>
-            <p>Nuestra misión es transformar momentos cotidianos en recuerdos extraordinarios a través del sabor.</p>
+            <p>${t('modal.hero_content_1')}</p>
+            <p>${t('modal.hero_content_2')}</p>
         `,
         imageColor: "#e6c9b8"
     },
     about: {
-        title: "Nuestra Historia",
+        title: t('modal.about_title'),
         content: `
-            <p>Todo comenzó en una pequeña cocina con una gran pasión: llevar alegría a través de la repostería. Hoy, somos una familia dedicada a la excelencia.</p>
-            <p>Nos enorgullece seleccionar ingredientes locales y sostenibles para garantizar la máxima frescura y calidad.</p>
+            <p>${t('modal.about_content_1')}</p>
+            <p>${t('modal.about_content_2')}</p>
         `,
         imageColor: "#dcdcdc"
     }
-};
+}));
 
-const currentContent = computed(() => modalData[props.type] || {});
+const currentContent = computed(() => modalData.value[props.type] || {});
 
 const close = () => {
     emit('close');

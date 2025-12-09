@@ -2,9 +2,12 @@
     "header": {
         "home": "HOME",
         "about": "ABOUT",
+        "for_you": "FOR YOU",
         "contact": "CONTACT",
         "search_placeholder": "Search desserts...",
-        "menu_btn": "OUR MENU"
+        "menu_btn": "OUR MENU",
+        "account": "Account",
+        "language": "LANGUAGE"
     },
     "hero": {
         "title": "Welcome to the sweet world of our desserts!",
@@ -20,7 +23,8 @@
             "drinks": "Drinks"
         },
         "empty": "Coming soon updates in {category}.",
-        "order": "Hi, I would like to order: {product}"
+        "order": "Hi, I would like to order: {product}",
+        "add_to_cart": "Add"
     },
     "brand": {
         "title": "More about our brand",
@@ -33,5 +37,67 @@
         "email": "Email",
         "message": "Message",
         "send": "Send"
+    },
+    "footer": {
+        "tagline": "Sweetness in every bite.",
+        "location": "Location",
+        "contact": "Contact"
+    },
+    "auth": {
+        "login_title": "Login",
+        "register_title": "Register",
+        "name": "Name",
+        "lastname": "Last Name",
+        "phone": "Phone",
+        "email": "Email",
+        "password": "Password",
+        "confirm_password": "Confirm Password",
+        "login_btn": "Sign In",
+        "register_btn": "Sign Up",
+        "no_account": "No account? Register here",
+        "has_account": "Already have an account? Login",
+        "success_register": "Registration successful! Logging in...",
+        "error_generic": "An error occurred. Please try again.",
+        "error_mismatch": "Passwords do not match."
+    },
+    "account": {
+        "title": "My Account",
+        "subtitle": "Manage your personal data",
+        "personal_data": "👤 My Data",
+        "edit": "Edit",
+        "cancel": "Cancel",
+        "save": "Save Changes",
+        "logout": "Logout",
+        "success_update": "Profile updated successfully!"
+    },
+    "profile": {
+        "welcome": "Hello, {name} 👋",
+        "welcome_sub": "Welcome to your personal space at Dulce Fe.",
+        "recommendations_title": "🧡 For You",
+        "recommendations_sub": "Specially selected for your tastes.",
+        "recent_orders": "📜 Your Recent Orders",
+        "no_orders": "You haven't made any recent orders.",
+        "go_menu": "Go to Menu"
+    },
+    "cart": {
+        "title": "Your Cart",
+        "empty": "Your cart is empty 🛒",
+        "empty_sub": "Go to our menu and add some treats!",
+        "image": "Image",
+        "product": "Product",
+        "price": "Price",
+        "quantity": "Quantity",
+        "total": "Total",
+        "clear": "Clear Cart",
+        "checkout_whatsapp": "Checkout via WhatsApp",
+        "whatsapp_msg": "Hello Dulce Fe! 👋 I would like to place the following order:\n\n"
+    },
+    "modal": {
+        "hero_title": "Sweet Experience",
+        "hero_content_1": "At Dulce Fe, every dessert is a work of art designed to delight your senses. We use artisanal techniques combined with modern innovation.",
+        "hero_content_2": "Our mission is to transform everyday moments into extraordinary memories through flavor.",
+        "about_title": "Our Story",
+        "about_content_1": "It all started in a small kitchen with a great passion: bringing joy through baking. Today, we are a family dedicated to excellence.",
+        "about_content_2": "We are proud to select local and sustainable ingredients to ensure maximum freshness and quality."
     }
 }

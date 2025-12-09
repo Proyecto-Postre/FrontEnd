@@ -2,9 +2,12 @@
     "header": {
         "home": "INICIO",
         "about": "NOSOTROS",
+        "for_you": "PARA TI",
         "contact": "CONTACTO",
         "search_placeholder": "Buscar postres...",
-        "menu_btn": "NUESTRA CARTA"
+        "menu_btn": "NUESTRA CARTA",
+        "account": "Cuenta",
+        "language": "IDIOMA"
     },
     "hero": {
         "title": "¡Bienvenidos al mundo dulce de nuestros postres!",
@@ -20,7 +23,8 @@
             "drinks": "Bebidas"
         },
         "empty": "Pronto tendremos novedades en {category}.",
-        "order": "Hola, quisiera ordenar: {product}"
+        "order": "Hola, quisiera ordenar: {product}",
+        "add_to_cart": "Agregar"
     },
     "brand": {
         "title": "Más sobre nuestra marca",
@@ -33,5 +37,67 @@
         "email": "Correo",
         "message": "Mensaje",
         "send": "Enviar"
+    },
+    "footer": {
+        "tagline": "Dulzura en cada bocado.",
+        "location": "Ubicación",
+        "contact": "Contacto"
+    },
+    "auth": {
+        "login_title": "Iniciar Sesión",
+        "register_title": "Registrarse",
+        "name": "Nombre",
+        "lastname": "Apellido",
+        "phone": "Teléfono",
+        "email": "Correo Electrónico",
+        "password": "Contraseña",
+        "confirm_password": "Confirmar Contraseña",
+        "login_btn": "Ingresar",
+        "register_btn": "Crear Cuenta",
+        "no_account": "¿No tienes cuenta? Regístrate aquí",
+        "has_account": "¿Ya tienes cuenta? Inicia sesión",
+        "success_register": "¡Registro exitoso! Iniciando sesión...",
+        "error_generic": "Ocurrió un error. Intenta nuevamente.",
+        "error_mismatch": "Las contraseñas no coinciden."
+    },
+    "account": {
+        "title": "Mi Cuenta",
+        "subtitle": "Gestiona tus datos personales",
+        "personal_data": "👤 Mis Datos",
+        "edit": "Editar",
+        "cancel": "Cancelar",
+        "save": "Guardar Cambios",
+        "logout": "Cerrar Sesión",
+        "success_update": "¡Perfil actualizado correctamente!"
+    },
+    "profile": {
+        "welcome": "Hola, {name} 👋",
+        "welcome_sub": "Bienvenido a tu espacio personal en Dulce Fe.",
+        "recommendations_title": "🧡 Para Ti",
+        "recommendations_sub": "Seleccionados especialmente para tus gustos.",
+        "recent_orders": "📜 Tus Pedidos Recientes",
+        "no_orders": "Aún no has realizado pedidos recientes.",
+        "go_menu": "Ir al Menú"
+    },
+    "cart": {
+        "title": "Tu Carrito",
+        "empty": "Tu carrito está vacío 🛒",
+        "empty_sub": "¡Ve a nuestro menú y agrega algunas delicias!",
+        "image": "Imagen",
+        "product": "Producto",
+        "price": "Precio",
+        "quantity": "Cantidad",
+        "total": "Total",
+        "clear": "Vaciar Carrito",
+        "checkout_whatsapp": "Finalizar Pedido por WhatsApp",
+        "whatsapp_msg": "Hola Dulce Fe! 👋 Me gustaría realizar el siguiente pedido:\n\n"
+    },
+    "modal": {
+        "hero_title": "Experiencia Dulce",
+        "hero_content_1": "En Dulce Fe, cada postre es una obra de arte diseñada para deleitar tus sentidos. Utilizamos técnicas artesanales combinadas con innovación moderna.",
+        "hero_content_2": "Nuestra misión es transformar momentos cotidianos en recuerdos extraordinarios a través del sabor.",
+        "about_title": "Nuestra Historia",
+        "about_content_1": "Todo comenzó en una pequeña cocina con una gran pasión: llevar alegría a través de la repostería. Hoy, somos una familia dedicada a la excelencia.",
+        "about_content_2": "Nos enorgullece seleccionar ingredientes locales y sostenibles para garantizar la máxima frescura y calidad."
     }
 }

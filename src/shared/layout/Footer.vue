@@ -3,15 +3,15 @@
         <div class="container footer-container">
             <div class="footer-content">
                 <div class="footer-brand">
-                    <h2>Dulce Fé</h2>
+                    <h2>Dulce Fe</h2>
                 </div>
                 <div class="footer-info">
                     <div class="footer-column">
-                        <h4>Ubicación</h4>
+                        <h4>{{ $t('footer.location') }}</h4>
                         <p>Calle de ejemplo, 123<br>Nueva York, NY 12345</p>
                     </div>
                     <div class="footer-column">
-                        <h4>Contacto</h4>
+                        <h4>{{ $t('footer.contact') }}</h4>
                         <p>correo@ejemplo.com<br>(555) 555-5555</p>
                     </div>
                 </div>

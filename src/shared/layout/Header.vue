@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { cart } from '../../domains/cart/store.js';
 
 const { t, locale } = useI18n();
 const isMenuOpen = ref(false);
@@ -40,7 +41,7 @@ const toggleLanguage = () => {
         <div class="container header-top">
             <div class="logo">
                 <RouterLink to="/">
-                    <h1>Dulce Fé</h1>
+                    <h1>Dulce Fe</h1>
                 </RouterLink>
             </div>
             
@@ -55,13 +56,14 @@ const toggleLanguage = () => {
                 <button class="icon-btn lang-btn" @click="toggleLanguage" title="Cambiar idioma">
                     {{ locale.toUpperCase() }}
                 </button>
-                <RouterLink to="/login" class="icon-btn" title="Cuenta">
+                <RouterLink :to="user ? '/cuenta' : '/login'" class="icon-btn" title="Cuenta">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     <span v-if="user" style="margin-left: 5px; font-size: 0.8rem; font-weight: 700;">{{ displayName }}</span>
                 </RouterLink>
-                <button class="icon-btn" title="Carrito">
+                <RouterLink to="/carrito" class="icon-btn cart-btn-wrapper" title="Carrito">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                </button>
+                    <span v-if="cart.totalItems > 0" class="cart-badge">{{ cart.totalItems }}</span>
+                </RouterLink>
                 <div class="mobile-toggle">
                      <button class="hamburger-btn" @click="toggleMenu" aria-label="Menu">
                         <span :class="{ 'open': isMenuOpen }"></span>
@@ -83,7 +85,7 @@ const toggleLanguage = () => {
                 <ul class="nav-links">
                     <li><RouterLink to="/" @click="closeMenu">{{ $t('header.home') }}</RouterLink></li>
                     <li><RouterLink to="/nosotros" @click="closeMenu">{{ $t('header.about') }}</RouterLink></li>
-                    <li v-if="user"><RouterLink to="/perfil" @click="closeMenu">Para Ti</RouterLink></li>
+                    <li v-if="user"><RouterLink to="/para-ti" @click="closeMenu">{{ $t('header.for_you') }}</RouterLink></li>
                     <li><RouterLink to="/contacto" @click="closeMenu">{{ $t('header.contact') }}</RouterLink></li>
                 </ul>
             </div>
@@ -239,8 +241,15 @@ const toggleLanguage = () => {
     width: 100%;
 }
 
-.router-link-active {
-    color: var(--secondary-color) !important;
+/* Active state for Header Icons (Top Row) - Green */
+.header-icons .router-link-active {
+    color: var(--primary-color) !important;
+}
+
+/* Active state for Navigation Links (Bottom Row) - Keep White/Visible */
+.nav-links .router-link-active {
+    color: white !important;
+    font-weight: 700;
 }
 
 /* Mobile Toggle */
@@ -320,5 +329,33 @@ const toggleLanguage = () => {
         justify-content: center;
         border-radius: 50px;
     }
+}
+
+.cart-btn-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+.cart-btn-wrapper:hover {
+    color: var(--primary-color);
+}
+
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: var(--accent-color);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 </style>
