@@ -8,24 +8,30 @@
                         breve. Esperamos tener noticias tuyas pronto.</p>
                 </div>
                 <div class="contact-form-wrapper">
-                    <form class="contact-form" @submit.prevent="handleSubmit">
+                    <!-- FormSubmit Configuration -->
+                    <form action="https://formsubmit.co/jafethworren@gmail.com" method="POST" class="contact-form">
+                        <!-- Redirect after submission (optional, stays on page or goes to a thank you page if defined, here we leave default or add a hidden next) -->
+                        <input type="hidden" name="_next" value="http://localhost:5173/"> <!-- NOTE: In production this should be the render URL, we can leave it auto or set it to home -->
+                        <input type="hidden" name="_subject" value="Nuevo contacto de Dulce Fé">
+                        <input type="hidden" name="_captcha" value="false">
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="nombre">Nombre <span class="required-text">(obligatorio)</span></label>
-                                <input type="text" id="nombre" class="form-input" required>
+                                <input type="text" name="name" id="nombre" class="form-input" required>
                             </div>
                             <div class="form-group">
                                 <label for="apellido">Apellido</label>
-                                <input type="text" id="apellido" class="form-input">
+                                <input type="text" name="apellido" id="apellido" class="form-input">
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="email">Correo electrónico <span class="required-text">(obligatorio)</span></label>
-                            <input type="email" id="email" class="form-input" required>
+                            <input type="email" name="email" id="email" class="form-input" required>
                         </div>
                         <div class="form-group">
                             <label for="mensaje">Mensaje <span class="required-text">(obligatorio)</span></label>
-                            <textarea id="mensaje" class="form-input" rows="4" required></textarea>
+                            <textarea name="message" id="mensaje" class="form-input" rows="4" required></textarea>
                         </div>
                         <button type="submit" class="btn-primary">Enviar</button>
                     </form>
@@ -36,9 +42,7 @@
 </template>
 
 <script setup>
-const handleSubmit = () => {
-    alert("Formulario envíado (simulación)");
-};
+// No custom script needed for FormSubmit
 </script>
 
 <style scoped>
