@@ -49,7 +49,7 @@
                     <h2>¡Bienvenidos al mundo dulce de nuestros postres!</h2>
                     <p>Prepárate para una explosión de sabores deliciosos que te harán sonreír en cada bocado, porque
                         sabemos que cada día merece un toque de dulzura.</p>
-                    <a href="#" class="btn-outline">Leer más</a>
+                    <a href="#" class="btn-outline open-modal-btn" data-modal-type="hero">Leer más</a>
                 </div>
             </div>
         </section>
@@ -122,7 +122,7 @@
                         <h2 class="section-title">Más sobre<br>nuestra marca</h2>
                         <p>Cuenta quién eres, tus orígenes, tu proceso o lo que te inspira. Aprovecha tu creatividad.
                             ¡Tú puedes! La manera en la que cuentes tu historia en línea puede marcar la diferencia.</p>
-                        <a href="#" class="btn-primary">Leer más</a>
+                        <a href="#" class="btn-primary open-modal-btn" data-modal-type="about">Leer más</a>
                     </div>
                     <div class="about-image-wide">
                         <img src="" alt="Imagen ancha" class="about-img-placeholder">
@@ -205,6 +205,26 @@
             </div>
         </div>
     </footer>
+
+    <!-- Modal Structure -->
+    <div class="modal-overlay" id="infoModal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <div class="modal-grid">
+                <div class="modal-image-col">
+                    <div class="modal-img-placeholder"></div>
+                    <!-- You can inject an img tag here via JS if needed -->
+                </div>
+                <div class="modal-text-col">
+                    <h3>Detalles Exclusivos</h3>
+                    <p>Aquí encontrarás información extendida sobre nuestra marca y nuestros procesos. Nos dedicamos a
+                        crear experiencias dulces inolvidables.</p>
+                    <p>Utilizamos solo los ingredientes más frescos y seleccionados para garantizar que cada bocado sea
+                        una obra maestra.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="script.js"></script>
