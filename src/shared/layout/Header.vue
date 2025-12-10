@@ -1,25 +1,38 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { cart } from '../../domains/cart/store.js';
+import { catalog } from '../../domains/catalog/store.js';
 
 const { t, locale } = useI18n();
+const router = useRouter();
 const isMenuOpen = ref(false);
 const user = ref(null);
+const searchQuery = ref('');
+const showSuggestions = ref(false);
+
+// Ensure catalog is loaded
+onMounted(async () => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+        user.value = JSON.parse(storedUser);
+    }
+    await catalog.fetchProducts();
+});
+
+const suggestions = computed(() => {
+    if (!searchQuery.value.trim()) return [];
+    return catalog.items.filter(product => 
+        product.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+    ).slice(0, 5); // Limit to 5 suggestions
+});
 
 const displayName = computed(() => {
     if (!user.value) return '';
     const name = user.value.name ? user.value.name.split(' ')[0] : '';
     const lastName = user.value.lastName ? user.value.lastName.split(' ')[0] : '';
     return `${name} ${lastName}`;
-});
-
-onMounted(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-        user.value = JSON.parse(storedUser);
-    }
 });
 
 const toggleMenu = () => {
@@ -32,6 +45,13 @@ const closeMenu = () => {
 
 const toggleLanguage = () => {
     locale.value = locale.value === 'es' ? 'en' : 'es';
+};
+
+const handleSearch = () => {
+    if (searchQuery.value.trim()) {
+        router.push({ path: '/menu', query: { q: searchQuery.value } });
+        searchQuery.value = ''; // Optional: clear after search
+    }
 };
 </script>
 
@@ -46,10 +66,17 @@ const toggleLanguage = () => {
             </div>
             
             <div class="search-bar">
-                <input type="text" :placeholder="$t('header.search_placeholder')" />
-                <button class="search-btn">
+            <div class="search-bar">
+                <input 
+                    type="text" 
+                    :placeholder="$t('header.search_placeholder')" 
+                    v-model="searchQuery"
+                    @keyup.enter="handleSearch"
+                />
+                <button class="search-btn" @click="handleSearch">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 </button>
+            </div>
             </div>
 
             <div class="header-icons">
@@ -358,4 +385,5 @@ const toggleLanguage = () => {
     justify-content: center;
     align-items: center;
 }
+
 </style>
