@@ -77,7 +77,16 @@
         "recommendations_sub": "Specially selected for your tastes.",
         "recent_orders": "📜 Your Recent Orders",
         "no_orders": "You haven't made any recent orders.",
-        "go_menu": "Go to Menu"
+        "go_menu": "Go to Menu",
+        "promotions_title": "Exclusive Promotions",
+        "promotions_sub": "Enjoy these special discounts just for you."
+    },
+    "promo": {
+        "first_buy_title": "15% Off",
+        "first_buy_desc": "For your first purchase! Enjoy the best.",
+        "loyal_title": "20% Off 2nd Cake",
+        "loyal_desc": "Loyalty reward. Thanks for choosing us!",
+        "code": "Code: {code}"
     },
     "cart": {
         "title": "Your Cart",

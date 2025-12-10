@@ -77,7 +77,16 @@
         "recommendations_sub": "Seleccionados especialmente para tus gustos.",
         "recent_orders": "📜 Tus Pedidos Recientes",
         "no_orders": "Aún no has realizado pedidos recientes.",
-        "go_menu": "Ir al Menú"
+        "go_menu": "Ir al Menú",
+        "promotions_title": "Promociones Exclusivas",
+        "promotions_sub": "Aprovecha estos descuentos especiales pensados para ti."
+    },
+    "promo": {
+        "first_buy_title": "15% de Descuento",
+        "first_buy_desc": "¡Para tu primera compra! Disfruta de lo mejor.",
+        "loyal_title": "20% en Segunda Torta",
+        "loyal_desc": "Premio a tu fidelidad. ¡Gracias por preferirnos!",
+        "code": "Código: {code}"
     },
     "cart": {
         "title": "Tu Carrito",
