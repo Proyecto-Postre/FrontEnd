@@ -46,6 +46,11 @@ const router = createRouter({
             path: '/carrito',
             name: 'cart',
             component: () => import('../domains/cart/views/CartView.vue')
+        },
+        {
+            path: '/admin',
+            name: 'admin',
+            component: () => import('../domains/admin/views/AdminDashboard.vue')
         }
     ],
     scrollBehavior(to, from, savedPosition) {

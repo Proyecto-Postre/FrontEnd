@@ -261,21 +261,31 @@ const handleOrder = (product) => {
 }
 
 /* Animations */
+/* Animations */
 .fade-move,
 .fade-enter-active,
 .fade-leave-active {
   transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
 }
 
+/* 
+   POSITION ABSOLUTE is key for the "Displacement" (Move) effect to work on siblings.
+   We hide the leaving element quickly (opacity/z-index) to avoid visual collisions.
+*/
+.fade-leave-active {
+  position: absolute;
+  z-index: -1; /* Keep it behind moving items */
+  width: 100%; /* Try to maintain some shape context if needed, though in grid it's tricky */
+  max-width: 300px; /* Constraints to prevent exploding */
+}
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(0.9) translateY(20px);
 }
 
-.fade-leave-active {
-  position: absolute;
-}
+
 
 @media (max-width: 768px) {
     .section-title {

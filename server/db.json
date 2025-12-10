@@ -1,62 +1,71 @@
 {
-  "products": [
-    {
-      "id": 1,
-      "title": "Red Velvet Supreme",
-      "price": "S/ 85.00",
-      "category": "Tortas",
-      "description": "Suave bizcocho de terciopelo rojo con capas de frosting de queso crema.",
-      "image": ""
-    },
-    {
-      "id": 2,
-      "title": "Chocolate Intenso",
-      "price": "S/ 90.00",
-      "category": "Tortas",
-      "description": "Para los amantes del cacao. Bizcocho húmedo con ganache de chocolate 70%.",
-      "image": ""
-    },
-    {
-      "id": 3,
-      "title": "Cheesecake de Frutos Rojos",
-      "price": "S/ 120.00",
-      "category": "Postres",
-      "description": "Base crujiente de galleta, crema suave de queso y topping artesanal de frutos del bosque.",
-      "image": ""
-    },
-    {
-      "id": 4,
-      "title": "Macarons Surtidos (Box x6)",
-      "price": "S/ 45.00",
-      "category": "Postres",
-      "description": "Delicados bocados franceses en sabores variados: Pistacho, Frambuesa y Vainilla.",
-      "image": ""
-    },
-    {
-      "id": 5,
-      "title": "Cappuccino Art",
-      "price": "S/ 12.00",
-      "category": "Bebidas",
-      "description": "Espresso doble con leche texturizada y arte latte.",
-      "image": ""
-    },
-    {
-      "id": 6,
-      "title": "Té Helado de Durazno",
-      "price": "S/ 10.00",
-      "category": "Bebidas",
-      "description": "Refrescante infusión de té negro con trozos de durazno natural.",
-      "image": ""
-    }
-  ],
-  "users": [
-    {
-      "name": "Jafeth Worren",
-      "lastName": "Ynga Amado",
-      "phone": "998265700",
-      "email": "jafethworren@gmail.com",
-      "password": "lolasoxd153",
-      "id": 1
-    }
-  ]
+    "products": [
+        {
+            "id": 1,
+            "title": "Red Velvet Supreme",
+            "price": "S/ 55.00",
+            "category": "Tortas",
+            "description": "Suave bizcocho de terciopelo rojo con capas de frosting de queso crema.",
+            "image": ""
+        },
+        {
+            "id": 2,
+            "title": "Chocolate Intenso",
+            "price": "S/ 90.00",
+            "category": "Tortas",
+            "description": "Para los amantes del cacao. Bizcocho húmedo con ganache de chocolate 70%.",
+            "image": ""
+        },
+        {
+            "id": 3,
+            "title": "Cheesecake de Frutos Rojos",
+            "price": "S/ 120.00",
+            "category": "Postres",
+            "description": "Base crujiente de galleta, crema suave de queso y topping artesanal de frutos del bosque.",
+            "image": ""
+        },
+        {
+            "id": 4,
+            "title": "Macarons Surtidos (Box x6)",
+            "price": "S/ 45.00",
+            "category": "Postres",
+            "description": "Delicados bocados franceses en sabores variados: Pistacho, Frambuesa y Vainilla.",
+            "image": ""
+        },
+        {
+            "id": 5,
+            "title": "Cappuccino Art",
+            "price": "S/ 12.00",
+            "category": "Bebidas",
+            "description": "Espresso doble con leche texturizada y arte latte.",
+            "image": ""
+        },
+        {
+            "id": 6,
+            "title": "Té Helado de Durazno",
+            "price": "S/ 10.00",
+            "category": "Bebidas",
+            "description": "Refrescante infusión de té negro con trozos de durazno natural.",
+            "image": ""
+        }
+    ],
+    "users": [
+        {
+            "id": "admin-001",
+            "name": "Admin",
+            "lastname": "Principal",
+            "phone": "999888777",
+            "email": "admin@gmail.com",
+            "password": "lolasoxd153",
+            "role": "admin"
+        },
+        {
+            "name": "Jafeth Worren",
+            "lastName": "Ynga Amado",
+            "phone": "998265700",
+            "email": "jafethworren@gmail.com",
+            "password": "lolasoxd153",
+            "id": 1
+        }
+    ]
 }

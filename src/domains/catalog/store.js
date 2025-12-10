@@ -6,8 +6,7 @@ export const catalog = reactive({
     error: null,
 
     async fetchProducts() {
-        // Avoid re-fetching if we already have data
-        if (this.items.length > 0) return;
+        // Always fetch fresh data to reflect Admin changes immediately
 
         this.loading = true;
         this.error = null;
