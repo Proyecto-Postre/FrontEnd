@@ -1,7 +1,9 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import ProductCard from './ProductCard.vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
+import { catalog } from '../store.js';
 
 const props = defineProps({
     mode: {
@@ -12,38 +14,53 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const route = useRoute();
 const categories = ['Tortas', 'Postres', 'Bebidas'];
 const allCategories = ['Todos', ...categories];
 const selectedCategory = ref('Todos');
-const products = ref([]);
-const loading = ref(true);
+const searchQuery = ref('');
 
-const fetchProducts = async () => {
-    try {
-        const response = await fetch('/api/products');
-        products.value = await response.json();
-    } catch (error) {
-        console.error('Error fetching products:', error);
-    } finally {
-        loading.value = false;
-    }
-};
+// Watch for URL query changes
+watch(() => route.query.q, (newQ) => {
+    searchQuery.value = newQ || '';
+}, { immediate: true });
 
-onMounted(() => {
-    fetchProducts();
+onMounted(async () => {
+    await catalog.fetchProducts();
 });
 
 // Helper to filter products by category (LIST MODE)
 const getProductsByCategory = (category) => {
-    return products.value.filter(product => product.category === category);
+    return catalog.items.filter(product => product.category === category);
 };
 
-// Compute filtered products for TABS MODE
+// Compute filtered products for TABS MODE & SEARCH
 const filteredProducts = computed(() => {
-    if (selectedCategory.value === 'Todos') {
-        return products.value;
+    let result = catalog.items;
+
+    // IF SEARCH ACTIVE: Ignore categories, search ALL items
+    if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase();
+        return result.filter(p => 
+            p.title.toLowerCase().includes(query) || 
+            p.description.toLowerCase().includes(query)
+        );
     }
-    return products.value.filter(product => product.category === selectedCategory.value);
+
+    // IF NO SEARCH: Apply Category Filter
+    if (selectedCategory.value !== 'Todos') {
+        result = result.filter(product => product.category === selectedCategory.value);
+    }
+
+    return result;
+});
+
+// Recommendations when no results found
+const suggestedProducts = computed(() => {
+    if (!catalog.items.length) return [];
+    // Shuffle and pick 3
+    const shuffled = [...catalog.items].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 3);
 });
 
 // Emulate WhatsApp order redirect
@@ -58,8 +75,13 @@ const handleOrder = (product) => {
     <section class="catalog-section" id="catalogo">
         <div class="container">
             
-            <!-- HEADER: Only show title if in Tabs mode or if desired -->
-            <div v-if="mode === 'tabs'" class="catalog-header">
+            <!-- SEARCH MODE TITLE -->
+            <div v-if="searchQuery" class="catalog-header">
+                 <h2 class="section-title">Resultados de Búsqueda</h2>
+            </div>
+
+            <!-- TABS HEADER: Only show if NOT searching and in TABS mode -->
+            <div v-else-if="mode === 'tabs'" class="catalog-header">
                 <h2 class="section-title">Nuestro Menú</h2>
                 <div class="category-tabs">
                     <button 
@@ -74,39 +96,79 @@ const handleOrder = (product) => {
                 </div>
             </div>
 
-            <!-- MODE: LIST (Sequential Categories) -->
-            <div v-if="mode === 'list'">
-                 <div v-for="category in categories" :key="category" class="category-block">
-                    <h3 class="category-title">{{ category }}</h3>
-                    <div class="products-grid">
-                        <ProductCard 
-                            v-for="product in getProductsByCategory(category)" 
-                            :key="product.id" 
-                            :product="product"
-                            @order="() => handleOrder(product)"
-                        />
+            <!-- SEARCH RESULTS MESSAGE & SUGGESTIONS -->
+            <div v-if="searchQuery" class="search-results-wrapper" style="margin-bottom: 40px;">
+                <p v-if="filteredProducts.length > 0" style="text-align:center; font-size:1.1rem; margin-bottom:30px;">
+                    Encontramos {{ filteredProducts.length }} coincidencias para: <strong>"{{ searchQuery }}"</strong>
+                </p>
+                
+                <div v-else class="empty-search-state" style="text-align:center;">
+                    <div style="margin-bottom: 50px;">
+                        <p style="font-size: 1.2rem; margin-bottom: 20px;">No encontramos resultados exactos para <strong>"{{ searchQuery }}"</strong> 😔</p>
+                        <button @click="$router.push({ query: {} })" class="btn-link" style="border:none; background:none; cursor:pointer; color:var(--primary-color); text-decoration:underline;">Ver menú completo</button>
                     </div>
-                     <div v-if="getProductsByCategory(category).length === 0" class="empty-state">
-                        <p>Pronto tendremos novedades en {{ category }}.</p>
+
+                    <!-- SUGGESTIONS SECTION -->
+                    <div class="suggestions-section">
+                        <h3 class="category-title" style="font-size:1.5rem;">Quizás te interese...</h3>
+                        <div class="products-grid">
+                            <ProductCard 
+                                v-for="product in suggestedProducts" 
+                                :key="'sugg-'+product.id" 
+                                :product="product"
+                                @order="() => handleOrder(product)"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- MODE: TABS (Filtered Grid) -->
-            <div v-else class="products-grid">
-                  <TransitionGroup name="fade">
+            <!-- LOADING STATE -->
+            <div v-if="catalog.loading" style="text-align:center; padding: 50px;">
+                <p>Cargando delicias...</p>
+            </div>
+
+            <!-- CONTENT DISPLAY -->
+            <template v-else-if="filteredProducts.length > 0">
+                
+                <!-- SEARCH RESULT GRID (Overrides everything) -->
+                <div v-if="searchQuery" class="products-grid">
                     <ProductCard 
                         v-for="product in filteredProducts" 
                         :key="product.id" 
                         :product="product"
                         @order="() => handleOrder(product)"
                     />
-                 </TransitionGroup>
-            </div>
-             <div v-if="mode === 'tabs' && filteredProducts.length === 0" class="empty-state">
-                <p>No hay productos en esta categoría.</p>
-            </div>
+                </div>
 
+                <!-- MODE: LIST (Sequential Categories) - Only if NO search -->
+                <div v-else-if="mode === 'list'">
+                     <div v-for="category in categories" :key="category" class="category-block">
+                        <h3 class="category-title">{{ category }}</h3>
+                        <div class="products-grid">
+                            <ProductCard 
+                                v-for="product in getProductsByCategory(category)" 
+                                :key="product.id" 
+                                :product="product"
+                                @order="() => handleOrder(product)"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODE: TABS (Filtered Grid) - Only if NO search -->
+                <div v-else class="products-grid">
+                      <TransitionGroup name="fade">
+                        <ProductCard 
+                            v-for="product in filteredProducts" 
+                            :key="product.id" 
+                            :product="product"
+                            @order="() => handleOrder(product)"
+                        />
+                     </TransitionGroup>
+                </div>
+
+            </template>
         </div>
     </section>
 </template>
