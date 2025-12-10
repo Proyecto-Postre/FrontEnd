@@ -6,7 +6,6 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 const cartItems = computed(() => cart.items);
-const total = computed(() => cart.totalPrice);
 
 const increase = (id) => {
     const item = cart.items.find(i => i.id === id);
@@ -29,14 +28,25 @@ const checkout = () => {
     cart.items.forEach(item => {
         message += `• *${item.title}* (x${item.quantity}) - S/ ${(parseFloat(item.price.replace('S/ ', '')) * item.quantity).toFixed(2)}\n`;
     });
+
+    message += `\nSubtotal: S/ ${cart.subtotal.toFixed(2)}`;
+
+    if (cart.coupon) {
+        message += `\nDescuento (${cart.coupon.code}): -S/ ${cart.discountAmount.toFixed(2)}`;
+    }
     
-    message += `\n*${t('cart.total')}: S/ ${total.value.toFixed(2)}*`;
+    message += `\n\n*${t('cart.total')}: S/ ${cart.totalPrice.toFixed(2)}*`;
     message += "\n\nQuedo atento a la confirmación.";
 
     const phoneNumber = "51998265700"; // Replace with real number
     const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     
     window.open(url, '_blank');
+    
+    // Consume coupon after checkout
+    if (cart.coupon) {
+        cart.removeCoupon();
+    }
 };
 </script>
 
@@ -70,9 +80,42 @@ const checkout = () => {
             <div class="cart-summary">
                 <div class="summary-card">
                     <h3>Resumen del Pedido</h3>
+                    
+                    <div class="summary-items-list">
+                        <div v-for="item in cart.items" :key="item.id" class="summary-item-group">
+                            <div class="summary-item-row">
+                                <span class="item-name">{{ item.title }} (x{{ item.quantity }})</span>
+                                <span class="item-price">S/ {{ (parseFloat(item.price.replace('S/ ', '')) * item.quantity).toFixed(2) }}</span>
+                            </div>
+                            
+                            <!-- Coupon Selection Logic -->
+                            <div v-if="cart.coupon" class="coupon-action">
+                                <!-- State 1: Coupon Active but this item NOT selected -->
+                                <button 
+                                    v-if="cart.coupon.targetId !== item.id" 
+                                    class="btn-select-coupon"
+                                    @click="cart.setCouponTarget(item.id)"
+                                >
+                                    Aplicar cupón aquí
+                                </button>
+
+                                <!-- State 2: This item IS selected -->
+                                <div v-else class="coupon-applied-msg">
+                                    <span>Descuento ({{ cart.coupon.code }})</span>
+                                    <span>- S/ {{ cart.discountAmount.toFixed(2) }}</span>
+                                    <button @click="cart.setCouponTarget(null)" class="btn-deselect" title="Cambiar">
+                                        ✕
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
                     <div class="summary-row total">
                         <span>Total a Pagar:</span>
-                        <span>S/ {{ total.toFixed(2) }}</span>
+                        <span>S/ {{ cart.totalPrice.toFixed(2) }}</span>
                     </div>
                     <button class="btn-checkout" @click="checkout">
                         Finalizar Pedido por WhatsApp
@@ -253,11 +296,62 @@ const checkout = () => {
     font-size: 1.2rem;
     color: #888;
 }
-.btn-link {
-    display: inline-block;
-    margin-top: 20px;
+.summary-items-list {
+    margin-bottom: 20px;
+}
+
+.summary-item-group {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #eee;
+}
+
+.summary-item-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    margin-bottom: 5px;
+}
+
+.btn-select-coupon {
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    background: none;
+    border: 1px solid var(--primary-color);
+    border-radius: 12px;
+    padding: 2px 8px;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.btn-select-coupon:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.coupon-applied-msg {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
     color: var(--accent-color);
-    font-weight: 700;
-    text-decoration: none;
+    font-weight: 600;
+    background: #fdf2e9;
+    padding: 5px 10px;
+    border-radius: 8px;
+    margin-top: 5px;
+}
+
+.btn-deselect {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.divider {
+    border-top: 2px solid #e0e0e0;
+    margin-top: 20px;
 }
 </style>
