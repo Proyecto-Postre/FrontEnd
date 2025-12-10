@@ -1,7 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import ProductCard from '../../catalog/components/ProductCard.vue';
+import { cart } from '../../cart/store.js';
 
+const router = useRouter();
 const user = ref(null);
 const recommendations = ref([]);
 const recentOrders = ref([]);
@@ -26,6 +29,19 @@ onMounted(async () => {
         console.error("Error loading profile data", e);
     }
 });
+
+const promotions = [
+    { id: 1, titleKey: 'promo.first_buy_title', descKey: 'promo.first_buy_desc', code: 'NUEVO15' },
+    { id: 2, titleKey: 'promo.loyal_title', descKey: 'promo.loyal_desc', code: 'DULCE20' }
+];
+
+const applyPromo = (code) => {
+    const success = cart.applyCoupon(code);
+    if (success) {
+        alert(`¡Cupón ${code} aplicado exitosamente!`);
+        router.push('/menu');
+    }
+};
 </script>
 
 <template>
@@ -46,6 +62,33 @@ onMounted(async () => {
                     :key="product.id" 
                     :product="product"
                 />
+            </div>
+        </section>
+
+        <!-- Section: Promotions -->
+        <section class="section-block">
+            <h3 class="section-title">{{ $t('profile.promotions_title') }}</h3>
+            <p class="subtitle">{{ $t('profile.promotions_sub') }}</p>
+
+            <div class="promotions-grid">
+                <div v-for="promo in promotions" :key="promo.id" class="promo-card">
+                    <div class="promo-content">
+                        <h4>{{ $t(promo.titleKey) }}</h4>
+                        <p>{{ $t(promo.descKey) }}</p>
+                        <div class="promo-code">
+                             {{ $t('promo.code', { code: promo.code }) }}
+                        </div>
+                        <button 
+                            class="btn-apply" 
+                            :class="{ 'active': cart.coupon && cart.coupon.code === promo.code }"
+                            :disabled="cart.coupon && cart.coupon.code === promo.code"
+                            @click="applyPromo(promo.code)"
+                        >
+                            {{ (cart.coupon && cart.coupon.code === promo.code) ? 'En uso' : 'Usar ahora' }}
+                        </button>
+                    </div>
+                    <div class="circles"></div>
+                </div>
             </div>
         </section>
 
@@ -123,5 +166,84 @@ onMounted(async () => {
     color: var(--accent-color);
     font-weight: 700;
     text-decoration: none;
+}
+
+/* Promotions Styles */
+.promotions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.promo-card {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #7d9685 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(105, 126, 113, 0.3);
+    transition: transform 0.3s;
+}
+
+.promo-card:hover {
+    transform: translateY(-5px);
+}
+
+.promo-content h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.promo-content p {
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+.promo-code {
+    background: rgba(255,255,255,0.2);
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-weight: 700;
+    display: inline-block;
+    border: 1px dashed white;
+    margin-right: 15px;
+}
+
+.btn-apply {
+    background-color: white;
+    color: var(--primary-color);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-apply:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.btn-apply.active {
+    background-color: rgba(255, 255, 255, 0.5);
+    cursor: default;
+    transform: none;
+    box-shadow: none;
+}
+
+
+.circles {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 100px;
+    height: 100px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
 }
 </style>
