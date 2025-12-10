@@ -77,12 +77,12 @@ const handleOrder = (product) => {
             
             <!-- SEARCH MODE TITLE -->
             <div v-if="searchQuery" class="catalog-header">
-                 <h2 class="section-title">Resultados de Búsqueda</h2>
+                 <h2 class="section-title">{{ t('catalog.search_results') }}</h2>
             </div>
 
             <!-- TABS HEADER: Only show if NOT searching and in TABS mode -->
             <div v-else-if="mode === 'tabs'" class="catalog-header">
-                <h2 class="section-title">Nuestro Menú</h2>
+                <h2 class="section-title">{{ t('catalog.title') }}</h2>
                 <div class="category-tabs">
                     <button 
                         v-for="cat in allCategories" 
@@ -91,7 +91,7 @@ const handleOrder = (product) => {
                         :class="{ active: selectedCategory === cat }"
                         @click="selectedCategory = cat"
                     >
-                        {{ cat }}
+                        {{ t(`catalog.categories.${cat.toLowerCase()}`) || cat }}
                     </button>
                 </div>
             </div>
@@ -99,18 +99,22 @@ const handleOrder = (product) => {
             <!-- SEARCH RESULTS MESSAGE & SUGGESTIONS -->
             <div v-if="searchQuery" class="search-results-wrapper" style="margin-bottom: 40px;">
                 <p v-if="filteredProducts.length > 0" style="text-align:center; font-size:1.1rem; margin-bottom:30px;">
-                    Encontramos {{ filteredProducts.length }} coincidencias para: <strong>"{{ searchQuery }}"</strong>
+                    {{ t('catalog.found_matches', { count: filteredProducts.length, query: searchQuery }) }}
                 </p>
                 
                 <div v-else class="empty-search-state" style="text-align:center;">
                     <div style="margin-bottom: 50px;">
-                        <p style="font-size: 1.2rem; margin-bottom: 20px;">No encontramos resultados exactos para <strong>"{{ searchQuery }}"</strong> 😔</p>
-                        <button @click="$router.push({ query: {} })" class="btn-link" style="border:none; background:none; cursor:pointer; color:var(--primary-color); text-decoration:underline;">Ver menú completo</button>
+                        <p style="font-size: 1.2rem; margin-bottom: 20px;">
+                            {{ t('catalog.no_matches', { query: searchQuery }) }}
+                        </p>
+                        <button @click="$router.push({ query: {} })" class="btn-link" style="border:none; background:none; cursor:pointer; color:var(--primary-color); text-decoration:underline;">
+                            {{ t('catalog.view_full_menu') }}
+                        </button>
                     </div>
 
                     <!-- SUGGESTIONS SECTION -->
                     <div class="suggestions-section">
-                        <h3 class="category-title" style="font-size:1.5rem;">Quizás te interese...</h3>
+                        <h3 class="category-title" style="font-size:1.5rem;">{{ t('catalog.might_interest') }}</h3>
                         <div class="products-grid">
                             <ProductCard 
                                 v-for="product in suggestedProducts" 
@@ -125,7 +129,7 @@ const handleOrder = (product) => {
 
             <!-- LOADING STATE -->
             <div v-if="catalog.loading" style="text-align:center; padding: 50px;">
-                <p>Cargando delicias...</p>
+                <p>{{ t('catalog.loading') }}</p>
             </div>
 
             <!-- CONTENT DISPLAY -->

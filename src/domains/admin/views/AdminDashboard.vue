@@ -1,11 +1,15 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const products = ref([]);
 const users = ref([]);
 const activeTab = ref('products'); // 'products' | 'users'
 const isEditing = ref(false);
 const currentProduct = ref({});
+const fileName = ref('');
 
 const emptyProduct = {
     title: '',
@@ -63,16 +67,16 @@ const closeMode = () => {
 // User Management
 const deleteUser = async (id) => {
     if (id === currentUser.value.id) {
-        alert("No puedes eliminar tu propia cuenta.");
+        alert(t('admin.alerts.delete_self'));
         return;
     }
-    if (!confirm('¿Estás seguro de eliminar este usuario?')) return;
+    if (!confirm(t('admin.alerts.confirm_delete_user'))) return;
 
     try {
         await fetch(`/api/users/${id}`, { method: 'DELETE' });
         await fetchUsers(); // Refresh list
     } catch (e) {
-        alert('Error eliminando el usuario');
+        alert(t('admin.alerts.error_delete_user'));
     }
 };
 
@@ -101,26 +105,27 @@ const saveProduct = async () => {
         
         await fetchProducts(); // Refresh list
         closeMode();
-        alert(isNew ? 'Producto agregado exitosamente' : 'Producto actualizado exitosamente');
+        alert(isNew ? t('admin.alerts.success_add') : t('admin.alerts.success_update'));
     } catch (e) {
-        alert('Error guardando el producto');
+        alert(t('admin.alerts.error_save'));
     }
 };
 
 const deleteProduct = async (id) => {
-    if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+    if (!confirm(t('admin.alerts.confirm_delete_product'))) return;
 
     try {
         await fetch(`/api/products/${id}`, { method: 'DELETE' });
         await fetchProducts();
     } catch (e) {
-        alert('Error eliminando el producto');
+        alert(t('admin.alerts.error_delete_product'));
     }
 };
 
 const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+        fileName.value = file.name;
         const reader = new FileReader();
         reader.onload = (e) => {
             currentProduct.value.image = e.target.result; // Base64 string
@@ -133,8 +138,8 @@ const handleFileUpload = (event) => {
 <template>
     <div class="admin-dashboard container">
         <div class="dashboard-header">
-            <h1>Panel de Administración 🛠️</h1>
-            <p>Gestiona tu inventario y usuarios</p>
+            <h1>{{ t('admin.title') }}</h1>
+            <p>{{ t('admin.subtitle') }}</p>
         </div>
 
         <!-- TABS NAVIGATION -->
@@ -144,14 +149,14 @@ const handleFileUpload = (event) => {
                 :class="{ active: activeTab === 'products' }"
                 @click="activeTab = 'products'"
             >
-                🍰 Inventario
+                {{ t('admin.tab_inventory') }}
             </button>
             <button 
                 class="tab-btn" 
                 :class="{ active: activeTab === 'users' }"
                 @click="activeTab = 'users'"
             >
-                👥 Usuarios
+                {{ t('admin.tab_users') }}
             </button>
         </div>
 
@@ -159,7 +164,7 @@ const handleFileUpload = (event) => {
         <div v-if="activeTab === 'products'">
             <div class="actions-bar">
                 <button class="btn-primary" @click="openAddModal">
-                    + Agregar Nuevo Producto
+                    {{ t('admin.btn_add') }}
                 </button>
             </div>
 
@@ -167,12 +172,12 @@ const handleFileUpload = (event) => {
                 <table class="products-table">
                     <thead>
                         <tr>
-                            <th>Imagen</th>
-                            <th>Nombre</th>
-                            <th>Categoría</th>
-                            <th>Precio</th>
-                            <th>Descripción</th>
-                            <th>Acciones</th>
+                            <th>{{ t('admin.table.image') }}</th>
+                            <th>{{ t('admin.table.name') }}</th>
+                            <th>{{ t('admin.table.category') }}</th>
+                            <th>{{ t('admin.table.price') }}</th>
+                            <th>{{ t('admin.table.description') }}</th>
+                            <th>{{ t('admin.table.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -187,8 +192,8 @@ const handleFileUpload = (event) => {
                             <td>{{ product.price }}</td>
                             <td class="desc-cell">{{ product.description }}</td>
                             <td class="actions-cell">
-                                <button @click="editProduct(product)" class="btn-icon edit" title="Editar">✏️</button>
-                                <button @click="deleteProduct(product.id)" class="btn-icon delete" title="Eliminar">🗑️</button>
+                                <button @click="editProduct(product)" class="btn-icon edit" :title="t('admin.actions.edit')">✏️</button>
+                                <button @click="deleteProduct(product.id)" class="btn-icon delete" :title="t('admin.actions.delete')">🗑️</button>
                             </td>
                         </tr>
                     </tbody>
@@ -202,12 +207,12 @@ const handleFileUpload = (event) => {
                 <table class="products-table">
                     <thead>
                         <tr>
-                            <th>Nombre</th>
-                            <th>Apellido</th>
-                            <th>Email</th>
-                            <th>Teléfono</th>
-                            <th>Rol</th>
-                            <th>Acciones</th>
+                            <th>{{ t('admin.table.name') }}</th>
+                            <th>{{ t('admin.table.lastname') }}</th>
+                            <th>{{ t('admin.table.email') }}</th>
+                            <th>{{ t('admin.table.phone') }}</th>
+                            <th>{{ t('admin.table.role') }}</th>
+                            <th>{{ t('admin.table.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -226,7 +231,7 @@ const handleFileUpload = (event) => {
                                     v-if="user.id !== currentUser.id"
                                     @click="deleteUser(user.id)" 
                                     class="btn-icon delete" 
-                                    title="Eliminar Usuario"
+                                    :title="t('admin.actions.delete_user')"
                                 >
                                     🗑️
                                 </button>
@@ -240,21 +245,21 @@ const handleFileUpload = (event) => {
         <!-- Modal / Form Overlay -->
         <div v-if="isEditing" class="modal-overlay">
             <div class="modal-content">
-                <h2>{{ currentProduct.id ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
+                <h2>{{ currentProduct.id ? t('admin.form.edit_title') : t('admin.form.new_title') }}</h2>
                 
                 <form @submit.prevent="saveProduct" class="product-form">
                     <div class="form-group">
-                        <label>Nombre del Producto</label>
+                        <label>{{ t('admin.form.product_name') }}</label>
                         <input v-model="currentProduct.title" required placeholder="Ej: Torta de Chocolate" />
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Precio (Ej: 45.00)</label>
+                            <label>{{ t('admin.form.price') }}</label>
                             <input v-model="currentProduct.price" required placeholder="0.00" />
                         </div>
                         <div class="form-group">
-                            <label>Categoría</label>
+                            <label>{{ t('admin.form.category') }}</label>
                             <select v-model="currentProduct.category">
                                 <option value="Tortas">Tortas</option>
                                 <option value="Postres">Postres</option>
@@ -264,21 +269,29 @@ const handleFileUpload = (event) => {
                     </div>
 
                     <div class="form-group">
-                        <label>Imagen del Producto</label>
-                        <input type="file" @change="handleFileUpload" accept="image/*" />
+                        <label>{{ t('admin.form.image_label') }}</label>
+                        <div class="file-upload-container">
+                            <label for="file-upload" class="custom-file-upload">
+                                {{ t('admin.form.select_image') }}
+                            </label>
+                            <input id="file-upload" type="file" @change="handleFileUpload" accept="image/*" />
+                            <span v-if="fileName" class="file-name">{{ fileName }}</span>
+                            <span v-else class="file-name placeholder">{{ t('admin.form.no_file') }}</span>
+                        </div>
+                        
                         <div v-if="currentProduct.image" class="image-preview">
                             <img :src="currentProduct.image" alt="Vista previa" />
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Descripción</label>
+                        <label>{{ t('admin.form.description') }}</label>
                         <textarea v-model="currentProduct.description" rows="3"></textarea>
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn-cancel" @click="closeMode">Cancelar</button>
-                        <button type="submit" class="btn-save">Guardar Cambio</button>
+                        <button type="button" class="btn-cancel" @click="closeMode">{{ t('admin.form.cancel') }}</button>
+                        <button type="submit" class="btn-save">{{ t('admin.form.save') }}</button>
                     </div>
                 </form>
             </div>
@@ -481,5 +494,49 @@ const handleFileUpload = (event) => {
     max-height: 200px;
     border-radius: 10px;
     border: 2px solid #eee;
+}
+
+/* Custom File Upload */
+.file-upload-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.custom-file-upload {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 10px 20px;
+    cursor: pointer;
+    background: #f9f9f9;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s;
+    color: #555;
+    white-space: nowrap;
+}
+
+.custom-file-upload:hover {
+    background: #eee;
+    border-color: #999;
+}
+
+.file-name {
+    color: #666;
+    font-size: 0.9rem;
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.file-name.placeholder {
+    color: #aaa;
 }
 </style>

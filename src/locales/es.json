@@ -24,7 +24,13 @@
         },
         "empty": "Pronto tendremos novedades en {category}.",
         "order": "Hola, quisiera ordenar: {product}",
-        "add_to_cart": "Agregar"
+        "add_to_cart": "Agregar",
+        "search_results": "Resultados de Búsqueda",
+        "found_matches": "Encontramos {count} coincidencias para: \"{query}\"",
+        "no_matches": "No encontramos resultados exactos para \"{query}\" 😔",
+        "view_full_menu": "Ver menú completo",
+        "might_interest": "Quizás te interese...",
+        "loading": "Cargando delicias..."
     },
     "brand": {
         "title": "Más sobre nuestra marca",
@@ -108,5 +114,52 @@
         "about_title": "Nuestra Historia",
         "about_content_1": "Todo comenzó en una pequeña cocina con una gran pasión: llevar alegría a través de la repostería. Hoy, somos una familia dedicada a la excelencia.",
         "about_content_2": "Nos enorgullece seleccionar ingredientes locales y sostenibles para garantizar la máxima frescura y calidad."
+    },
+    "admin": {
+        "title": "Panel de Administración 🛠️",
+        "subtitle": "Gestiona tu inventario y usuarios",
+        "tab_inventory": "🍰 Inventario",
+        "tab_users": "👥 Usuarios",
+        "btn_add": "+ Agregar Nuevo Producto",
+        "table": {
+            "image": "Imagen",
+            "name": "Nombre",
+            "category": "Categoría",
+            "price": "Precio",
+            "description": "Descripción",
+            "actions": "Acciones",
+            "lastname": "Apellido",
+            "email": "Email",
+            "phone": "Teléfono",
+            "role": "Rol"
+        },
+        "actions": {
+            "edit": "Editar",
+            "delete": "Eliminar",
+            "delete_user": "Eliminar Usuario"
+        },
+        "form": {
+            "edit_title": "Editar Producto",
+            "new_title": "Nuevo Producto",
+            "product_name": "Nombre del Producto",
+            "price": "Precio",
+            "category": "Categoría",
+            "image_label": "Imagen del Producto",
+            "select_image": "📷 Seleccionar Imagen",
+            "no_file": "No se ha seleccionado archivo",
+            "description": "Descripción",
+            "cancel": "Cancelar",
+            "save": "Guardar Cambio"
+        },
+        "alerts": {
+            "delete_self": "No puedes eliminar tu propia cuenta.",
+            "confirm_delete_user": "¿Estás seguro de eliminar este usuario?",
+            "error_delete_user": "Error eliminando el usuario",
+            "confirm_delete_product": "¿Estás seguro de eliminar este producto?",
+            "error_delete_product": "Error eliminando el producto",
+            "success_add": "Producto agregado exitosamente",
+            "success_update": "Producto actualizado exitosamente",
+            "error_save": "Error guardando el producto"
+        }
     }
 }
