@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue';
 import { cart } from '../../cart/store';
 
 const props = defineProps({ // Assign props to variable to use in script if needed
@@ -8,10 +9,15 @@ const props = defineProps({ // Assign props to variable to use in script if need
     }
 });
 
+const isAdded = ref(false);
+
 const handleOrder = () => {
     cart.addToCart(props.product);
-    // Optional: Toast notification could go here
-    // alert("Producto agregado!"); 
+    isAdded.value = true;
+    
+    setTimeout(() => {
+        isAdded.value = false;
+    }, 2000);
 };
 </script>
 
@@ -25,9 +31,15 @@ const handleOrder = () => {
         <div class="card-content">
             <h3>{{ product.title }}</h3>
             <p>{{ product.description }}</p>
-            <button class="btn-order" @click.stop="handleOrder">
-                {{ $t('catalog.add_to_cart') }}
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <button 
+                class="btn-order" 
+                :class="{ 'added': isAdded }"
+                @click.stop="handleOrder"
+                :disabled="isAdded"
+            >
+                {{ isAdded ? $t('catalog.added') : $t('catalog.add_to_cart') }}
+                <svg v-if="!isAdded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
             </button>
         </div>
     </div>
@@ -123,5 +135,12 @@ const handleOrder = () => {
 .btn-order:hover {
     background-color: #D99578;
     gap: 15px;
+}
+
+.btn-order.added {
+    background-color: #D99578; /* Same as hover color */
+    color: white;
+    transform: scale(1.05);
+    cursor: default;
 }
 </style>
