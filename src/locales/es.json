@@ -25,6 +25,7 @@
         "empty": "Pronto tendremos novedades en {category}.",
         "order": "Hola, quisiera ordenar: {product}",
         "add_to_cart": "Agregar",
+        "added": "¡Agregado! 🛒",
         "search_results": "Resultados de Búsqueda",
         "found_matches": "Encontramos {count} coincidencias para: \"{query}\"",
         "no_matches": "No encontramos resultados exactos para \"{query}\" 😔",
