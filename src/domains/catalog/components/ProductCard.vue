@@ -46,6 +46,12 @@ const handleOrder = () => {
 </template>
 
 <style scoped>
+/* Mobile adjustments for the card itself */
+@media (max-width: 768px) {
+    .product-card {
+        border-radius: 12px; /* Smaller radius */
+    }
+}
 .product-card {
     background: #fff;
     border-radius: 20px;
@@ -73,7 +79,15 @@ const handleOrder = () => {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    height: 100%;
+    object-fit: cover;
     transition: transform 0.5s ease;
+}
+
+@media (max-width: 768px) {
+    .card-image {
+        height: 140px; /* Reduce image height on mobile */
+    }
 }
 
 .product-card:hover .card-image img {
@@ -142,5 +156,35 @@ const handleOrder = () => {
     color: white;
     transform: scale(1.05);
     cursor: default;
+}
+
+@media (max-width: 768px) {
+    .card-content {
+        padding: 12px; /* Reduce padding */
+    }
+    .card-content h3 {
+        font-size: 1rem; /* Smaller title */
+        margin-bottom: 5px;
+    }
+    .card-content p {
+        font-size: 0.8rem; /* Smaller description */
+        margin-bottom: 10px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* Limit text lines */
+        line-clamp: 2; /* Standard property */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .price-tag {
+        top: 8px;
+        right: 8px;
+        padding: 4px 10px;
+        font-size: 0.8rem;
+    }
+    .btn-order {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        border-radius: 8px;
+    }
 }
 </style>

@@ -1,5 +1,8 @@
 <script setup>
 import { inject } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 const openModal = inject('openModal');
 
 const handleOpenModal = () => {
@@ -14,10 +17,9 @@ const handleOpenModal = () => {
         <div class="container about-grid">
             <div class="about-left-col">
                 <div class="about-text-content">
-                    <h2 class="section-title">Más sobre<br>nuestra marca</h2>
-                    <p>Cuenta quién eres, tus orígenes, tu proceso o lo que te inspira. Aprovecha tu creatividad.
-                        ¡Tú puedes! La manera en la que cuentes tu historia en línea puede marcar la diferencia.</p>
-                    <button class="btn-primary" @click.prevent="handleOpenModal">Leer más</button>
+                    <h2 class="section-title" v-html="t('brand.title')"></h2>
+                    <p>{{ t('brand.description') }}</p>
+                    <button class="btn-primary" @click.prevent="handleOpenModal">{{ t('brand.cta') }}</button>
                 </div>
                 <!-- Images using empty boxes with src="" as requested -->
                 <div class="about-image-wide">

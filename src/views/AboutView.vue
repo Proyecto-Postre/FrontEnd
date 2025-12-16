@@ -1,12 +1,14 @@
 <script setup>
 import AboutSection from '../domains/brand/components/AboutSection.vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 </script>
 
 <template>
     <div class="page-view about-view">
          <div class="page-header">
-            <h1>Nuestra Historia</h1>
-            <p>Pasión por lo dulce desde el primer día</p>
+            <h1>{{ t('about_view.title') }}</h1>
+            <p>{{ t('about_view.subtitle') }}</p>
         </div>
         <AboutSection />
     </div>

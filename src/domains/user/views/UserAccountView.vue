@@ -14,6 +14,8 @@ const form = ref({
     email: ''
 });
 
+const orders = ref([]);
+
 onMounted(async () => {
     // 1. Get user
     const storedUser = localStorage.getItem('user');
@@ -21,6 +23,16 @@ onMounted(async () => {
         user.value = JSON.parse(storedUser);
         // Init form
         form.value = { ...user.value };
+
+        // 2. Fetch Orders
+        try {
+            const res = await fetch(`/api/orders?userId=${user.value.id}&_sort=id&_order=desc`);
+            if (res.ok) {
+                orders.value = await res.json();
+            }
+        } catch (e) {
+            console.error("Error fetching orders:", e);
+        }
     } else {
         router.push('/login'); // Protected route
     }
@@ -81,50 +93,85 @@ const logout = () => {
             <p>{{ $t('account.subtitle') }}</p>
         </div>
 
-        <div class="account-card" v-if="user">
-            <div class="card-header">
-                <h3>{{ $t('account.personal_data') }}</h3>
-                <div class="header-actions">
-                     <button v-if="!isEditing" @click="toggleEdit" class="btn-edit">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                        {{ $t('account.edit') }}
+        <div class="grid-layout">
+            <!-- LEFT COLUMN: PERSONAL DATA -->
+            <div class="account-card" v-if="user">
+                <div class="card-header">
+                    <h3>{{ $t('account.personal_data') }}</h3>
+                    <div class="header-actions">
+                         <button v-if="!isEditing" @click="toggleEdit" class="btn-edit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            {{ $t('account.edit') }}
+                        </button>
+                        <button v-else @click="toggleEdit" class="btn-cancel">{{ $t('account.cancel') }}</button>
+                    </div>
+                </div>
+
+                <form @submit.prevent="saveProfile" class="account-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>{{ $t('auth.name') }}</label>
+                            <input type="text" v-model="form.name" :disabled="!isEditing" required>
+                        </div>
+                        <div class="form-group">
+                            <label>{{ $t('auth.lastname') }}</label>
+                            <input type="text" v-model="form.lastName" :disabled="!isEditing" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>{{ $t('auth.phone') }}</label>
+                        <input type="tel" v-model="form.phone" :disabled="!isEditing" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ $t('auth.email') }}</label>
+                        <input type="email" v-model="form.email" disabled class="disabled-input">
+                    </div>
+
+                    <div class="form-actions" v-if="isEditing">
+                        <button type="submit" class="btn-save">{{ $t('account.save') }}</button>
+                    </div>
+                </form>
+
+                <div class="logout-section">
+                    <button class="btn-logout" @click="logout">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        {{ $t('account.logout') }}
                     </button>
-                    <button v-else @click="toggleEdit" class="btn-cancel">{{ $t('account.cancel') }}</button>
                 </div>
             </div>
 
-            <form @submit.prevent="saveProfile" class="account-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>{{ $t('auth.name') }}</label>
-                        <input type="text" v-model="form.name" :disabled="!isEditing" required>
-                    </div>
-                    <div class="form-group">
-                        <label>{{ $t('auth.lastname') }}</label>
-                        <input type="text" v-model="form.lastName" :disabled="!isEditing" required>
-                    </div>
+            <!-- RIGHT COLUMN: MY ORDERS -->
+             <div class="account-card orders-card">
+                <div class="card-header">
+                    <h3>Mis Pedidos 📦</h3>
                 </div>
                 
-                <div class="form-group">
-                    <label>{{ $t('auth.phone') }}</label>
-                    <input type="tel" v-model="form.phone" :disabled="!isEditing" required>
-                </div>
-                <div class="form-group">
-                    <label>{{ $t('auth.email') }}</label>
-                    <input type="email" v-model="form.email" disabled class="disabled-input">
+                <div v-if="orders.length === 0" class="empty-orders">
+                    <p>Aún no has realizado pedidos.</p>
+                    <RouterLink to="/menu" class="btn-link">Ir al Menú</RouterLink>
                 </div>
 
-                <div class="form-actions" v-if="isEditing">
-                    <button type="submit" class="btn-save">{{ $t('account.save') }}</button>
+                <div v-else class="orders-list">
+                    <div v-for="order in orders" :key="order.id" class="order-item">
+                        <div class="order-header">
+                            <span class="order-date">{{ new Date(order.date).toLocaleDateString() }}</span>
+                            <span class="order-status" :class="order.status">{{ order.status || 'pendiente' }}</span>
+                        </div>
+                        <div class="order-body">
+                            <div class="order-summary">
+                                <span class="item-count">{{ order.items.length }} productos</span>
+                                <span class="total-price">S/ {{ order.total }}</span>
+                            </div>
+                            <ul class="order-items-preview">
+                                <li v-for="item in order.items" :key="item.id">
+                                    {{ item.quantity }}x {{ item.title }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-            </form>
-
-            <div class="logout-section">
-                <button class="btn-logout" @click="logout">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                    {{ $t('account.logout') }}
-                </button>
-            </div>
+             </div>
         </div>
     </div>
 </template>
@@ -132,13 +179,27 @@ const logout = () => {
 <style scoped>
 .account-container {
     padding: 60px 20px;
-    min-height: 70vh;
-    max-width: 800px;
+    min-height: 80vh;
+    max-width: 1200px; /* Increased max-width for 2 cols */
+}
+
+/* GRID LAYOUT */
+.grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .grid-layout {
+        grid-template-columns: 1fr; /* Stack on mobile */
+    }
 }
 
 .account-header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 50px;
 }
 
 .account-header h2 {
@@ -169,6 +230,7 @@ const logout = () => {
     color: var(--text-color);
 }
 
+/* FORM STYLES (Existing) */
 .btn-edit, .btn-cancel {
     background: none;
     border: none;
@@ -181,9 +243,7 @@ const logout = () => {
     font-size: 1rem;
 }
 
-.btn-cancel {
-    color: #999;
-}
+.btn-cancel { color: #999; }
 
 .account-form {
     display: flex;
@@ -195,12 +255,6 @@ const logout = () => {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-}
-
-@media (max-width: 600px) {
-    .form-row {
-        grid-template-columns: 1fr;
-    }
 }
 
 .form-group {
@@ -222,12 +276,6 @@ const logout = () => {
     font-family: var(--body-font-family);
     font-size: 1rem;
     transition: all 0.3s;
-}
-
-.form-group input:disabled {
-    background-color: #f9f9f9;
-    border-color: transparent;
-    color: #777;
 }
 
 .form-group input:focus {
@@ -254,10 +302,6 @@ const logout = () => {
     transition: background 0.3s;
 }
 
-.btn-save:hover {
-    background-color: var(--primary-dark);
-}
-
 .logout-section {
     margin-top: 40px;
     padding-top: 30px;
@@ -278,10 +322,85 @@ const logout = () => {
     font-weight: 700;
     cursor: pointer;
     transition: background 0.3s;
-    font-size: 1rem;
 }
 
-.btn-logout:hover {
-    background: #ffe0e0;
+/* ORDER HISTORY STYLES */
+.orders-card {
+    min-height: 400px;
+}
+
+.empty-orders {
+    text-align: center;
+    padding: 40px 0;
+    color: #888;
+}
+
+.btn-link {
+    display: inline-block;
+    margin-top: 15px;
+    color: var(--primary-color);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.order-item {
+    border: 1px solid #eee;
+    border-radius: 15px;
+    padding: 20px;
+    transition: all 0.3s;
+}
+
+.order-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 600;
+}
+
+.order-status {
+    text-transform: capitalize;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+}
+
+.order-status.pendiente { background: #fff3cd; color: #856404; }
+.order-status.atendido { background: #d4edda; color: #155724; }
+.order-status.cancelado { background: #f8d7da; color: #721c24; }
+
+.order-summary {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.total-price {
+    color: var(--primary-color);
+}
+
+.order-items-preview {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+    color: #777;
+    border-top: 1px dashed #eee;
+    padding-top: 10px;
 }
 </style>

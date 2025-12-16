@@ -6,7 +6,9 @@
       "price": "S/ 55.00",
       "category": "Tortas",
       "description": "Suave bizcocho de terciopelo rojo con capas de frosting de queso crema.",
-      "image": ""
+      "image": "",
+      "isFeatured": true,
+      "sales": 3
     },
     {
       "id": 2,
@@ -14,7 +16,9 @@
       "price": "S/ 90.00",
       "category": "Tortas",
       "description": "Para los amantes del cacao. Bizcocho húmedo con ganache de chocolate 70%.",
-      "image": ""
+      "image": "",
+      "isFeatured": true,
+      "sales": 3
     },
     {
       "id": 3,
@@ -22,7 +26,9 @@
       "price": "S/ 120.00",
       "category": "Postres",
       "description": "Base crujiente de galleta, crema suave de queso y topping artesanal de frutos del bosque.",
-      "image": ""
+      "image": "",
+      "isFeatured": false,
+      "sales": 3
     },
     {
       "id": 4,
@@ -30,7 +36,9 @@
       "price": "S/ 45.00",
       "category": "Postres",
       "description": "Delicados bocados franceses en sabores variados: Pistacho, Frambuesa y Vainilla.",
-      "image": ""
+      "image": "",
+      "isFeatured": false,
+      "sales": 5
     },
     {
       "id": 5,
@@ -38,7 +46,9 @@
       "price": "S/ 12.00",
       "category": "Bebidas",
       "description": "Espresso doble con leche texturizada y arte latte.",
-      "image": ""
+      "image": "",
+      "isFeatured": false,
+      "sales": 2
     },
     {
       "id": 6,
@@ -46,7 +56,9 @@
       "price": "S/ 10.00",
       "category": "Bebidas",
       "description": "Refrescante infusión de té negro con trozos de durazno natural.",
-      "image": ""
+      "image": "",
+      "isFeatured": true,
+      "sales": 1
     }
   ],
   "users": [
@@ -57,7 +69,8 @@
       "phone": "999888777",
       "email": "admin@gmail.com",
       "password": "lolasoxd153",
-      "role": "admin"
+      "role": "admin",
+      "coupons": []
     },
     {
       "name": "Jafeth Worren",
@@ -65,7 +78,113 @@
       "phone": "998265700",
       "email": "jafethworren@gmail.com",
       "password": "lolasoxd153",
-      "id": 1
+      "id": 1,
+      "coupons": []
+    }
+  ],
+  "orders": [
+    {
+      "id": "1765842824030",
+      "date": "2025-12-15T23:53:44.030Z",
+      "userId": 1,
+      "userName": "Jafeth Worren Ynga Amado",
+      "items": [
+        {
+          "id": 2,
+          "title": "Chocolate Intenso",
+          "quantity": 1,
+          "price": "S/ 90.00"
+        }
+      ],
+      "total": 90,
+      "status": "pendiente"
+    },
+    {
+      "id": "1765842854615",
+      "date": "2025-12-15T23:54:14.615Z",
+      "userId": 1,
+      "userName": "Jafeth Worren Ynga Amado",
+      "items": [
+        {
+          "id": 4,
+          "title": "Macarons Surtidos (Box x6)",
+          "quantity": 1,
+          "price": "S/ 45.00"
+        },
+        {
+          "id": 3,
+          "title": "Cheesecake de Frutos Rojos",
+          "quantity": 1,
+          "price": "S/ 120.00"
+        }
+      ],
+      "total": 165,
+      "status": "pendiente"
+    },
+    {
+      "id": "1765843367451",
+      "date": "2025-12-16T00:02:47.451Z",
+      "userId": 1,
+      "userName": "Jafeth Worren Ynga Amado",
+      "items": [
+        {
+          "id": 3,
+          "title": "Cheesecake de Frutos Rojos",
+          "quantity": 1,
+          "price": "S/ 120.00"
+        },
+        {
+          "id": 1,
+          "title": "Red Velvet Supreme",
+          "quantity": 1,
+          "price": "S/ 55.00"
+        }
+      ],
+      "total": 175,
+      "status": "pendiente"
+    },
+    {
+      "id": "1765843385078",
+      "date": "2025-12-16T00:03:05.078Z",
+      "userId": 1,
+      "userName": "Jafeth Worren Ynga Amado",
+      "items": [
+        {
+          "id": 2,
+          "title": "Chocolate Intenso",
+          "quantity": 1,
+          "price": "S/ 90.00"
+        },
+        {
+          "id": 4,
+          "title": "Macarons Surtidos (Box x6)",
+          "quantity": 3,
+          "price": "S/ 45.00"
+        },
+        {
+          "id": 6,
+          "title": "Té Helado de Durazno",
+          "quantity": 1,
+          "price": "S/ 10.00"
+        },
+        {
+          "id": 5,
+          "title": "Cappuccino Art",
+          "quantity": 1,
+          "price": "S/ 12.00"
+        }
+      ],
+      "total": 247,
+      "status": "pendiente"
+    }
+  ],
+  "testimonials": [
+    {
+      "id": 1765847687575,
+      "name": "Jafeth Worren Y.",
+      "text": "hola amigos del wasap\n",
+      "stars": 5,
+      "role": "Cliente Verificado"
     }
   ]
 }

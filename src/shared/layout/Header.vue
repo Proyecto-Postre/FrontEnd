@@ -66,17 +66,31 @@ const handleSearch = () => {
             </div>
             
             <div class="search-bar">
-            <div class="search-bar">
-                <input 
-                    type="text" 
-                    :placeholder="$t('header.search_placeholder')" 
-                    v-model="searchQuery"
-                    @keyup.enter="handleSearch"
-                />
-                <button class="search-btn" @click="handleSearch">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                </button>
-            </div>
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        :placeholder="$t('header.search_placeholder')" 
+                        v-model="searchQuery"
+                        @keyup.enter="handleSearch"
+                        @focus="showSuggestions = true"
+                        @blur="setTimeout(() => showSuggestions = false, 200)"
+                    />
+                    <button class="search-btn" @click="handleSearch">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </button>
+                </div>
+
+                <!-- Suggestions Dropdown -->
+                <div v-if="showSuggestions && suggestions.length > 0" class="suggestions-dropdown">
+                    <div 
+                        v-for="item in suggestions" 
+                        :key="item.id" 
+                        class="suggestion-item"
+                        @click="router.push({ path: '/menu', query: { q: item.title } }); searchQuery = item.title"
+                    >
+                        {{ item.title }}
+                    </div>
+                </div>
             </div>
 
             <div class="header-icons">
@@ -104,24 +118,37 @@ const handleSearch = () => {
         <!-- Bottom Row: Navigation (Green Bar) -->
         <nav class="main-nav" :class="{ 'mobile-active': isMenuOpen }">
             <div class="container nav-container">
+                <!-- Mobile Search (Visible only inside mobile menu) -->
+                <div class="mobile-search-wrapper">
+                    <input 
+                        type="text" 
+                        :placeholder="$t('header.search_placeholder')" 
+                        v-model="searchQuery"
+                        @keyup.enter="handleSearch"
+                        class="mobile-search-input"
+                    />
+                    <button class="mobile-search-btn" @click="handleSearch">🔍</button>
+                </div>
+
                 <RouterLink to="/menu" class="special-nav-btn" @click="closeMenu">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                      {{ $t('header.menu_btn') }}
                 </RouterLink>
                 <!-- Navigation Links -->
                 <nav class="nav-links"> <!-- hidden on mobile, shown on desktop -->
-                    <RouterLink to="/" class="nav-item">{{ $t('header.home') }}</RouterLink>
+                    <RouterLink to="/" class="nav-item" @click="closeMenu">{{ $t('header.home') }}</RouterLink>
+                    <RouterLink to="/servicios" class="nav-item" @click="closeMenu">{{ $t('header.services') }}</RouterLink>
                     
                     <!-- Admin Only Link -->
-                    <RouterLink v-if="user && user.role === 'admin'" to="/admin" class="nav-item highlight">
-                        PANEL ADMIN
+                    <RouterLink v-if="user && user.role === 'admin'" to="/admin" class="nav-item highlight" @click="closeMenu">
+                        {{ $t('header.admin_panel') }}
                     </RouterLink>
 
                     <!-- User Only Links -->
                     <template v-else>
-                        <RouterLink to="/nosotros" class="nav-item">{{ $t('header.about') }}</RouterLink>
-                        <RouterLink v-if="user" to="/para-ti" class="nav-item">{{ $t('header.for_you') }}</RouterLink>
-                        <RouterLink to="/contacto" class="nav-item">{{ $t('header.contact') }}</RouterLink>
+                        <RouterLink to="/nosotros" class="nav-item" @click="closeMenu">{{ $t('header.about') }}</RouterLink>
+                        <RouterLink v-if="user" to="/para-ti" class="nav-item" @click="closeMenu">{{ $t('header.for_you') }}</RouterLink>
+                        <RouterLink to="/contacto" class="nav-item" @click="closeMenu">{{ $t('header.contact') }}</RouterLink>
                     </template>
                 </nav>
             </div>
@@ -130,10 +157,47 @@ const handleSearch = () => {
 </template>
 
 <style scoped>
+/* MOBILE SEARCH STYLES */
+.mobile-search-wrapper {
+    display: none; /* Default hidden on desktop */
+}
+
+@media (max-width: 900px) {
+    .mobile-search-wrapper {
+        display: flex;
+        width: 80%;
+        margin: 20px auto 0;
+        position: relative;
+    }
+
+    .mobile-search-input {
+        width: 100%;
+        padding: 12px 20px;
+        border-radius: 50px;
+        border: none;
+        font-size: 1rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        padding-right: 50px;
+    }
+
+    .mobile-search-btn {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+    }
+}
+
 .site-header {
     background-color: var(--white);
-    position: relative;
-    z-index: 100;
+    position: fixed; /* Fixed to always stay on top */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000; /* Ensure it stays above everything */
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
@@ -144,6 +208,7 @@ const handleSearch = () => {
     justify-content: space-between;
     padding: 15px 20px;
     gap: 20px;
+    height: 80px; /* Fixed height for consistent spacing */
 }
 
 .logo h1 {
@@ -158,9 +223,14 @@ const handleSearch = () => {
     text-decoration: none;
 }
 
+/* Search & Suggestions */
 .search-bar {
     flex-grow: 1;
     max-width: 500px;
+    position: relative; /* For absolute dropdown */
+}
+
+.input-wrapper {
     position: relative;
     display: flex;
     align-items: center;
@@ -189,6 +259,34 @@ const handleSearch = () => {
     border: none;
     color: #999;
     cursor: pointer;
+}
+
+.suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-top: 10px;
+    padding: 10px 0;
+    z-index: 101;
+    border: 1px solid #f0f0f0;
+}
+
+.suggestion-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 0.95rem;
+    color: var(--text-color);
+}
+
+.suggestion-item:hover {
+    background: #f9f9f9;
+    color: var(--primary-color);
+    font-weight: 600;
 }
 
 .header-icons {
@@ -329,16 +427,20 @@ const handleSearch = () => {
         top: 70px; /* Below header */
         left: 0;
         width: 100%;
-        height: calc(100vh - 70px);
-        background-color: var(--primary-color);
+        height: calc(100dvh - 70px); /* Use dvh for better mobile support */
+        /* Gradient Green Background for depth */
+        background: linear-gradient(160deg, var(--primary-color) 0%, #4a7c6a 100%); 
         transform: translateX(100%);
-        transition: transform 0.3s ease;
+        transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother bezier */
         display: flex;
         flex-direction: column;
-        justify-content: flex-start;
-        padding-top: 40px;
+        justify-content: center; /* Center vertically for better aesthetics */
+        padding-top: 0;
         z-index: 99;
+        overflow-y: auto; /* Allow scrolling if content is too tall */
     }
+
+    /* Decorative Circle Removed as requested */
 
     .main-nav.mobile-active {
         transform: translateX(0);
@@ -357,13 +459,39 @@ const handleSearch = () => {
     }
     
     .nav-links a {
-        font-size: 1.2rem;
+        font-size: 2rem; /* Big and Bold */
+        font-family: var(--heading-font-family); 
+        color: #ffffff; /* White text for contrast */
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin: 10px 0;
+    }
+    
+    .nav-links a:hover {
+       color: #FFD1BA; /* Light Peach/Cream for hover */
+       transform: scale(1.05);
+       transition: all 0.3s ease;
+    }
+    
+    .nav-links a::after {
+        display: none; /* No underline, just scale/color */
     }
 
     .special-nav-btn {
-        width: 100%;
+        width: 80%; 
         justify-content: center;
         border-radius: 50px;
+        margin: 20px auto 0; 
+        background-color: #ffffff; /* White Button */
+        color: var(--primary-color); /* Green Text */
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .special-nav-btn svg {
+        stroke: var(--primary-color); /* Icon matches text */
     }
 }
 

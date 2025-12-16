@@ -7,7 +7,7 @@ import { cart } from '../../cart/store.js';
 const router = useRouter();
 const user = ref(null);
 const recommendations = ref([]);
-const recentOrders = ref([]);
+
 
 onMounted(async () => {
     // 1. Get user
@@ -23,108 +23,83 @@ onMounted(async () => {
         
         // Simple shuffle for simulation
         recommendations.value = allProducts.sort(() => 0.5 - Math.random()).slice(0, 3);
-        
-        recentOrders.value = []; 
     } catch (e) {
         console.error("Error loading profile data", e);
     }
 });
 
-const promotions = [
-    { id: 1, titleKey: 'promo.first_buy_title', descKey: 'promo.first_buy_desc', code: 'NUEVO15' },
-    { id: 2, titleKey: 'promo.loyal_title', descKey: 'promo.loyal_desc', code: 'DULCE20' }
-];
-
-const applyPromo = (code) => {
-    const success = cart.applyCoupon(code);
-    if (success) {
-        alert(`¡Cupón ${code} aplicado exitosamente!`);
-        router.push('/menu');
-    }
-};
 </script>
 
 <template>
-    <div class="profile-container container">
-        <div class="profile-header" v-if="user">
+    <div class="page-view profile-view">
+        <!-- Unified Header Style matching About/Services -->
+        <div class="page-header" v-if="user">
             <h2>{{ $t('profile.welcome', { name: user.name }) }}</h2>
             <p>{{ $t('profile.welcome_sub') }}</p>
         </div>
 
-        <!-- Section: Recommendations (Para Ti) -->
-        <section class="section-block">
-            <h3 class="section-title">{{ $t('profile.recommendations_title') }}</h3>
-            <p class="subtitle">{{ $t('profile.recommendations_sub') }}</p>
-            
-            <div class="products-grid">
-                <ProductCard 
-                    v-for="product in recommendations" 
-                    :key="product.id" 
-                    :product="product"
-                />
-            </div>
-        </section>
-
-        <!-- Section: Promotions -->
-        <section class="section-block">
-            <h3 class="section-title">{{ $t('profile.promotions_title') }}</h3>
-            <p class="subtitle">{{ $t('profile.promotions_sub') }}</p>
-
-            <div class="promotions-grid">
-                <div v-for="promo in promotions" :key="promo.id" class="promo-card">
-                    <div class="promo-content">
-                        <h4>{{ $t(promo.titleKey) }}</h4>
-                        <p>{{ $t(promo.descKey) }}</p>
-                        <div class="promo-code">
-                             {{ $t('promo.code', { code: promo.code }) }}
-                        </div>
-                        <button 
-                            class="btn-apply" 
-                            :class="{ 'active': cart.coupon && cart.coupon.code === promo.code }"
-                            :disabled="cart.coupon && cart.coupon.code === promo.code"
-                            @click="applyPromo(promo.code)"
-                        >
-                            {{ (cart.coupon && cart.coupon.code === promo.code) ? 'En uso' : 'Usar ahora' }}
-                        </button>
-                    </div>
-                    <div class="circles"></div>
+        <div class="container profile-content">
+            <!-- Section: Recommendations (Para Ti) -->
+            <section class="section-block">
+                <h3 class="section-title text-dark">{{ $t('profile.recommendations_title') }}</h3>
+                <p class="subtitle">{{ $t('profile.recommendations_sub') }}</p>
+                
+                <div class="products-grid">
+                    <ProductCard 
+                        v-for="product in recommendations" 
+                        :key="product.id" 
+                        :product="product"
+                    />
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Section: Recent Orders -->
-        <section class="section-block">
-            <h3 class="section-title">{{ $t('profile.recent_orders') }}</h3>
-            <div v-if="recentOrders.length > 0" class="orders-list">
-                <!-- Order items would go here -->
-            </div>
-            <div v-else class="empty-state">
-                <p>{{ $t('profile.no_orders') }}</p>
-                <RouterLink to="/menu" class="btn-link">{{ $t('profile.go_menu') }}</RouterLink>
-            </div>
-        </section>
+            <!-- Section: My Coupons -->
+            <section class="section-block">
+                <h3 class="section-title text-dark">{{ $t('profile.my_coupons') }} 🎟️</h3>
+                
+                <div v-if="user && user.coupons && user.coupons.length > 0" class="promotions-grid">
+                    <div v-for="coupon in user.coupons" :key="coupon.id" class="promo-card">
+                        <div class="promo-content">
+                            <h4>{{ (coupon.value * 100).toFixed(0) }}% OFF</h4>
+                            <p>{{ coupon.desc }}</p>
+                            <div class="promo-code">
+                                 {{ coupon.code }}
+                            </div>
+                            <span class="expiry-note" v-if="coupon.expiry">Vence: {{ new Date(coupon.expiry).toLocaleDateString() }}</span>
+                        </div>
+                        <div class="circles"></div>
+                    </div>
+                </div>
+                <div v-else class="empty-state">
+                    <p>{{ $t('profile.no_coupons') }}</p>
+                    <RouterLink to="/menu" class="btn-link">Ir a pedir algo</RouterLink>
+                </div>
+            </section>
+        </div>
     </div>
 </template>
 
 <style scoped>
-.profile-container {
-    padding: 60px 20px;
-    min-height: 70vh;
-}
-
-.profile-header {
+/* Page Header - Unified Flat Green Style */
+.page-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 60px 0 60px;
     text-align: center;
+    border-bottom-left-radius: 50px;
+    border-bottom-right-radius: 50px;
     margin-bottom: 60px;
 }
 
-.profile-header h2 {
+.page-header h2 {
     font-family: var(--heading-font-family);
     font-size: 2.5rem;
-    color: var(--text-color);
+    font-weight: 700;
 }
 
-.highlight {
-    color: var(--primary-color);
+.profile-content {
+    min-height: 60vh;
+    padding-bottom: 60px;
 }
 
 .section-block {
@@ -152,6 +127,7 @@ const applyPromo = (code) => {
     gap: 30px;
 }
 
+/* ... Existing styles for promo cards ... */
 .empty-state {
     background: #f9f8f6;
     padding: 40px;
@@ -168,7 +144,6 @@ const applyPromo = (code) => {
     text-decoration: none;
 }
 
-/* Promotions Styles */
 .promotions-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -213,36 +188,13 @@ const applyPromo = (code) => {
     margin-right: 15px;
 }
 
-.btn-apply {
-    background-color: white;
-    color: var(--primary-color);
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn-apply:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-.btn-apply.active {
-    background-color: rgba(255, 255, 255, 0.5);
-    cursor: default;
-    transform: none;
-    box-shadow: none;
-}
-
-
 .circles {
     position: absolute;
     top: -20px;
     right: -20px;
-    width: 100px;
-    height: 100px;
+    /* Standard container width instead of breakout to prevent layout issues */
+    width: 100%;
+    margin-bottom: 40px;
     background: rgba(255,255,255,0.1);
     border-radius: 50%;
 }

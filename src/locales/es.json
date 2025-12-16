@@ -7,7 +7,9 @@
         "search_placeholder": "Buscar postres...",
         "menu_btn": "NUESTRA CARTA",
         "account": "Cuenta",
-        "language": "IDIOMA"
+        "language": "IDIOMA",
+        "services": "SERVICIOS",
+        "admin_panel": "PANEL ADMIN"
     },
     "hero": {
         "title": "¡Bienvenidos al mundo dulce de nuestros postres!",
@@ -20,7 +22,11 @@
         "categories": {
             "cakes": "Tortas",
             "desserts": "Postres",
-            "drinks": "Bebidas"
+            "drinks": "Bebidas",
+            "todos": "Todos",
+            "tortas": "Tortas",
+            "postres": "Postres",
+            "bebidas": "Bebidas"
         },
         "empty": "Pronto tendremos novedades en {category}.",
         "order": "Hola, quisiera ordenar: {product}",
@@ -31,12 +37,47 @@
         "no_matches": "No encontramos resultados exactos para \"{query}\" 😔",
         "view_full_menu": "Ver menú completo",
         "might_interest": "Quizás te interese...",
-        "loading": "Cargando delicias..."
+        "loading": "Cargando delicias...",
+        "featured_title": "Los más destacados",
+        "view_menu": "Ver todo nuestro menú"
+    },
+    "services": {
+        "hero_title": "Tus Celebraciones,\nNuestra Pasión 🥂",
+        "hero_sub": "Llevamos la dulzura a tus eventos más importantes y te enseñamos a crear magia en la cocina.",
+        "tab_catering": "Eventos & Buffet 🥂",
+        "tab_workshops": "Talleres y Clases 👩‍🍳",
+        "catering_title": "Buffets & Catering",
+        "catering_sub": "Sorprende a tus invitados con una mesa de postres inolvidable.",
+        "feat_1": "✨ Bocaditos dulces y salados personalizados",
+        "feat_2": "🎂 Tortas de diseño para bodas y eventos",
+        "feat_3": "🚛 Servicio de entrega y montaje incluido",
+        "form_title": "Cotiza tu Evento",
+        "date": "Fecha del Evento",
+        "guests": "Nro. Invitados",
+        "type": "Tipo de Evento",
+        "other_type": "Especifique el Evento",
+        "details": "Detalles / Preferencias",
+        "ph_other": "Ej. Aniversario, Graduación...",
+        "ph_details": "Cuéntanos qué tienes en mente...",
+        "btn_submit": "Solicitar Cotización 📤",
+        "types": {
+            "wedding": "Boda",
+            "birthday": "Cumpleaños",
+            "corporate": "Corporativo",
+            "other": "Otro"
+        },
+        "workshops_title": "Aprende con Nosotros",
+        "workshops_sub": "Talleres prácticos para amantes del dulce.",
+        "btn_join": "Inscribirme"
     },
     "brand": {
         "title": "Más sobre nuestra marca",
         "description": "Cuenta quién eres, tus orígenes, tu proceso o lo que te inspira.",
         "cta": "Leer más"
+    },
+    "about_view": {
+        "title": "Nuestra Historia",
+        "subtitle": "Pasión por lo dulce desde el primer día"
     },
     "contact": {
         "title": "Contáctanos",
@@ -86,7 +127,9 @@
         "no_orders": "Aún no has realizado pedidos recientes.",
         "go_menu": "Ir al Menú",
         "promotions_title": "Promociones Exclusivas",
-        "promotions_sub": "Aprovecha estos descuentos especiales pensados para ti."
+        "promotions_sub": "Aprovecha estos descuentos especiales pensados para ti.",
+        "my_coupons": "Mis Cupones",
+        "no_coupons": "No tienes cupones disponibles en este momento."
     },
     "promo": {
         "first_buy_title": "15% de Descuento",
@@ -106,7 +149,17 @@
         "total": "Total",
         "clear": "Vaciar Carrito",
         "checkout_whatsapp": "Finalizar Pedido por WhatsApp",
-        "whatsapp_msg": "Hola Dulce Fe! 👋 Me gustaría realizar el siguiente pedido:\n\n"
+        "whatsapp_msg": "Hola Dulce Fe! 👋 Me gustaría realizar el siguiente pedido:\n\n",
+        "coupon_placeholder": "CÓDIGO CUPÓN",
+        "coupon_invalid": "Cupón no válido o expirado",
+        "go_to_menu": "Ir a ver el Menú",
+        "title_long": "Tu Carrito de Compras 🛒",
+        "summary": "Resumen del Pedido"
+    },
+    "menu": {
+        "title": "Nuestra Carta",
+        "subtitle": "Descubre el sabor de la felicidad",
+        "filter_by": "Filtrar por:"
     },
     "modal": {
         "hero_title": "Experiencia Dulce",
@@ -137,7 +190,8 @@
         "actions": {
             "edit": "Editar",
             "delete": "Eliminar",
-            "delete_user": "Eliminar Usuario"
+            "delete_user": "Eliminar Usuario",
+            "manage_coupons": "Gestionar Cupones"
         },
         "form": {
             "edit_title": "Editar Producto",
@@ -150,17 +204,28 @@
             "no_file": "No se ha seleccionado archivo",
             "description": "Descripción",
             "cancel": "Cancelar",
-            "save": "Guardar Cambio"
+            "save": "Guardar Cambio",
+            "close": "Cerrar"
+        },
+        "coupons": {
+            "manage_title": "Gestionar Cupones de {name}",
+            "add_title": "Agregar Nuevo Cupón",
+            "code_placeholder": "CÓDIGO",
+            "desc_placeholder": "Descripción (opcional)",
+            "btn_add": "Agregar",
+            "empty": "Este usuario no tiene cupones asignados."
         },
         "alerts": {
             "delete_self": "No puedes eliminar tu propia cuenta.",
             "confirm_delete_user": "¿Estás seguro de eliminar este usuario?",
             "error_delete_user": "Error eliminando el usuario",
+            "confirm_delete": "¿Estás seguro?",
             "confirm_delete_product": "¿Estás seguro de eliminar este producto?",
             "error_delete_product": "Error eliminando el producto",
             "success_add": "Producto agregado exitosamente",
             "success_update": "Producto actualizado exitosamente",
-            "error_save": "Error guardando el producto"
+            "error_save": "Error guardando el producto",
+            "coupon_added": "Cupón agregado exitosamente"
         }
     }
 }

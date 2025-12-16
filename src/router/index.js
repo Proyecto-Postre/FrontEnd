@@ -18,6 +18,11 @@ const router = createRouter({
             component: MenuView
         },
         {
+            path: '/servicios',
+            name: 'services',
+            component: () => import('../views/ServicesView.vue')
+        },
+        {
             path: '/nosotros', // Changed from /about to /nosotros for Spanish URL
             name: 'about',
             component: AboutView

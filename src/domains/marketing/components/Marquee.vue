@@ -41,7 +41,11 @@
 
 @media (max-width: 768px) {
     .marquee-content span {
-        font-size: 3rem;
+        font-size: 1.5rem; /* Reduced from 3rem to be less overwhelming */
+        padding-right: 20px; /* Reduced padding */
+    }
+    .marquee-container {
+        bottom: 0; /* Align to bottom edge on mobile so it's not cut off */
     }
 }
 </style>

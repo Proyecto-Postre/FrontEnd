@@ -7,7 +7,9 @@
         "search_placeholder": "Search desserts...",
         "menu_btn": "OUR MENU",
         "account": "Account",
-        "language": "LANGUAGE"
+        "language": "LANGUAGE",
+        "services": "SERVICES",
+        "admin_panel": "ADMIN PANEL"
     },
     "hero": {
         "title": "Welcome to the sweet world of our desserts!",
@@ -20,7 +22,11 @@
         "categories": {
             "cakes": "Cakes",
             "desserts": "Desserts",
-            "drinks": "Drinks"
+            "drinks": "Drinks",
+            "todos": "All",
+            "tortas": "Cakes",
+            "postres": "Desserts",
+            "bebidas": "Drinks"
         },
         "empty": "Coming soon updates in {category}.",
         "order": "Hi, I would like to order: {product}",
@@ -31,12 +37,47 @@
         "no_matches": "No exact results found for \"{query}\" 😔",
         "view_full_menu": "View full menu",
         "might_interest": "You might be interested in...",
-        "loading": "Loading delights..."
+        "loading": "Loading delights...",
+        "featured_title": "Featured Products",
+        "view_menu": "View full menu"
+    },
+    "services": {
+        "hero_title": "Your Celebrations,\nOur Passion 🥂",
+        "hero_sub": "We bring sweetness to your most important events and teach you how to create magic in the kitchen.",
+        "tab_catering": "Events & Catering 🥂",
+        "tab_workshops": "Workshops & Classes 👩‍🍳",
+        "catering_title": "Buffets & Catering",
+        "catering_sub": "Surprise your guests with an unforgettable dessert table.",
+        "feat_1": "✨ Personalized sweet and savory bites",
+        "feat_2": "🎂 Design cakes for weddings and events",
+        "feat_3": "🚛 Delivery and setup service included",
+        "form_title": "Get a Quote",
+        "date": "Event Date",
+        "guests": "No. Guests",
+        "type": "Event Type",
+        "other_type": "Specify Event",
+        "details": "Details / Preferences",
+        "ph_other": "E.g. Anniversary, Graduation...",
+        "ph_details": "Tell us what you have in mind...",
+        "btn_submit": "Request Quote 📤",
+        "types": {
+            "wedding": "Wedding",
+            "birthday": "Birthday",
+            "corporate": "Corporate",
+            "other": "Other"
+        },
+        "workshops_title": "Learn with Us",
+        "workshops_sub": "Practical workshops for dessert lovers.",
+        "btn_join": "Sign Me Up"
     },
     "brand": {
         "title": "More about our brand",
         "description": "Tell who you are, your origins, your process or what inspires you.",
         "cta": "Read More"
+    },
+    "about_view": {
+        "title": "Our Story",
+        "subtitle": "Passion for sweetness from day one"
     },
     "contact": {
         "title": "Contact Us",
@@ -86,7 +127,9 @@
         "no_orders": "You haven't made any recent orders.",
         "go_menu": "Go to Menu",
         "promotions_title": "Exclusive Promotions",
-        "promotions_sub": "Enjoy these special discounts just for you."
+        "promotions_sub": "Enjoy these special discounts just for you.",
+        "my_coupons": "My Coupons",
+        "no_coupons": "You have no available coupons at the moment."
     },
     "promo": {
         "first_buy_title": "15% Off",
@@ -106,7 +149,17 @@
         "total": "Total",
         "clear": "Clear Cart",
         "checkout_whatsapp": "Checkout via WhatsApp",
-        "whatsapp_msg": "Hello Dulce Fe! 👋 I would like to place the following order:\n\n"
+        "whatsapp_msg": "Hello Dulce Fe! 👋 I would like to place the following order:\n\n",
+        "coupon_placeholder": "COUPON CODE",
+        "coupon_invalid": "Invalid or expired coupon",
+        "go_to_menu": "Go to Menu",
+        "title_long": "Your Shopping Cart 🛒",
+        "summary": "Order Summary"
+    },
+    "menu": {
+        "title": "Our Menu",
+        "subtitle": "Discover the taste of happiness",
+        "filter_by": "Filter by:"
     },
     "modal": {
         "hero_title": "Sweet Experience",
@@ -137,7 +190,8 @@
         "actions": {
             "edit": "Edit",
             "delete": "Delete",
-            "delete_user": "Delete User"
+            "delete_user": "Delete User",
+            "manage_coupons": "Manage Coupons"
         },
         "form": {
             "edit_title": "Edit Product",
@@ -150,17 +204,28 @@
             "no_file": "No file selected",
             "description": "Description",
             "cancel": "Cancel",
-            "save": "Save Changes"
+            "save": "Save Changes",
+            "close": "Close"
+        },
+        "coupons": {
+            "manage_title": "Manage Coupons for {name}",
+            "add_title": "Add New Coupon",
+            "code_placeholder": "CODE",
+            "desc_placeholder": "Description (optional)",
+            "btn_add": "Add",
+            "empty": "This user has no assigned coupons."
         },
         "alerts": {
             "delete_self": "You cannot delete your own account.",
             "confirm_delete_user": "Are you sure you want to delete this user?",
             "error_delete_user": "Error deleting user",
+            "confirm_delete": "Are you sure?",
             "confirm_delete_product": "Are you sure you want to delete this product?",
             "error_delete_product": "Error deleting product",
             "success_add": "Product added successfully",
             "success_update": "Product updated successfully",
-            "error_save": "Error saving product"
+            "error_save": "Error saving product",
+            "coupon_added": "Coupon added successfully"
         }
     }
 }

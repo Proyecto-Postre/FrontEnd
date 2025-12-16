@@ -8,8 +8,12 @@ import { catalog } from '../store.js';
 const props = defineProps({
     mode: {
         type: String,
-        default: 'list', // 'list' | 'tabs'
-        validator: (value) => ['list', 'tabs'].includes(value)
+        default: 'list', // 'list' | 'tabs' | 'featured'
+        validator: (value) => ['list', 'tabs', 'featured'].includes(value)
+    },
+    filterCategory: {
+        type: String,
+        default: null
     }
 });
 
@@ -34,6 +38,14 @@ const getProductsByCategory = (category) => {
     return catalog.items.filter(product => product.category === category);
 };
 
+// Computed categories to display in LIST mode
+const displayedCategories = computed(() => {
+    if (props.mode === 'list' && props.filterCategory && props.filterCategory !== 'Todos') {
+        return [props.filterCategory];
+    }
+    return categories;
+});
+
 // Compute filtered products for TABS MODE & SEARCH
 const filteredProducts = computed(() => {
     let result = catalog.items;
@@ -45,6 +57,14 @@ const filteredProducts = computed(() => {
             p.title.toLowerCase().includes(query) || 
             p.description.toLowerCase().includes(query)
         );
+    }
+
+    if (props.mode === 'featured') {
+        // Pure Dynamic: Sort by Sales Descending
+        const sortedBySales = [...result].sort((a, b) => (b.sales || 0) - (a.sales || 0));
+        
+        // slice top 5
+        return sortedBySales.slice(0, 5);
     }
 
     // IF NO SEARCH: Apply Category Filter
@@ -81,9 +101,9 @@ const handleOrder = (product) => {
             </div>
 
             <!-- TABS HEADER: Only show if NOT searching and in TABS mode -->
-            <div v-else-if="mode === 'tabs'" class="catalog-header">
-                <h2 class="section-title">{{ t('catalog.title') }}</h2>
-                <div class="category-tabs">
+            <div v-else-if="mode === 'tabs' || mode === 'featured'" class="catalog-header">
+                <h2 class="section-title">{{ mode === 'featured' ? t('catalog.featured_title') : t('catalog.title') }}</h2>
+                <div v-if="mode === 'tabs'" class="category-tabs">
                     <button 
                         v-for="cat in allCategories" 
                         :key="cat"
@@ -147,7 +167,7 @@ const handleOrder = (product) => {
 
                 <!-- MODE: LIST (Sequential Categories) - Only if NO search -->
                 <div v-else-if="mode === 'list'">
-                     <div v-for="category in categories" :key="category" class="category-block">
+                     <div v-for="category in displayedCategories" :key="category" class="category-block">
                         <h3 class="category-title">{{ category }}</h3>
                         <div class="products-grid">
                             <ProductCard 
@@ -157,6 +177,29 @@ const handleOrder = (product) => {
                                 @order="() => handleOrder(product)"
                             />
                         </div>
+                    </div>
+                </div>
+
+
+
+                <!-- MODE: FEATURED (Grid + Button) -->
+                <div v-else-if="mode === 'featured'" class="featured-wrapper">
+                    <div class="products-grid featured-grid">
+                        <div 
+                            v-for="product in filteredProducts" 
+                            :key="product.id"
+                            class="featured-card-container"
+                        >
+                            <ProductCard 
+                                :product="product"
+                                @order="() => handleOrder(product)"
+                            />
+                        </div>
+                    </div>
+                     <div class="view-menu-container">
+                        <RouterLink to="/menu" class="btn-primary view-menu-btn">
+                            {{ t('catalog.view_menu') }}
+                        </RouterLink>
                     </div>
                 </div>
 
@@ -291,6 +334,65 @@ const handleOrder = (product) => {
 
 
 
+/* GLOBAL STYLES (Moved out of media query) */
+
+/* FEATURED CARD CONTAINER (The Aura Host) */
+.featured-card-container {
+    position: relative;
+    border-radius: 20px; /* Matches card radius */
+    z-index: 1; /* Establishes stacking context */
+}
+
+/* The Glowing Gradient Aura */
+.featured-card-container::before {
+    content: "";
+    position: absolute;
+    inset: -5px; /* Aura extends 5px OUTSIDE the card */
+    z-index: -1; /* Behind the card */
+    background: linear-gradient(45deg, #FFD700, #ff5e62, #42e695, #00f2fe);
+    filter: blur(15px);
+    border-radius: 25px; /* Slightly larger than card */
+    opacity: 0.7;
+    transition: all 0.4s ease;
+}
+
+/* Hover Sync: When hovering the CONTAINER, boost the aura */
+.featured-card-container:hover::before {
+    opacity: 1;
+    filter: blur(20px);
+    inset: -8px; /* Grows slightly */
+}
+
+/* Ensure the card itself sits on top and doesn't have shadows conflicting */
+.featured-grid :deep(.product-card) {
+    height: 100%;
+    transform: none !important; /* Disable card's internal move to handle it here if needed, or let them compose */
+    transition: transform 0.4s ease;
+}
+
+/* Move both container and aura together on hover for the "Lift" effect */
+.featured-card-container:hover {
+    transform: translateY(-5px);
+    transition: transform 0.4s ease;
+}
+
+.view-menu-container {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center;
+    margin-top: 50px; /* More space */
+    padding-bottom: 20px;
+}
+
+.view-menu-btn {
+    padding: 12px 40px;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+
+/* MEDIA QUERY */
 @media (max-width: 768px) {
     .section-title {
         font-size: 2.5rem;
@@ -298,8 +400,21 @@ const handleOrder = (product) => {
     .category-title {
         font-size: 1.8rem;
     }
+
     .products-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr); /* 2 columns for better visibility */
+        gap: 15px; /* Reduced gap for mobile */
+    }
+    
+    .catalog-section {
+        padding: 40px 0 60px;
+    }
+    
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
     }
 }
+
+
 </style>

@@ -37,16 +37,25 @@ export const cart = reactive({
     },
 
     // Coupon Actions
-    applyCoupon(code) {
-        const coupons = {
+    applyCoupon(code, userCoupons = []) {
+        // 1. Check Global Hardcoded Coupons
+        const globalCoupons = {
             'NUEVO15': { code: 'NUEVO15', type: 'percent', value: 0.15, desc: '15% Off' },
             'DULCE20': { code: 'DULCE20', type: 'percent', value: 0.20, desc: '20% Off' }
         };
 
-        if (coupons[code]) {
-            this.coupon = { ...coupons[code], targetId: null }; // Initialize with no target
+        if (globalCoupons[code]) {
+            this.coupon = { ...globalCoupons[code], targetId: null, isPersonal: false };
             return true;
         }
+
+        // 2. Check User Personal Coupons
+        const personalCoupon = userCoupons.find(c => c.code === code);
+        if (personalCoupon) {
+            this.coupon = { ...personalCoupon, targetId: null, isPersonal: true };
+            return true;
+        }
+
         return false;
     },
 

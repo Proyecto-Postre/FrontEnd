@@ -1,6 +1,6 @@
 <script setup>
 import { cart } from '../store'; // Adjust import based on location
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -19,10 +19,60 @@ const decrease = (id) => {
 
 const remove = (id) => cart.removeFromCart(id);
 
-const checkout = () => {
+const checkout = async () => {
     if (cart.items.length === 0) return;
 
-    // Build WhatsApp Message
+    // 1. Update Sales Count & Create Order Record
+    try {
+        // A. Sales Count (Sequential execution to prevent json-server write conflicts)
+        for (const item of cart.items) {
+            try {
+                const res = await fetch(`/api/products/${item.id}`);
+                if (res.ok) {
+                    const product = await res.json();
+                    const newSales = (product.sales || 0) + item.quantity;
+                    await fetch(`/api/products/${item.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sales: newSales })
+                    });
+                }
+            } catch (err) {
+                console.warn("Could not update sales for item:", item.title);
+            }
+        }
+
+        // B. Create Persistent Order
+        // Dynamic User Data
+        const storedUser = localStorage.getItem('user');
+        const currentUser = storedUser ? JSON.parse(storedUser) : null;
+
+        const newOrder = {
+            id: Date.now().toString(), // Simple ID
+            date: new Date().toISOString(),
+            userId: currentUser ? currentUser.id : 1, // Fallback to 1 (Jafeth) if guest
+            userName: currentUser ? `${currentUser.name} ${currentUser.lastName}` : "Invitado",
+            items: cart.items.map(i => ({
+                id: i.id,
+                title: i.title,
+                quantity: i.quantity,
+                price: i.price
+            })),
+            total: cart.totalPrice,
+            status: 'pendiente' // pendiente | atendido | cancelado
+        };
+
+        await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newOrder)
+        });
+
+    } catch (e) {
+        console.error("Error processing order stats:", e);
+    }
+
+    // 2. Build WhatsApp Message & Redirect
     let message = t('cart.whatsapp_msg');
     
     cart.items.forEach(item => {
@@ -43,16 +93,61 @@ const checkout = () => {
     
     window.open(url, '_blank');
     
-    // Consume coupon after checkout
-    if (cart.coupon) {
-        cart.removeCoupon();
+    // Consume coupon after checkout if personal
+    if (cart.coupon && cart.coupon.isPersonal) {
+        // Remove from user coupons in DB
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            const user = JSON.parse(storedUser);
+            // Filter out used coupon
+            const updatedCoupons = (user.coupons || []).filter(c => c.code !== cart.coupon.code);
+            
+            try {
+                await fetch(`/api/users/${user.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ coupons: updatedCoupons })
+                });
+
+                // Update Local Storage
+                user.coupons = updatedCoupons;
+                localStorage.setItem('user', JSON.stringify(user));
+            } catch (e) {
+                console.error("Failed to consume coupon", e);
+            }
+        }
+    }
+    
+    cart.removeCoupon(); // Clear from cart state
+    cart.clearCart();
+};
+
+// COUPON INPUT UI LOGIC
+const couponCodeInput = ref('');
+const couponError = ref('');
+
+const handleApplyCoupon = () => {
+    couponError.value = '';
+    const code = couponCodeInput.value.trim().toUpperCase();
+    if (!code) return;
+
+    // Get User Coupons
+    const storedUser = localStorage.getItem('user');
+    const user = storedUser ? JSON.parse(storedUser) : null;
+    const userCoupons = user ? (user.coupons || []) : [];
+
+    const success = cart.applyCoupon(code, userCoupons);
+    if (success) {
+        couponCodeInput.value = '';
+    } else {
+        couponError.value = t('cart.coupon_invalid');
     }
 };
 </script>
 
 <template>
     <div class="cart-container container">
-        <h2 class="cart-title">Tu Carrito de Compras 🛒</h2>
+        <h2 class="cart-title">{{ t('cart.title_long') }}</h2>
 
         <div v-if="cartItems.length > 0" class="cart-content">
             <div class="cart-items">
@@ -79,7 +174,7 @@ const checkout = () => {
 
             <div class="cart-summary">
                 <div class="summary-card">
-                    <h3>Resumen del Pedido</h3>
+                    <h3>{{ t('cart.summary') }}</h3>
                     
                     <div class="summary-items-list">
                         <div v-for="item in cart.items" :key="item.id" class="summary-item-group">
@@ -88,6 +183,20 @@ const checkout = () => {
                                 <span class="item-price">S/ {{ (parseFloat(item.price.replace('S/ ', '')) * item.quantity).toFixed(2) }}</span>
                             </div>
                             
+                            <!-- Coupon Input Section -->
+                            <div class="coupon-section">
+                                <div class="coupon-input-group">
+                                    <input 
+                                        v-model="couponCodeInput" 
+                                        type="text" 
+                                        :placeholder="t('cart.coupon_placeholder')" 
+                                        @keyup.enter="handleApplyCoupon"
+                                    />
+                                    <button @click="handleApplyCoupon">OK</button>
+                                </div>
+                                <p v-if="couponError" class="error-msg">{{ couponError }}</p>
+                            </div>
+
                             <!-- Coupon Selection Logic -->
                             <div v-if="cart.coupon" class="coupon-action">
                                 <!-- State 1: Coupon Active but this item NOT selected -->
@@ -114,11 +223,11 @@ const checkout = () => {
                     <div class="divider"></div>
 
                     <div class="summary-row total">
-                        <span>Total a Pagar:</span>
+                        <span>{{ t('cart.total') }}:</span>
                         <span>S/ {{ cart.totalPrice.toFixed(2) }}</span>
                     </div>
                     <button class="btn-checkout" @click="checkout">
-                        Finalizar Pedido por WhatsApp
+                        {{ t('cart.checkout_whatsapp') }}
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     </button>
                 </div>
@@ -126,8 +235,8 @@ const checkout = () => {
         </div>
 
         <div v-else class="empty-cart">
-            <p>El carrito está vacío 😢</p>
-            <RouterLink to="/menu" class="btn-link">Ir a ver el Menú</RouterLink>
+            <p>{{ t('cart.empty') }} 😢</p>
+            <RouterLink to="/menu" class="btn-link">{{ t('cart.go_to_menu') }}</RouterLink>
         </div>
     </div>
 </template>
@@ -312,6 +421,42 @@ const checkout = () => {
     font-size: 0.95rem;
     color: var(--text-color);
     margin-bottom: 5px;
+}
+
+.coupon-section {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #eee;
+}
+
+.coupon-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.coupon-input-group input {
+    flex-grow: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.coupon-input-group button {
+    background: var(--text-color);
+    color: white;
+    border: none;
+    padding: 0 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.error-msg {
+    color: red;
+    font-size: 0.8rem;
+    margin-top: 5px;
 }
 
 .btn-select-coupon {

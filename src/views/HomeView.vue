@@ -3,6 +3,7 @@ import Hero from '../domains/marketing/components/Hero.vue';
 import Marquee from '../domains/marketing/components/Marquee.vue';
 import CatalogSection from '../domains/catalog/components/CatalogSection.vue'; // We can reuse logic or make a Preview
 import AboutSection from '../domains/brand/components/AboutSection.vue';
+import TestimonialsSection from '../domains/marketing/components/TestimonialsSection.vue';
 import ContactForm from '../domains/contact/components/ContactForm.vue';
 
 // For Home, maybe we want just a preview of Catalog? 
@@ -28,7 +29,12 @@ import ContactForm from '../domains/contact/components/ContactForm.vue';
         
         <!-- Catalog Preview -->
         <!-- Catalog Preview -->
-        <CatalogSection mode="tabs" />
+        <CatalogSection mode="featured" />
+
+        <div class="section-spacer"></div>
+
+        <!-- Social Proof -->
+        <TestimonialsSection />
 
         <ContactForm />
     </div>

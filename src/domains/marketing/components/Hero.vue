@@ -32,12 +32,12 @@ const handleOpenModal = () => {
 
 <style scoped>
 .hero {
-    height: 100vh;
+    height: calc(100vh - 80px); /* Adjust for fixed header */
     display: flex;
     align-items: center;
     justify-content: flex-start;
     position: relative;
-    padding-top: 80px;
+    padding-top: 0; /* Handled by global app padding */
     overflow: hidden;
 }
 

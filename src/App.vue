@@ -21,7 +21,7 @@ provide('openModal', openModal);
 <template>
   <Header />
   
-  <main>
+  <main class="app-main">
     <!-- router-view loads the component for the current URL -->
     <RouterView /> 
   </main>
@@ -31,3 +31,9 @@ provide('openModal', openModal);
   <!-- Global components -->
   <Modal :isOpen="showModal" :type="modalType" @close="showModal = false" />
 </template>
+
+<style>
+.app-main {
+  padding-top: 80px; /* Offset for fixed header */
+}
+</style>

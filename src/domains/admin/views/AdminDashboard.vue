@@ -1,13 +1,16 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
 const products = ref([]);
 const users = ref([]);
-const activeTab = ref('products'); // 'products' | 'users'
+const activeTab = ref('orders'); // 'products' | 'users' | 'analytics' | 'orders'
 const isEditing = ref(false);
+const orders = ref([]); // New State
+const testimonials = ref([]); // Reviews State
+const reviewsSearch = ref(''); // Search Query
 const currentProduct = ref({});
 const fileName = ref('');
 
@@ -17,7 +20,10 @@ const emptyProduct = {
     description: '',
     category: 'Tortas', // default
     image: '',
-    popular: false
+
+    popular: false,
+    isFeatured: false,
+    sales: 0
 };
 
 // Fetch data
@@ -39,10 +45,96 @@ const fetchUsers = async () => {
     }
 };
 
+const fetchOrders = async () => {
+    try {
+        const res = await fetch('/api/orders');
+        orders.value = (await res.json()).reverse(); // Newest first
+    } catch (e) {
+        console.error("Error fetching orders:", e);
+    }
+};
+
+const fetchTestimonials = async () => {
+    try {
+        const res = await fetch('/api/testimonials');
+        testimonials.value = await res.json();
+    } catch (e) {
+        console.error("Error fetching testimonials:", e);
+    }
+};
+
+const deleteTestimonial = async (id) => {
+    if (!confirm("¿Eliminar este comentario permanentemente?")) return;
+    try {
+        await fetch(`/api/testimonials/${id}`, { method: 'DELETE' });
+        await fetchTestimonials();
+    } catch (e) {
+        alert("Error al eliminar comentario");
+    }
+};
+
+const toggleTestimonialSelection = async (review) => {
+    // Check limit
+    if (!review.isSelected && testimonials.value.filter(t => t.isSelected).length >= 3) {
+        alert("Solo puedes seleccionar hasta 3 testimonios.");
+        return;
+    }
+
+    try {
+        const newVal = !review.isSelected;
+        await fetch(`/api/testimonials/${review.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isSelected: newVal })
+        });
+        review.isSelected = newVal; // Optimistic update
+    } catch (e) {
+        alert("Error al actualizar el estado");
+    }
+};
+
+const filteredTestimonials = computed(() => {
+    if (!reviewsSearch.value) return testimonials.value;
+    const q = reviewsSearch.value.toLowerCase();
+    return testimonials.value.filter(t => t.name.toLowerCase().includes(q));
+});
+
+const updateOrderStatus = async (order, newStatus) => {
+    try {
+        await fetch(`/api/orders/${order.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        });
+        order.status = newStatus; // Optimistic update
+    } catch(e) {
+        alert("Error updating status");
+    }
+};
+
 onMounted(() => {
     fetchProducts();
     fetchUsers();
+    fetchOrders(); 
+    fetchTestimonials(); 
 });
+
+// Computed for Analytics
+
+const topSellingProducts = computed(() => {
+    return [...products.value].sort((a, b) => (b.sales || 0) - (a.sales || 0)).slice(0, 5);
+});
+// Max sales for chart scaling
+const maxSales = computed(() => {
+    return Math.max(...products.value.map(p => p.sales || 0), 100);
+});
+
+// Toggle Featured - REMOVED (Now Auto-Sales Only)
+/*
+const toggleFeatured = async (product) => {
+    // ... logic removed ...
+};
+*/
 
 // Form Actions
 const openAddModal = () => {
@@ -133,6 +225,86 @@ const handleFileUpload = (event) => {
         reader.readAsDataURL(file);
     }
 };
+
+// COUPONS MANAGEMENT
+const showCouponsModal = ref(false);
+const selectedUser = ref(null);
+const newCoupon = ref({
+    code: '',
+    discount: 10, // Percent
+    desc: ''
+});
+
+const openCouponsModal = (user) => {
+    selectedUser.value = { ...user };
+    // Ensure coupons array exists
+    if (!selectedUser.value.coupons) selectedUser.value.coupons = [];
+    newCoupon.value = { code: '', discount: 10, desc: '' };
+    showCouponsModal.value = true;
+};
+
+const closeCouponsModal = () => {
+    showCouponsModal.value = false;
+    selectedUser.value = null;
+};
+
+const addCouponToUser = async () => {
+    if (!newCoupon.value.code || !newCoupon.value.discount) return;
+
+    // Create coupon object
+    const coupon = {
+        id: Date.now(),
+        code: newCoupon.value.code.toUpperCase(),
+        value: newCoupon.value.discount / 100, // Store as decimal (0.10)
+        desc: newCoupon.value.desc || `${newCoupon.value.discount}% OFF`,
+        type: 'percent'
+    };
+
+    // Update local state
+    selectedUser.value.coupons.push(coupon);
+
+    // Persist
+    try {
+        await fetch(`/api/users/${selectedUser.value.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coupons: selectedUser.value.coupons })
+        });
+        
+        // Refresh users list to reflect changes in main table
+        const userIndex = users.value.findIndex(u => u.id === selectedUser.value.id);
+        if (userIndex !== -1) {
+            users.value[userIndex].coupons = selectedUser.value.coupons;
+        }
+
+        newCoupon.value = { code: '', discount: 10, desc: '' };
+        alert(t('admin.alerts.coupon_added'));
+    } catch (e) {
+        alert(t('admin.alerts.error_save'));
+    }
+};
+
+const removeCouponFromUser = async (couponId) => {
+    if (!confirm(t('admin.alerts.confirm_delete'))) return;
+
+    selectedUser.value.coupons = selectedUser.value.coupons.filter(c => c.id !== couponId);
+
+    try {
+        await fetch(`/api/users/${selectedUser.value.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coupons: selectedUser.value.coupons })
+        });
+        
+         // Refresh users list
+        const userIndex = users.value.findIndex(u => u.id === selectedUser.value.id);
+        if (userIndex !== -1) {
+            users.value[userIndex].coupons = selectedUser.value.coupons;
+        }
+    } catch (e) {
+        alert(t('admin.alerts.error_save'));
+    }
+};
 </script>
 
 <template>
@@ -144,6 +316,13 @@ const handleFileUpload = (event) => {
 
         <!-- TABS NAVIGATION -->
         <div class="tabs-nav">
+             <button 
+                class="tab-btn" 
+                :class="{ active: activeTab === 'orders' }"
+                @click="activeTab = 'orders'"
+            >
+                Pedidos 📦
+            </button>
             <button 
                 class="tab-btn" 
                 :class="{ active: activeTab === 'products' }"
@@ -158,6 +337,151 @@ const handleFileUpload = (event) => {
             >
                 {{ t('admin.tab_users') }}
             </button>
+            <button 
+                class="tab-btn" 
+                :class="{ active: activeTab === 'analytics' }"
+                @click="activeTab = 'analytics'"
+            >
+                Estadísticas 📊
+            </button>
+            <button 
+                class="tab-btn" 
+                :class="{ active: activeTab === 'reviews' }"
+                @click="activeTab = 'reviews'"
+            >
+                Reseñas 💬
+            </button>
+        </div>
+
+        <!-- ORDERS TAB -->
+        <div v-if="activeTab === 'orders'" class="orders-tab">
+            <div class="table-responsive">
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="order in orders" :key="order.id">
+                            <td>{{ new Date(order.date).toLocaleDateString() }}</td>
+                            <td>{{ order.userName }}</td>
+                            <td>
+                                <ul style="list-style:none; padding:0; margin:0; font-size:0.9rem;">
+                                    <li v-for="item in order.items" :key="item.id">
+                                        {{ item.quantity }}x {{ item.title }}
+                                    </li>
+                                </ul>
+                            </td>
+                            <td style="font-weight:bold;">S/ {{ order.total.toFixed(2) }}</td>
+                            <td>
+                                <select 
+                                    @change="updateOrderStatus(order, $event.target.value)"
+                                    :value="order.status"
+                                    class="status-select"
+                                    :class="order.status"
+                                >
+                                    <option value="pendiente">Pendiente</option>
+                                    <option value="atendido">Atendido</option>
+                                    <option value="cancelado">Cancelado</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr v-if="orders.length === 0">
+                            <td colspan="5" style="text-align:center; padding: 30px; color: #999;">
+                                No hay pedidos registrados aún.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ANALYTICS TAB -->
+        <div v-if="activeTab === 'analytics'" class="analytics-tab">
+            <h2 class="section-title">Lo que más quiere la gente (Top Ventas)</h2>
+            <div class="chart-container">
+                <div v-for="product in topSellingProducts" :key="product.id" class="chart-row">
+                    <div class="chart-label">
+                         <span>{{ product.title }}</span>
+                    </div>
+                    <div class="chart-bar-container">
+                        <div 
+                            class="chart-bar" 
+                            :style="{ width: (product.sales / maxSales * 100) + '%' }"
+                        >
+                            <span class="chart-value">{{ product.sales }} ventas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="quick-stats">
+                 <div class="stat-card">
+                    <h3>Total Productos</h3>
+                    <p>{{ products.length }}</p>
+                 </div>
+                 <div class="stat-card">
+                    <h3>Usuarios Registrados</h3>
+                    <p>{{ users.length }}</p>
+                 </div>
+            </div>
+        </div>
+
+        <!-- REVIEWS TAB -->
+        <div v-if="activeTab === 'reviews'" class="reviews-tab">
+            <div class="search-bar-container">
+                <input 
+                    v-model="reviewsSearch" 
+                    placeholder="Buscar por nombre de usuario..." 
+                    class="search-input"
+                />
+            </div>
+            
+            <div class="table-responsive">
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Comentario</th>
+                            <th>Calif.</th>
+                            <th>Destacar (Max 3)</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="review in filteredTestimonials" :key="review.id">
+                            <td style="font-weight:bold;">{{ review.name }}</td>
+                            <td class="desc-cell" :title="review.text">{{ review.text }}</td>
+                            <td>
+                                <span style="color:#FFD700;">{{ '★'.repeat(review.stars) }}</span>
+                            </td>
+                            <td style="text-align:center;">
+                                <button 
+                                    @click="toggleTestimonialSelection(review)" 
+                                    class="btn-icon"
+                                    :style="{ opacity: review.isSelected ? 1 : 0.3 }"
+                                    :title="review.isSelected ? 'Quitar de Inicio' : 'Mostrar en Inicio'"
+                                >
+                                    📌
+                                </button>
+                            </td>
+                            <td class="actions-cell">
+                                <button @click="deleteTestimonial(review.id)" class="btn-icon delete" title="Eliminar Comentario">🗑️</button>
+                            </td>
+                        </tr>
+                        <tr v-if="filteredTestimonials.length === 0">
+                            <td colspan="4" style="text-align:center; padding:30px; color:#999;">
+                                No se encontraron reseñas.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- PRODUCTS TAB -->
@@ -175,6 +499,7 @@ const handleFileUpload = (event) => {
                             <th>{{ t('admin.table.image') }}</th>
                             <th>{{ t('admin.table.name') }}</th>
                             <th>{{ t('admin.table.category') }}</th>
+                            <!-- <th>Destacado ⭐</th> REMOVED -->
                             <th>{{ t('admin.table.price') }}</th>
                             <th>{{ t('admin.table.description') }}</th>
                             <th>{{ t('admin.table.actions') }}</th>
@@ -189,6 +514,11 @@ const handleFileUpload = (event) => {
                             <td>
                                 <span class="badge" :class="product.category">{{ product.category }}</span>
                             </td>
+                            <!-- 
+                            <td style="text-align:center; cursor:pointer;" @click="toggleFeatured(product)" title="Clic para destacar en Inicio">
+                                <span :style="{ opacity: product.isFeatured ? 1 : 0.2, fontSize: '1.5rem' }">⭐</span>
+                            </td> 
+                            -->
                             <td>{{ product.price }}</td>
                             <td class="desc-cell">{{ product.description }}</td>
                             <td class="actions-cell">
@@ -234,6 +564,13 @@ const handleFileUpload = (event) => {
                                     :title="t('admin.actions.delete_user')"
                                 >
                                     🗑️
+                                </button>
+                                <button 
+                                    @click="openCouponsModal(user)" 
+                                    class="btn-icon" 
+                                    :title="t('admin.actions.manage_coupons')"
+                                >
+                                    🎟️
                                 </button>
                             </td>
                         </tr>
@@ -304,6 +641,74 @@ const handleFileUpload = (event) => {
     padding: 60px 20px;
     min-height: 80vh;
 }
+
+/* Coupons Styles */
+.coupons-list-container {
+    background: #f9f9f9;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.empty-coupons {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+}
+
+.coupons-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.coupon-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px dashed #ccc;
+}
+
+.coupon-code {
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-right: 10px;
+    background: #e0f0e0;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.add-coupon-form {
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.add-coupon-form h3 {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.input-code {
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.input-desc {
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
 
 .dashboard-header {
     text-align: center;
@@ -538,5 +943,99 @@ input[type="file"] {
 
 .file-name.placeholder {
     color: #aaa;
+}
+
+/* Analytics Styles */
+.chart-container {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+}
+
+.chart-row {
+    margin-bottom: 20px;
+}
+
+.chart-label {
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.chart-bar-container {
+    background: #f0f0f0;
+    border-radius: 10px;
+    height: 30px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.chart-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #4a7c6a);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    transition: width 1s ease-out;
+    white-space: nowrap;
+}
+
+.chart-value {
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-left: 10px;
+}
+
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.stat-card h3 {
+    font-size: 1rem;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.stat-card p {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+.status-select {
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.status-select.pendiente { background: #fff3cd; color: #856404; }
+.status-select.atendido { background: #d4edda; color: #155724; }
+.status-select.cancelado { background: #f8d7da; color: #721c24; }
+
+.search-bar-container {
+    margin-bottom: 20px;
+}
+.search-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #eee;
+    border-radius: 10px;
+    font-size: 1rem;
 }
 </style>
