@@ -14,7 +14,13 @@
     "hero": {
         "title": "¡Bienvenidos al mundo dulce de nuestros postres!",
         "subtitle": "Prepárate para una explosión de sabores deliciosos que te harán sonreír en cada bocado.",
-        "cta": "Leer más"
+        "cta": "Leer más",
+        "menu_btn": "Ver Nuestra Carta",
+        "eyebrow": "Pastería Artesanal",
+        "stat_orders": "Pedidos",
+        "stat_natural": "Natural",
+        "stat_rating": "Calificación",
+        "badge_artisan": "Artesanal"
     },
     "catalog": {
         "title": "Nuestro Menú",
@@ -42,15 +48,15 @@
         "view_menu": "Ver todo nuestro menú"
     },
     "services": {
-        "hero_title": "Tus Celebraciones,\nNuestra Pasión 🥂",
+        "hero_title": "Tus Celebraciones, Nuestra Pasión",
         "hero_sub": "Llevamos la dulzura a tus eventos más importantes y te enseñamos a crear magia en la cocina.",
-        "tab_catering": "Eventos & Buffet 🥂",
-        "tab_workshops": "Talleres y Clases 👩‍🍳",
+        "tab_catering": "Eventos & Buffet",
+        "tab_workshops": "Talleres y Clases",
         "catering_title": "Buffets & Catering",
         "catering_sub": "Sorprende a tus invitados con una mesa de postres inolvidable.",
-        "feat_1": "✨ Bocaditos dulces y salados personalizados",
-        "feat_2": "🎂 Tortas de diseño para bodas y eventos",
-        "feat_3": "🚛 Servicio de entrega y montaje incluido",
+        "feat_1": "Bocaditos dulces y salados personalizados",
+        "feat_2": "Tortas de diseño para bodas y eventos",
+        "feat_3": "Servicio de entrega y montaje incluido",
         "form_title": "Cotiza tu Evento",
         "date": "Fecha del Evento",
         "guests": "Nro. Invitados",
@@ -59,7 +65,7 @@
         "details": "Detalles / Preferencias",
         "ph_other": "Ej. Aniversario, Graduación...",
         "ph_details": "Cuéntanos qué tienes en mente...",
-        "btn_submit": "Solicitar Cotización 📤",
+        "btn_submit": "Solicitar Cotización",
         "types": {
             "wedding": "Boda",
             "birthday": "Cumpleaños",
@@ -84,12 +90,21 @@
         "name": "Nombre",
         "email": "Correo",
         "message": "Mensaje",
-        "send": "Enviar"
+        "send": "Enviar",
+        "subtitle": "¿Quieres que trabajemos juntos? Ingresa tus datos y nos pondremos en contacto contigo en breve. Esperamos tener noticias tuyas pronto.",
+        "lastname": "Apellido",
+        "required": "(obligatorio)",
+        "page_subtitle": "Estamos aquí para endulzar tu día"
     },
     "footer": {
         "tagline": "Dulzura en cada bocado.",
         "location": "Ubicación",
-        "contact": "Contacto"
+        "contact": "Contacto",
+        "legal": "Legal",
+        "privacy": "Política de Privacidad",
+        "legal_notice": "Aviso Legal",
+        "copyright": "© {year} Dulce Fe. Todos los derechos reservados.",
+        "made_in": "Hecho con amor en Lima"
     },
     "auth": {
         "login_title": "Iniciar Sesión",
@@ -106,24 +121,33 @@
         "has_account": "¿Ya tienes cuenta? Inicia sesión",
         "success_register": "¡Registro exitoso! Iniciando sesión...",
         "error_generic": "Ocurrió un error. Intenta nuevamente.",
-        "error_mismatch": "Las contraseñas no coinciden."
+        "error_mismatch": "Las contraseñas no coinciden.",
+        "error_fill_all": "Por favor completa todos los campos.",
+        "error_credentials": "Correo o contraseña incorrectos.",
+        "error_email_taken": "Este correo ya está registrado.",
+        "loading": "Cargando..."
     },
     "account": {
         "title": "Mi Cuenta",
         "subtitle": "Gestiona tus datos personales",
-        "personal_data": "👤 Mis Datos",
+        "personal_data": "Mis Datos",
         "edit": "Editar",
         "cancel": "Cancelar",
         "save": "Guardar Cambios",
         "logout": "Cerrar Sesión",
-        "success_update": "¡Perfil actualizado correctamente!"
+        "success_update": "¡Perfil actualizado correctamente!",
+        "error_required": "Por favor completa todos los campos requeridos.",
+        "my_orders": "Mis Pedidos",
+        "no_orders": "Aún no has realizado pedidos.",
+        "go_menu": "Ir al Menú",
+        "order_items": "{count} productos"
     },
     "profile": {
-        "welcome": "Hola, {name} 👋",
+        "welcome": "Hola, {name}",
         "welcome_sub": "Bienvenido a tu espacio personal en Dulce Fe.",
-        "recommendations_title": "🧡 Para Ti",
+        "recommendations_title": "Para Ti",
         "recommendations_sub": "Seleccionados especialmente para tus gustos.",
-        "recent_orders": "📜 Tus Pedidos Recientes",
+        "recent_orders": "Tus Pedidos Recientes",
         "no_orders": "Aún no has realizado pedidos recientes.",
         "go_menu": "Ir al Menú",
         "promotions_title": "Promociones Exclusivas",
@@ -161,7 +185,30 @@
         "subtitle": "Descubre el sabor de la felicidad",
         "filter_by": "Filtrar por:"
     },
+    "testimonials": {
+        "title": "Lo que dicen nuestros clientes",
+        "subtitle": "Historias dulces de personas reales.",
+        "write_review": "Escribir una reseña",
+        "login_hint": "Inicia sesión para dejar tu opinión.",
+        "login_link": "Inicia sesión",
+        "share_experience": "Comparte tu experiencia",
+        "review_placeholder": "¿Qué fue lo que más te gustó?",
+        "cancel": "Cancelar",
+        "publish": "Publicar",
+        "verified": "Cliente Verificado",
+        "empty": "Úun no hay reseñas. ¡Sé el primero en contarnos tu experiencia!",
+        "thank_you": "¡Gracias por tu opinión!"
+    },
+    "marquee": {
+        "item1": "Postres Artesanales",
+        "item2": "Tortas de Temporada",
+        "item3": "Hecho con Amor",
+        "item4": "Ingredientes Naturales",
+        "item5": "Delivery a Lima",
+        "item6": "Eventos y Catering"
+    },
     "modal": {
+        "understood": "Entendido",
         "hero_title": "Experiencia Dulce",
         "hero_content_1": "En Dulce Fe, cada postre es una obra de arte diseñada para deleitar tus sentidos. Utilizamos técnicas artesanales combinadas con innovación moderna.",
         "hero_content_2": "Nuestra misión es transformar momentos cotidianos en recuerdos extraordinarios a través del sabor.",
@@ -169,11 +216,37 @@
         "about_content_1": "Todo comenzó en una pequeña cocina con una gran pasión: llevar alegría a través de la repostería. Hoy, somos una familia dedicada a la excelencia.",
         "about_content_2": "Nos enorgullece seleccionar ingredientes locales y sostenibles para garantizar la máxima frescura y calidad."
     },
+    "db_products": {
+        "1": {
+            "title": "Red Velvet Supreme",
+            "desc": "Suave bizcocho de terciopelo rojo con capas de frosting de queso crema."
+        },
+        "2": {
+            "title": "Chocolate Intenso",
+            "desc": "Para los amantes del cacao. Bizcocho húmedo con ganache de chocolate 70%."
+        },
+        "3": {
+            "title": "Cheesecake de Frutos Rojos",
+            "desc": "Base crujiente de galleta, crema suave de queso y topping artesanal de frutos del bosque."
+        },
+        "4": {
+            "title": "Macarons Surtidos (Box x6)",
+            "desc": "Delicados bocados franceses en sabores variados: Pistacho, Frambuesa y Vainilla."
+        },
+        "5": {
+            "title": "Cappuccino Art",
+            "desc": "Espresso doble con leche texturizada y arte latte."
+        },
+        "6": {
+            "title": "Té Helado de Durazno",
+            "desc": "Refrescante infusión de té negro con trozos de durazno natural."
+        }
+    },
     "admin": {
-        "title": "Panel de Administración 🛠️",
+        "title": "Panel de Administración",
         "subtitle": "Gestiona tu inventario y usuarios",
-        "tab_inventory": "🍰 Inventario",
-        "tab_users": "👥 Usuarios",
+        "tab_inventory": "Inventario",
+        "tab_users": "Usuarios",
         "btn_add": "+ Agregar Nuevo Producto",
         "table": {
             "image": "Imagen",
@@ -200,7 +273,7 @@
             "price": "Precio",
             "category": "Categoría",
             "image_label": "Imagen del Producto",
-            "select_image": "📷 Seleccionar Imagen",
+            "select_image": "Seleccionar Imagen",
             "no_file": "No se ha seleccionado archivo",
             "description": "Descripción",
             "cancel": "Cancelar",

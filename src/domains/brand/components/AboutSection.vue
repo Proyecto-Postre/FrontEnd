@@ -38,9 +38,9 @@ const handleOpenModal = () => {
 
 <style scoped>
 .about-section {
-    background-color: #EBE9E4;
-    color: #1a1a1a;
-    padding: 100px 0;
+    background-color: var(--surface-alt);
+    color: var(--text-color);
+    padding: 90px 0;
     overflow: hidden;
 }
 
@@ -75,8 +75,8 @@ const handleOpenModal = () => {
 
 .about-text-content p {
     font-size: 1rem;
-    color: #4a4a4a;
-    line-height: 1.6;
+    color: var(--text-muted);
+    line-height: 1.7;
     margin-bottom: 35px;
     max-width: 90%;
 }
@@ -89,9 +89,9 @@ const handleOpenModal = () => {
 .about-image-wide {
     width: 100%;
     height: 280px;
-    background-color: #dcdcdc;
-    margin-top: 150px;
-    border-radius: 0;
+    background-color: var(--border-color);
+    margin-top: 100px;
+    border-radius: var(--border-radius);
     overflow: hidden;
     position: relative;
     display: block;
@@ -105,8 +105,8 @@ const handleOpenModal = () => {
 .about-image-tall {
     width: 100%;
     height: 480px;
-    background-color: #dcdcdc;
-    border-radius: 0;
+    background-color: var(--border-color);
+    border-radius: var(--border-radius);
     overflow: hidden;
     position: relative;
     display: block;

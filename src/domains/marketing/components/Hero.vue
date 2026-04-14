@@ -1,119 +1,234 @@
 <script setup>
 import { inject } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { RouterLink } from 'vue-router';
 import Marquee from './Marquee.vue';
 
 const openModal = inject('openModal');
 const { t } = useI18n();
 
 const handleOpenModal = () => {
-    if (openModal) {
-        openModal('hero');
-    }
+    if (openModal) openModal('hero');
 };
 </script>
 
 <template>
     <section class="hero">
-        <!-- Image in public/assets -->
-        <img src="/assets/ejemplo.avif" alt="Fondo de postres delicioso" class="hero-bg">
-        
-        <div class="container hero-content">
-            <div class="hero-text">
-                <h2>{{ $t('hero.title') }}</h2>
-                <p>{{ $t('hero.subtitle') }}</p>
-                <!-- Using button instead of a href for action -->
-                <button class="btn-outline" @click.prevent="handleOpenModal">{{ $t('hero.cta') }}</button>
+        <!-- Split layout: image left, text right -->
+        <div class="hero-inner container">
+            <!-- LEFT: Image -->
+            <div class="hero-image-col">
+                <div class="hero-image-wrapper">
+                    <img src="/assets/ejemplo.avif" alt="Postres artesanales Dulce Fe" class="hero-img" />
+                    <!-- Decorative badge -->
+                    <div class="hero-badge">
+                        <span class="badge-icon">🎂</span>
+                        <div>
+                            <strong>100%</strong>
+                            <span>{{ $t('hero.badge_artisan') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Text -->
+            <div class="hero-text-col">
+                <p class="hero-eyebrow">✦ {{ $t('hero.eyebrow') }} ✦</p>
+                <h1 class="hero-title">{{ $t('hero.title') }}</h1>
+                <p class="hero-subtitle">{{ $t('hero.subtitle') }}</p>
+                <div class="hero-actions">
+                    <RouterLink to="/menu" class="btn-primary">
+                        {{ $t('hero.menu_btn') }}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </RouterLink>
+                    <button class="btn-outline" @click.prevent="handleOpenModal">
+                        {{ $t('hero.cta') }}
+                    </button>
+                </div>
+                <!-- Mini stats -->
+                <div class="hero-stats">
+                    <div class="stat">
+                        <strong>+500</strong>
+                        <span>{{ $t('hero.stat_orders') }}</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat">
+                        <strong>100%</strong>
+                        <span>{{ $t('hero.stat_natural') }}</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat">
+                        <strong>⭐ 4.9</strong>
+                        <span>{{ $t('hero.stat_rating') }}</span>
+                    </div>
+                </div>
             </div>
         </div>
+
         <Marquee />
     </section>
 </template>
 
 <style scoped>
 .hero {
-    height: calc(100vh - 80px); /* Adjust for fixed header */
+    background-color: var(--bg-color);
+    padding: 60px 0 0;
+}
+
+.hero-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    padding-top: 20px;
+    padding-bottom: 60px;
+}
+
+/* ── Image Column ─────────────────────────────────────────── */
+.hero-image-col { position: relative; }
+
+.hero-image-wrapper {
+    position: relative;
+    border-radius: var(--border-radius-lg);
+    overflow: visible;
+}
+
+.hero-img {
+    width: 100%;
+    height: 480px;
+    object-fit: cover;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 20px 60px rgba(44, 32, 12, 0.18);
+    display: block;
+}
+
+.hero-badge {
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 14px 20px;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    position: relative;
-    padding-top: 0; /* Handled by global app padding */
-    overflow: hidden;
+    gap: 12px;
+    box-shadow: 0 8px 24px rgba(44, 32, 12, 0.12);
 }
 
-.hero-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 0;
-}
+.badge-icon { font-size: 1.8rem; }
 
-.hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    z-index: 1;
-}
-
-.hero-content {
-    z-index: 2;
-    width: 100%;
+.hero-badge div {
     display: flex;
-    justify-content: flex-start;
-    padding-left: 10%;
+    flex-direction: column;
+    line-height: 1.2;
 }
 
-.hero-text {
-    text-align: left;
-    max-width: 600px;
-    margin-bottom: 0;
-    transform: translateY(-100px);
+.hero-badge strong {
+    font-family: var(--body-font-family);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary-color);
 }
 
-.hero-text h2 {
-    font-size: 2rem;
-    margin-bottom: 25px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    color: #fff;
+.hero-badge span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
 }
 
-.hero-text p {
+/* ── Text Column ──────────────────────────────────────────── */
+.hero-text-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.hero-eyebrow {
+    font-family: var(--body-font-family);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+}
+
+.hero-title {
     font-family: var(--heading-font-family);
-    font-size: 1.2rem;
-    font-weight: 400;
-    margin-bottom: 35px;
-    max-width: 500px;
-    margin-left: 0;
-    margin-right: auto;
-    line-height: 1.6;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-    color: #fff;
+    font-size: clamp(2rem, 3.5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--primary-color);
 }
 
-@media (max-width: 768px) {
-    .hero-text h2 {
-        font-size: 2rem;
+.hero-subtitle {
+    font-family: var(--body-font-family);
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 440px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+/* ── Stats ────────────────────────────────────────────────── */
+.hero-stats {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 10px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stat strong {
+    font-family: var(--body-font-family);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.stat span {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.stat-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--border-color);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .hero-inner {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        padding-bottom: 40px;
     }
-    .hero-content {
-        justify-content: center;
-        padding-left: 20px;
-        text-align: center;
+
+    .hero-img { height: 320px; }
+
+    .hero-badge {
+        bottom: -16px;
+        right: 10px;
     }
-    .hero-text {
-        text-align: center;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .hero-text p {
-        margin-left: auto;
-        margin-right: auto;
-    }
+
+    .hero-title { font-size: 2rem; }
+}
+
+@media (max-width: 600px) {
+    .hero { padding: 40px 0 0; }
+    .hero-img { height: 250px; }
+    .hero-stats { gap: 14px; }
 }
 </style>

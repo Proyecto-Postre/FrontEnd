@@ -14,7 +14,13 @@
     "hero": {
         "title": "Welcome to the sweet world of our desserts!",
         "subtitle": "Get ready for an explosion of delicious flavors that will make you smile with every bite.",
-        "cta": "Read More"
+        "cta": "Read More",
+        "menu_btn": "View Our Menu",
+        "eyebrow": "Artisan Pastry",
+        "stat_orders": "Orders",
+        "stat_natural": "Natural",
+        "stat_rating": "Rating",
+        "badge_artisan": "Artisan"
     },
     "catalog": {
         "title": "Our Menu",
@@ -42,15 +48,15 @@
         "view_menu": "View full menu"
     },
     "services": {
-        "hero_title": "Your Celebrations,\nOur Passion 🥂",
+        "hero_title": "Your Celebrations, Our Passion",
         "hero_sub": "We bring sweetness to your most important events and teach you how to create magic in the kitchen.",
-        "tab_catering": "Events & Catering 🥂",
-        "tab_workshops": "Workshops & Classes 👩‍🍳",
+        "tab_catering": "Events & Catering",
+        "tab_workshops": "Workshops & Classes",
         "catering_title": "Buffets & Catering",
         "catering_sub": "Surprise your guests with an unforgettable dessert table.",
-        "feat_1": "✨ Personalized sweet and savory bites",
-        "feat_2": "🎂 Design cakes for weddings and events",
-        "feat_3": "🚛 Delivery and setup service included",
+        "feat_1": "Personalized sweet and savory bites",
+        "feat_2": "Design cakes for weddings and events",
+        "feat_3": "Delivery and setup service included",
         "form_title": "Get a Quote",
         "date": "Event Date",
         "guests": "No. Guests",
@@ -59,7 +65,7 @@
         "details": "Details / Preferences",
         "ph_other": "E.g. Anniversary, Graduation...",
         "ph_details": "Tell us what you have in mind...",
-        "btn_submit": "Request Quote 📤",
+        "btn_submit": "Request Quote",
         "types": {
             "wedding": "Wedding",
             "birthday": "Birthday",
@@ -84,12 +90,21 @@
         "name": "Name",
         "email": "Email",
         "message": "Message",
-        "send": "Send"
+        "send": "Send",
+        "subtitle": "Want to work together? Enter your details and we will contact you shortly. We look forward to hearing from you.",
+        "lastname": "Last Name",
+        "required": "(required)",
+        "page_subtitle": "We are here to sweeten your day"
     },
     "footer": {
         "tagline": "Sweetness in every bite.",
         "location": "Location",
-        "contact": "Contact"
+        "contact": "Contact",
+        "legal": "Legal",
+        "privacy": "Privacy Policy",
+        "legal_notice": "Legal Notice",
+        "copyright": "© {year} Dulce Fe. All rights reserved.",
+        "made_in": "Made with love in Lima"
     },
     "auth": {
         "login_title": "Login",
@@ -106,24 +121,33 @@
         "has_account": "Already have an account? Login",
         "success_register": "Registration successful! Logging in...",
         "error_generic": "An error occurred. Please try again.",
-        "error_mismatch": "Passwords do not match."
+        "error_mismatch": "Passwords do not match.",
+        "error_fill_all": "Please fill in all fields.",
+        "error_credentials": "Incorrect email or password.",
+        "error_email_taken": "This email is already registered.",
+        "loading": "Loading..."
     },
     "account": {
         "title": "My Account",
         "subtitle": "Manage your personal data",
-        "personal_data": "👤 My Data",
+        "personal_data": "My Data",
         "edit": "Edit",
         "cancel": "Cancel",
         "save": "Save Changes",
         "logout": "Logout",
-        "success_update": "Profile updated successfully!"
+        "success_update": "Profile updated successfully!",
+        "error_required": "Please fill in all required fields.",
+        "my_orders": "My Orders",
+        "no_orders": "You haven't placed any orders yet.",
+        "go_menu": "Go to Menu",
+        "order_items": "{count} items"
     },
     "profile": {
-        "welcome": "Hello, {name} 👋",
+        "welcome": "Hello, {name}",
         "welcome_sub": "Welcome to your personal space at Dulce Fe.",
-        "recommendations_title": "🧡 For You",
+        "recommendations_title": "For You",
         "recommendations_sub": "Specially selected for your tastes.",
-        "recent_orders": "📜 Your Recent Orders",
+        "recent_orders": "Your Recent Orders",
         "no_orders": "You haven't made any recent orders.",
         "go_menu": "Go to Menu",
         "promotions_title": "Exclusive Promotions",
@@ -161,13 +185,62 @@
         "subtitle": "Discover the taste of happiness",
         "filter_by": "Filter by:"
     },
+    "testimonials": {
+        "title": "What our customers say",
+        "subtitle": "Sweet stories from real people.",
+        "write_review": "Write a review",
+        "login_hint": "Log in to leave your feedback.",
+        "login_link": "Sign in",
+        "share_experience": "Share your experience",
+        "review_placeholder": "What did you like the most?",
+        "cancel": "Cancel",
+        "publish": "Publish",
+        "verified": "Verified Customer",
+        "empty": "No reviews yet. Be the first to tell us about your experience!",
+        "thank_you": "Thank you for your feedback!"
+    },
+    "marquee": {
+        "item1": "Artisan Desserts",
+        "item2": "Seasonal Cakes",
+        "item3": "Made with Love",
+        "item4": "Natural Ingredients",
+        "item5": "Delivery to Lima",
+        "item6": "Events & Catering"
+    },
     "modal": {
+        "understood": "Understood",
         "hero_title": "Sweet Experience",
         "hero_content_1": "At Dulce Fe, every dessert is a work of art designed to delight your senses. We use artisanal techniques combined with modern innovation.",
         "hero_content_2": "Our mission is to transform everyday moments into extraordinary memories through flavor.",
         "about_title": "Our Story",
         "about_content_1": "It all started in a small kitchen with a great passion: bringing joy through baking. Today, we are a family dedicated to excellence.",
         "about_content_2": "We are proud to select local and sustainable ingredients to ensure maximum freshness and quality."
+    },
+    "db_products": {
+        "1": {
+            "title": "Red Velvet Supreme",
+            "desc": "Soft red velvet sponge cake layered with cream cheese frosting."
+        },
+        "2": {
+            "title": "Intense Chocolate",
+            "desc": "For cocoa lovers. Moist sponge cake with 70% chocolate ganache."
+        },
+        "3": {
+            "title": "Berry Cheesecake",
+            "desc": "Crunchy biscuit base, soft cream cheese and artisan forest fruit topping."
+        },
+        "4": {
+            "title": "Assorted Macarons (Box x6)",
+            "desc": "Delicate French bites in varied flavors: Pistachio, Raspberry and Vanilla."
+        },
+        "5": {
+            "title": "Art Cappuccino",
+            "desc": "Double espresso with textured milk and latte art."
+        },
+        "6": {
+            "title": "Peach Iced Tea",
+            "desc": "Refreshing black tea infusion with natural peach chunks."
+        }
     },
     "admin": {
         "title": "Admin Dashboard 🛠️",

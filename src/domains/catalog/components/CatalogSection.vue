@@ -222,8 +222,8 @@ const handleOrder = (product) => {
 
 <style scoped>
 .catalog-section {
-    background-color: #f9f8f6;
-    padding: 60px 0 100px; 
+    background-color: var(--bg-color);
+    padding: 60px 0 100px;
 }
 
 /* Header Styles (Tabs Mode) */
@@ -234,40 +234,42 @@ const handleOrder = (product) => {
 
 .section-title {
     font-family: var(--heading-font-family);
-    font-size: 3rem;
+    font-size: 2.6rem;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--text-color);
     margin-bottom: 30px;
 }
 
 .category-tabs {
     display: flex;
     justify-content: center;
-    gap: 15px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
 .tab-btn {
-    padding: 10px 30px;
-    border: 2px solid #e0e0e0;
-    border-radius: 50px;
+    padding: 10px 28px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-pill);
     background: transparent;
     font-family: var(--body-font-family);
+    font-size: 0.9rem;
     font-weight: 600;
-    color: #666;
+    color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
 }
 
 .tab-btn:hover {
-    border-color: #D99578;
-    color: #D99578;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(44, 85, 48, 0.06);
 }
 
 .tab-btn.active {
-    background-color: #D99578;
-    border-color: #D99578;
-    color: #fff;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--white);
 }
 
 /* Category Block Styles (List Mode) */
@@ -336,44 +338,24 @@ const handleOrder = (product) => {
 
 /* GLOBAL STYLES (Moved out of media query) */
 
-/* FEATURED CARD CONTAINER (The Aura Host) */
+/* FEATURED CARD CONTAINER — warm shadow lift, no rainbow */
 .featured-card-container {
     position: relative;
-    border-radius: 20px; /* Matches card radius */
-    z-index: 1; /* Establishes stacking context */
+    border-radius: var(--border-radius-lg);
+    transition: transform 0.3s ease;
 }
 
-/* The Glowing Gradient Aura */
-.featured-card-container::before {
-    content: "";
-    position: absolute;
-    inset: -5px; /* Aura extends 5px OUTSIDE the card */
-    z-index: -1; /* Behind the card */
-    background: linear-gradient(45deg, #FFD700, #ff5e62, #42e695, #00f2fe);
-    filter: blur(15px);
-    border-radius: 25px; /* Slightly larger than card */
-    opacity: 0.7;
-    transition: all 0.4s ease;
+.featured-card-container:hover {
+    transform: translateY(-6px);
 }
 
-/* Hover Sync: When hovering the CONTAINER, boost the aura */
-.featured-card-container:hover::before {
-    opacity: 1;
-    filter: blur(20px);
-    inset: -8px; /* Grows slightly */
-}
-
-/* Ensure the card itself sits on top and doesn't have shadows conflicting */
+/* Clean artisan shadow on hover */
 .featured-grid :deep(.product-card) {
     height: 100%;
-    transform: none !important; /* Disable card's internal move to handle it here if needed, or let them compose */
-    transition: transform 0.4s ease;
 }
 
-/* Move both container and aura together on hover for the "Lift" effect */
-.featured-card-container:hover {
-    transform: translateY(-5px);
-    transition: transform 0.4s ease;
+.featured-card-container:hover :deep(.product-card) {
+    box-shadow: 0 16px 40px rgba(44, 85, 48, 0.14), 0 4px 12px rgba(44, 32, 12, 0.08);
 }
 
 .view-menu-container {

@@ -1,9 +1,15 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { authStore } from '../../auth/store.js';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const testimonials = ref([]);
-const user = ref(null);
 const showForm = ref(false);
+
+// ✅ Reactive user from authStore
+const user = computed(() => authStore.user);
 
 const newReview = ref({
     text: '',
@@ -32,11 +38,7 @@ onMounted(async () => {
         console.error("Error fetching testimonials", e);
     }
 
-    // 2. Check User
-    const stored = localStorage.getItem('user');
-    if (stored) {
-        user.value = JSON.parse(stored);
-    }
+    // 2. Check User — ✅ Handled reactively by authStore now, no manual read needed
 });
 
 const submitReview = async () => {
@@ -64,7 +66,7 @@ const submitReview = async () => {
         newReview.value.text = '';
         newReview.value.stars = 5;
         showForm.value = false;
-        alert("¡Gracias por tu opinión! ❤️");
+        alert(t('testimonials.thank_you'));
     } catch (e) {
         alert("Hubo un error al guardar tu reseña.");
     }
@@ -75,15 +77,15 @@ const submitReview = async () => {
     <section class="testimonials-section">
         <div class="container">
             <div class="header">
-                <h2>Lo que dicen nuestros clientes ❤️</h2>
-                <p>Historias dulces de personas reales.</p>
+                <h2>{{ t('testimonials.title') }}</h2>
+                <p>{{ t('testimonials.subtitle') }}</p>
                 
                 <div class="cta-review">
                     <button v-if="user && !showForm" @click="showForm = true" class="btn-write">
-                        ✍️ Escribir una reseña
+                        ✍️ {{ t('testimonials.write_review') }}
                     </button>
                     <p v-if="!user" class="login-hint">
-                        <router-link to="/login">Inicia sesión</router-link> para dejar tu opinión.
+                        <router-link to="/login">{{ t('testimonials.login_link') }}</router-link> {{ t('testimonials.login_hint').replace('Inicia sesión ', '') }}
                     </p>
                 </div>
             </div>
@@ -92,7 +94,7 @@ const submitReview = async () => {
             <transition name="slide-fade">
                 <div v-if="showForm" class="review-form-container">
                     <form @submit.prevent="submitReview" class="glass-form-sc">
-                        <h4>Comparte tu experiencia</h4>
+                        <h4>{{ t('testimonials.share_experience') }}</h4>
                         <div class="rating-select">
                             <span 
                                 v-for="n in 5" :key="n" 
@@ -102,13 +104,13 @@ const submitReview = async () => {
                         </div>
                         <textarea 
                             v-model="newReview.text" 
-                            placeholder="¿Qué fue lo que más te gustó?" 
+                            :placeholder="t('testimonials.review_placeholder')" 
                             rows="3"
                             required
                         ></textarea>
                         <div class="form-actions">
-                            <button type="button" @click="showForm = false" class="btn-cancel">Cancelar</button>
-                            <button type="submit" class="btn-submit">Publicar</button>
+                            <button type="button" @click="showForm = false" class="btn-cancel">{{ t('testimonials.cancel') }}</button>
+                            <button type="submit" class="btn-submit">{{ t('testimonials.publish') }}</button>
                         </div>
                     </form>
                 </div>
@@ -124,7 +126,7 @@ const submitReview = async () => {
                         <div class="avatar">{{ item.name.charAt(0) }}</div>
                         <div class="info">
                             <span class="name">{{ item.name }}</span>
-                            <span class="role">{{ item.role }}</span>
+                            <span class="role">{{ item.role === 'Cliente Verificado' ? t('testimonials.verified') : item.role }}</span>
                         </div>
                     </div>
                 </div>
@@ -132,7 +134,7 @@ const submitReview = async () => {
 
             <!-- Empty State -->
             <div v-else class="empty-state">
-                <p>Aún no hay reseñas. ¡Sé el primero en contarnos tu experiencia!</p>
+                <p>{{ t('testimonials.empty') }}</p>
             </div>
         </div>
     </section>
@@ -141,7 +143,7 @@ const submitReview = async () => {
 <style scoped>
 .testimonials-section {
     padding: 80px 0;
-    background-color: #FAFAFA;
+    background-color: var(--surface-alt);
 }
 
 .header {
@@ -150,7 +152,7 @@ const submitReview = async () => {
 }
 
 .header h2 {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     color: var(--primary-color);
     margin-bottom: 10px;
     font-family: var(--heading-font-family);
@@ -161,17 +163,19 @@ const submitReview = async () => {
 }
 
 .btn-write {
-    background-color: var(--accent-color);
+    background-color: var(--primary-color);
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 50px;
-    font-weight: 700;
+    padding: 10px 22px;
+    border-radius: var(--border-radius-pill);
+    font-family: var(--body-font-family);
+    font-weight: 600;
+    font-size: 0.9rem;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: background-color 0.25s, transform 0.2s;
 }
 
-.btn-write:hover { transform: scale(1.05); }
+.btn-write:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
 
 .login-hint a {
     color: var(--primary-color);
@@ -186,12 +190,12 @@ const submitReview = async () => {
 }
 
 .glass-form-sc {
-    background: white;
+    background: var(--surface);
     padding: 25px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 8px 30px var(--shadow-color);
     text-align: center;
-    border: 1px solid var(--primary-color);
+    border: 1px solid var(--border-color);
 }
 
 .rating-select {
@@ -270,12 +274,13 @@ const submitReview = async () => {
 }
 
 .avatar {
-    width: 45px; height: 45px;
-    background: var(--accent-color);
+    width: 44px; height: 44px;
+    background: var(--primary-color);
     color: white;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-weight: 700;
+    font-size: 1rem;
 }
 
 .info { display: flex; flex-direction: column; }

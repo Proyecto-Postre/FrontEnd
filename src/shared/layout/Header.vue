@@ -1,47 +1,125 @@
+<template>
+    <header class="site-header">
+        <!-- Top Row: Brand -->
+        <div class="header-brand">
+            <RouterLink to="/" class="brand-link">
+                <span class="brand-leaf">🌿</span>
+                <h1 class="brand-name">Dulce Fe</h1>
+                <span class="brand-leaf">🌿</span>
+            </RouterLink>
+        </div>
+
+        <!-- Bottom Row: Nav + Search + Icons -->
+        <div class="header-nav-row">
+            <div class="container nav-inner">
+
+                <!-- Search Bar (Desktop) -->
+                <div class="search-bar">
+                    <div class="input-wrapper">
+                        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input
+                            type="text"
+                            :placeholder="$t('header.search_placeholder')"
+                            v-model="searchQuery"
+                            @keyup.enter="handleSearch"
+                            @focus="showSuggestions = true"
+                            @blur="setTimeout(() => showSuggestions = false, 200)"
+                        />
+                    </div>
+                    <!-- Suggestions -->
+                    <div v-if="showSuggestions && suggestions.length > 0" class="suggestions-dropdown">
+                        <div
+                            v-for="item in suggestions"
+                            :key="item.id"
+                            class="suggestion-item"
+                            @click="router.push({ path: '/menu', query: { q: item.title } }); searchQuery = item.title"
+                        >
+                            {{ item.title }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nav Links (Center) -->
+                <nav class="nav-links" :class="{ 'mobile-active': isMenuOpen }">
+                    <!-- Mobile header inside menu -->
+                    <div class="mobile-menu-header">
+                        <span class="brand-name-mobile">Dulce Fe</span>
+                        <button class="close-menu-btn" @click="closeMenu">✕</button>
+                    </div>
+
+                    <RouterLink to="/" class="nav-item" @click="closeMenu">{{ $t('header.home') }}</RouterLink>
+                    <RouterLink to="/menu" class="nav-item nav-item--featured" @click="closeMenu">{{ $t('header.menu_btn') }}</RouterLink>
+                    <RouterLink to="/servicios" class="nav-item" @click="closeMenu">{{ $t('header.services') }}</RouterLink>
+                    <RouterLink to="/nosotros" class="nav-item" @click="closeMenu">{{ $t('header.about') }}</RouterLink>
+                    <RouterLink to="/contacto" class="nav-item" @click="closeMenu">{{ $t('header.contact') }}</RouterLink>
+                    <RouterLink v-if="user && user.role === 'admin'" to="/admin" class="nav-item nav-item--admin" @click="closeMenu">{{ $t('header.admin_panel') }}</RouterLink>
+                    <RouterLink v-if="user" to="/para-ti" class="nav-item" @click="closeMenu">{{ $t('header.for_you') }}</RouterLink>
+                </nav>
+
+                <!-- Right Icons -->
+                <div class="header-icons">
+                    <!-- Language toggle -->
+                    <button class="icon-btn lang-btn" @click="toggleLanguage" :title="$t('header.language')">
+                        {{ locale.toUpperCase() }}
+                    </button>
+
+                    <!-- User / Account -->
+                    <RouterLink :to="user ? '/cuenta' : '/login'" class="icon-btn" :title="$t('header.account')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span v-if="user" class="user-name">{{ displayName }}</span>
+                    </RouterLink>
+
+                    <!-- Cart -->
+                    <RouterLink to="/carrito" class="icon-btn cart-btn" title="Carrito">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                        <span v-if="cart.totalItems > 0" class="cart-badge">{{ cart.totalItems }}</span>
+                    </RouterLink>
+
+                    <!-- Hamburger (Mobile only) -->
+                    <button class="hamburger-btn" @click="toggleMenu" aria-label="Menu">
+                        <span :class="{ open: isMenuOpen }"></span>
+                        <span :class="{ open: isMenuOpen }"></span>
+                        <span :class="{ open: isMenuOpen }"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile overlay -->
+        <div class="mobile-overlay" :class="{ active: isMenuOpen }" @click="closeMenu"></div>
+    </header>
+</template>
+
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { cart } from '../../domains/cart/store.js';
 import { catalog } from '../../domains/catalog/store.js';
+import { authStore } from '../../domains/auth/store.js';
 
 const { t, locale } = useI18n();
 const router = useRouter();
 const isMenuOpen = ref(false);
-const user = ref(null);
 const searchQuery = ref('');
 const showSuggestions = ref(false);
 
-// Ensure catalog is loaded
 onMounted(async () => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-        user.value = JSON.parse(storedUser);
-    }
     await catalog.fetchProducts();
 });
 
 const suggestions = computed(() => {
     if (!searchQuery.value.trim()) return [];
-    return catalog.items.filter(product => 
+    return catalog.items.filter(product =>
         product.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-    ).slice(0, 5); // Limit to 5 suggestions
+    ).slice(0, 5);
 });
 
-const displayName = computed(() => {
-    if (!user.value) return '';
-    const name = user.value.name ? user.value.name.split(' ')[0] : '';
-    const lastName = user.value.lastName ? user.value.lastName.split(' ')[0] : '';
-    return `${name} ${lastName}`;
-});
+const user = computed(() => authStore.user);
+const displayName = computed(() => authStore.displayName);
 
-const toggleMenu = () => {
-    isMenuOpen.value = !isMenuOpen.value;
-};
-
-const closeMenu = () => {
-    isMenuOpen.value = false;
-};
+const toggleMenu = () => { isMenuOpen.value = !isMenuOpen.value; };
+const closeMenu  = () => { isMenuOpen.value = false; };
 
 const toggleLanguage = () => {
     locale.value = locale.value === 'es' ? 'en' : 'es';
@@ -50,249 +128,177 @@ const toggleLanguage = () => {
 const handleSearch = () => {
     if (searchQuery.value.trim()) {
         router.push({ path: '/menu', query: { q: searchQuery.value } });
-        searchQuery.value = ''; // Optional: clear after search
+        searchQuery.value = '';
+        closeMenu();
     }
 };
 </script>
 
-<template>
-    <header class="site-header">
-        <!-- Top Row: Brand & Tools -->
-        <div class="container header-top">
-            <div class="logo">
-                <RouterLink to="/">
-                    <h1>Dulce Fe</h1>
-                </RouterLink>
-            </div>
-            
-            <div class="search-bar">
-                <div class="input-wrapper">
-                    <input 
-                        type="text" 
-                        :placeholder="$t('header.search_placeholder')" 
-                        v-model="searchQuery"
-                        @keyup.enter="handleSearch"
-                        @focus="showSuggestions = true"
-                        @blur="setTimeout(() => showSuggestions = false, 200)"
-                    />
-                    <button class="search-btn" @click="handleSearch">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    </button>
-                </div>
-
-                <!-- Suggestions Dropdown -->
-                <div v-if="showSuggestions && suggestions.length > 0" class="suggestions-dropdown">
-                    <div 
-                        v-for="item in suggestions" 
-                        :key="item.id" 
-                        class="suggestion-item"
-                        @click="router.push({ path: '/menu', query: { q: item.title } }); searchQuery = item.title"
-                    >
-                        {{ item.title }}
-                    </div>
-                </div>
-            </div>
-
-            <div class="header-icons">
-                <button class="icon-btn lang-btn" @click="toggleLanguage" title="Cambiar idioma">
-                    {{ locale.toUpperCase() }}
-                </button>
-                <RouterLink :to="user ? '/cuenta' : '/login'" class="icon-btn" title="Cuenta">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    <span v-if="user" style="margin-left: 5px; font-size: 0.8rem; font-weight: 700;">{{ displayName }}</span>
-                </RouterLink>
-                <RouterLink to="/carrito" class="icon-btn cart-btn-wrapper" title="Carrito">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                    <span v-if="cart.totalItems > 0" class="cart-badge">{{ cart.totalItems }}</span>
-                </RouterLink>
-                <div class="mobile-toggle">
-                     <button class="hamburger-btn" @click="toggleMenu" aria-label="Menu">
-                        <span :class="{ 'open': isMenuOpen }"></span>
-                        <span :class="{ 'open': isMenuOpen }"></span>
-                        <span :class="{ 'open': isMenuOpen }"></span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bottom Row: Navigation (Green Bar) -->
-        <nav class="main-nav" :class="{ 'mobile-active': isMenuOpen }">
-            <div class="container nav-container">
-                <!-- Mobile Search (Visible only inside mobile menu) -->
-                <div class="mobile-search-wrapper">
-                    <input 
-                        type="text" 
-                        :placeholder="$t('header.search_placeholder')" 
-                        v-model="searchQuery"
-                        @keyup.enter="handleSearch"
-                        class="mobile-search-input"
-                    />
-                    <button class="mobile-search-btn" @click="handleSearch">🔍</button>
-                </div>
-
-                <RouterLink to="/menu" class="special-nav-btn" @click="closeMenu">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                     {{ $t('header.menu_btn') }}
-                </RouterLink>
-                <!-- Navigation Links -->
-                <nav class="nav-links"> <!-- hidden on mobile, shown on desktop -->
-                    <RouterLink to="/" class="nav-item" @click="closeMenu">{{ $t('header.home') }}</RouterLink>
-                    <RouterLink to="/servicios" class="nav-item" @click="closeMenu">{{ $t('header.services') }}</RouterLink>
-                    
-                    <!-- Admin Only Link -->
-                    <RouterLink v-if="user && user.role === 'admin'" to="/admin" class="nav-item highlight" @click="closeMenu">
-                        {{ $t('header.admin_panel') }}
-                    </RouterLink>
-
-                    <!-- User Only Links -->
-                    <template v-else>
-                        <RouterLink to="/nosotros" class="nav-item" @click="closeMenu">{{ $t('header.about') }}</RouterLink>
-                        <RouterLink v-if="user" to="/para-ti" class="nav-item" @click="closeMenu">{{ $t('header.for_you') }}</RouterLink>
-                        <RouterLink to="/contacto" class="nav-item" @click="closeMenu">{{ $t('header.contact') }}</RouterLink>
-                    </template>
-                </nav>
-            </div>
-        </nav>
-    </header>
-</template>
-
 <style scoped>
-/* MOBILE SEARCH STYLES */
-.mobile-search-wrapper {
-    display: none; /* Default hidden on desktop */
-}
-
-@media (max-width: 900px) {
-    .mobile-search-wrapper {
-        display: flex;
-        width: 80%;
-        margin: 20px auto 0;
-        position: relative;
-    }
-
-    .mobile-search-input {
-        width: 100%;
-        padding: 12px 20px;
-        border-radius: 50px;
-        border: none;
-        font-size: 1rem;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        padding-right: 50px;
-    }
-
-    .mobile-search-btn {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        font-size: 1.2rem;
-    }
-}
-
+/* ── Brand top bar ─────────────────────────────────────────── */
 .site-header {
-    background-color: var(--white);
-    position: fixed; /* Fixed to always stay on top */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 1000; /* Ensure it stays above everything */
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    z-index: 1000;
+    background-color: var(--surface);
+    box-shadow: 0 1px 0 var(--border-color), 0 4px 20px rgba(28, 25, 23, 0.06);
 }
 
-/* Top Row */
-.header-top {
-    display: flex;
+.header-brand {
+    background-color: var(--bg-color);
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+    padding: 14px 20px 10px;
+}
+
+.brand-link {
+    text-decoration: none;
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 15px 20px;
-    gap: 20px;
-    height: 80px; /* Fixed height for consistent spacing */
+    gap: 12px;
 }
 
-.logo h1 {
+.brand-name {
+    font-family: var(--heading-font-family);
     font-size: 2rem;
     font-weight: 700;
-    color: var(--accent-color); /* Coral logo */
-    text-decoration: none;
+    color: var(--primary-color);
+    letter-spacing: 0.04em;
     line-height: 1;
 }
 
-.logo a {
-    text-decoration: none;
+.brand-leaf {
+    font-size: 1rem;
+    opacity: 0.7;
 }
 
-/* Search & Suggestions */
+/* ── Nav row ───────────────────────────────────────────────── */
+.header-nav-row {
+    background-color: var(--surface);
+    padding: 0;
+}
+
+.nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    height: 52px;
+    padding: 0 20px;
+}
+
+/* ── Search ────────────────────────────────────────────────── */
 .search-bar {
-    flex-grow: 1;
-    max-width: 500px;
-    position: relative; /* For absolute dropdown */
+    position: relative;
+    flex-shrink: 0;
+    width: 220px;
 }
 
 .input-wrapper {
-    position: relative;
     display: flex;
     align-items: center;
+    background: var(--bg-color);
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--border-radius-pill);
+    padding: 7px 14px;
+    gap: 8px;
+    transition: border-color 0.2s;
 }
 
-.search-bar input {
-    width: 100%;
-    padding: 10px 20px;
-    padding-right: 40px;
-    border: 2px solid #e0e0e0;
-    border-radius: 50px;
-    font-family: var(--body-font-family);
-    font-size: 0.95rem;
-    outline: none;
-    transition: border-color 0.3s;
-}
-
-.search-bar input:focus {
+.input-wrapper:focus-within {
     border-color: var(--primary-color);
 }
 
-.search-btn {
-    position: absolute;
-    right: 15px;
-    background: none;
-    border: none;
-    color: #999;
-    cursor: pointer;
+.search-icon {
+    color: var(--text-muted);
+    flex-shrink: 0;
 }
+
+.input-wrapper input {
+    border: none;
+    background: transparent;
+    font-family: var(--body-font-family);
+    font-size: 0.88rem;
+    color: var(--text-color);
+    outline: none;
+    width: 100%;
+}
+
+.input-wrapper input::placeholder { color: var(--text-light); }
 
 .suggestions-dropdown {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 8px);
     left: 0;
     right: 0;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    margin-top: 10px;
-    padding: 10px 0;
-    z-index: 101;
-    border: 1px solid #f0f0f0;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 24px rgba(28, 25, 23, 0.12);
+    padding: 6px 0;
+    z-index: 110;
 }
 
 .suggestion-item {
-    padding: 10px 20px;
+    padding: 9px 16px;
+    font-size: 0.9rem;
     cursor: pointer;
-    transition: background 0.2s;
-    font-size: 0.95rem;
     color: var(--text-color);
+    transition: background 0.15s;
 }
 
 .suggestion-item:hover {
-    background: #f9f9f9;
+    background: var(--bg-color);
     color: var(--primary-color);
-    font-weight: 600;
 }
 
+/* ── Nav Links ─────────────────────────────────────────────── */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.nav-item {
+    font-family: var(--body-font-family);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--text-muted);
+    padding: 6px 10px;
+    border-radius: var(--border-radius-sm);
+    transition: color 0.2s, background 0.2s;
+    white-space: nowrap;
+}
+
+.nav-item:hover,
+.nav-item.router-link-active {
+    color: var(--primary-color);
+    background: rgba(44, 85, 48, 0.07);
+}
+
+.nav-item--featured {
+    color: var(--primary-color);
+    background: rgba(44, 85, 48, 0.1);
+    font-weight: 700;
+}
+
+.nav-item--admin {
+    color: var(--accent-color);
+}
+
+/* ── Header Icons ──────────────────────────────────────────── */
 .header-icons {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
 .icon-btn {
@@ -300,107 +306,66 @@ const handleSearch = () => {
     border: none;
     color: var(--text-color);
     cursor: pointer;
-    transition: color 0.3s;
     display: flex;
     align-items: center;
-}
-
-.icon-btn:hover {
-    color: var(--primary-color);
-}
-
-/* Bottom Row (Nav) */
-.main-nav {
-    background-color: var(--white); /* Let's keep white but maybe green links? Or full green bar? */
-    /* Let's Try Full Green Bar for fun look */
-    background-color: var(--primary-color); 
-    padding: 0;
-}
-
-.nav-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* To separate special btn and links */
-    padding: 0 20px; /* Reset internal container padding */
-}
-
-.special-nav-btn {
-    background-color: var(--accent-color);
-    color: white;
-    padding: 15px 30px;
-    font-weight: 700;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-top-right-radius: 20px; /* Playful shape tab */
-    font-size: 0.9rem;
-    transition: background-color 0.3s;
-}
-
-.nav-links {
-    display: flex;
-    gap: 80px;
-    margin-left: 60px;
-    flex-grow: 1;
-    justify-content: center;
-    list-style: none;
-}
-
-.nav-links a {
-    color: white;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: var(--border-radius-sm);
+    font-family: var(--body-font-family);
+    font-size: 0.85rem;
     font-weight: 600;
     text-decoration: none;
-    font-size: 0.9rem;
-    padding: 10px 0;
-    position: relative;
+    transition: color 0.2s, background 0.2s;
 }
 
-.nav-links a:hover {
-    opacity: 0.9;
+.icon-btn:hover { color: var(--primary-color); background: rgba(44, 85, 48, 0.07); }
+
+.lang-btn {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    border: 1.5px solid var(--border-color);
+    border-radius: 6px;
+    padding: 4px 8px;
 }
 
-.nav-links a::after {
-    content: '';
+.user-name {
+    font-size: 0.8rem;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cart-btn { position: relative; }
+
+.cart-badge {
     position: absolute;
-    bottom: 5px;
-    left: 0;
-    width: 0%;
-    height: 2px;
+    top: -4px;
+    right: -4px;
     background-color: var(--accent-color);
-    transition: width 0.3s;
-}
-
-.nav-links a:hover::after {
-    width: 100%;
-}
-
-/* Active state for Header Icons (Top Row) - Green */
-.header-icons .router-link-active {
-    color: var(--primary-color) !important;
-}
-
-/* Active state for Navigation Links (Bottom Row) - Keep White/Visible */
-.nav-links .router-link-active {
-    color: white !important;
+    color: white;
+    font-size: 0.65rem;
     font-weight: 700;
-}
-
-/* Mobile Toggle */
-.mobile-toggle {
-    display: none;
-}
-
-.hamburger-btn {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
     display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid var(--surface);
+}
+
+/* ── Hamburger ─────────────────────────────────────────────── */
+.hamburger-btn {
+    display: none;
     flex-direction: column;
     justify-content: space-between;
-    width: 24px;
-    height: 18px;
+    width: 22px;
+    height: 16px;
     background: transparent;
     border: none;
     cursor: pointer;
-    z-index: 102; 
+    padding: 0;
 }
 
 .hamburger-btn span {
@@ -408,119 +373,88 @@ const handleSearch = () => {
     width: 100%;
     height: 2px;
     background-color: var(--text-color);
-    transition: all 0.3s ease;
     border-radius: 2px;
+    transition: all 0.3s ease;
 }
 
-/* Mobile Responsive */
+/* ── Mobile ────────────────────────────────────────────────── */
 @media (max-width: 900px) {
-    .search-bar {
-        display: none; /* Hide search on mobile for simplicity or move it */
-    }
-    
-    .mobile-toggle {
-        display: block;
-    }
-
-    .main-nav {
-        position: fixed;
-        top: 70px; /* Below header */
-        left: 0;
-        width: 100%;
-        height: calc(100dvh - 70px); /* Use dvh for better mobile support */
-        /* Gradient Green Background for depth */
-        background: linear-gradient(160deg, var(--primary-color) 0%, #4a7c6a 100%); 
-        transform: translateX(100%);
-        transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother bezier */
-        display: flex;
-        flex-direction: column;
-        justify-content: center; /* Center vertically for better aesthetics */
-        padding-top: 0;
-        z-index: 99;
-        overflow-y: auto; /* Allow scrolling if content is too tall */
-    }
-
-    /* Decorative Circle Removed as requested */
-
-    .main-nav.mobile-active {
-        transform: translateX(0);
-    }
-
-    .nav-container {
-        flex-direction: column;
-        gap: 30px;
-    }
+    .search-bar { display: none; }
+    .hamburger-btn { display: flex; }
 
     .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: min(320px, 85vw);
+        height: 100dvh;
+        background: var(--surface);
         flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 0;
+        padding: 0;
+        transition: right 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: -8px 0 32px rgba(28, 25, 23, 0.15);
+        z-index: 200;
+        overflow-y: auto;
+    }
+
+    .nav-links.mobile-active { right: 0; }
+
+    .mobile-menu-header {
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        margin: 0;
-        gap: 20px;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+        width: 100%;
+        background: var(--bg-color);
     }
-    
-    .nav-links a {
-        font-size: 2rem; /* Big and Bold */
-        font-family: var(--heading-font-family); 
-        color: #ffffff; /* White text for contrast */
+
+    .brand-name-mobile {
+        font-family: var(--heading-font-family);
+        font-size: 1.4rem;
         font-weight: 700;
-        letter-spacing: 0.02em;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin: 10px 0;
-    }
-    
-    .nav-links a:hover {
-       color: #FFD1BA; /* Light Peach/Cream for hover */
-       transform: scale(1.05);
-       transition: all 0.3s ease;
-    }
-    
-    .nav-links a::after {
-        display: none; /* No underline, just scale/color */
+        color: var(--primary-color);
     }
 
-    .special-nav-btn {
-        width: 80%; 
-        justify-content: center;
-        border-radius: 50px;
-        margin: 20px auto 0; 
-        background-color: #ffffff; /* White Button */
-        color: var(--primary-color); /* Green Text */
-        font-size: 1rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    .close-menu-btn {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: var(--text-muted);
+        padding: 4px 8px;
     }
-    .special-nav-btn svg {
-        stroke: var(--primary-color); /* Icon matches text */
+
+    .nav-item {
+        width: 100%;
+        padding: 16px 24px;
+        border-radius: 0;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.9rem;
+        letter-spacing: 0.04em;
+    }
+
+    .mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(28, 25, 23, 0.45);
+        z-index: 199;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+    }
+
+    .mobile-overlay.active {
+        opacity: 1;
+        pointer-events: all;
     }
 }
 
-.cart-btn-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    color: var(--text-color);
+@media (min-width: 901px) {
+    .mobile-menu-header { display: none; }
+    .mobile-overlay { display: none; }
 }
-
-.cart-btn-wrapper:hover {
-    color: var(--primary-color);
-}
-
-.cart-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background-color: var(--accent-color);
-    color: white;
-    font-size: 0.7rem;
-    font-weight: 700;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 </style>

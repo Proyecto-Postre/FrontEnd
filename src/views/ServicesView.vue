@@ -58,13 +58,15 @@ const joinWorkshop = (workshop) => {
 
 <template>
     <div class="services-page">
-        <!-- HERO SECTION -->
-        <section class="services-hero">
-            <div class="hero-content">
-                <h1>{{ t('services.hero_title') }}</h1>
-                <p>{{ t('services.hero_sub') }}</p>
+        <!-- Artisan Page Header -->
+        <div class="page-header">
+            <div class="container page-header-inner">
+                <p class="page-eyebrow">✦ Dulce Fe ✦</p>
+                <h1 class="page-title">{{ t('services.hero_title') }}</h1>
+                <p class="page-subtitle">{{ t('services.hero_sub') }}</p>
+                <div class="page-divider"></div>
             </div>
-        </section>
+        </div>
 
         <div class="container main-content">
             
@@ -167,69 +169,100 @@ const joinWorkshop = (workshop) => {
 
 <style scoped>
 .services-page {
-    /* Background subtle pattern */
-    background-color: var(--secondary-color); /* Soft Cream */
+    background-color: var(--bg-color);
     min-height: 100vh;
 }
 
 /* HERO */
-.services-hero {
-    /* Overlay with Primary (Sage) at top to match header, fading to Dark */
-    background: linear-gradient(rgba(85, 139, 110, 0.95), rgba(85, 139, 110, 0.95)), url('https://images.unsplash.com/photo-1464349095431-e939923831ee?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
-    background-size: cover;
-    background-position: center;
-    border-radius: 0 0 50px 50px;
-    height: 350px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* ── Page Header ──────────────────────────────────────── */
+.page-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    padding: 48px 0 44px;
     text-align: center;
-    color: var(--white);
-    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 3px solid var(--accent-color);
+    margin-bottom: 0;
 }
 
-.hero-content h1 {
-    font-size: 3.5rem;
+.page-header::after {
+    content: 'Dulce Fe';
+    position: absolute;
+    right: 4%;
+    top: 50%;
+    transform: translateY(-50%);
     font-family: var(--heading-font-family);
-    margin-bottom: 10px;
-    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    font-size: 7rem;
+    font-style: italic;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+    white-space: nowrap;
+    line-height: 1;
 }
 
-.hero-content p {
-    font-size: 1.3rem;
-    max-width: 600px;
-    margin: 0 auto;
-    font-weight: 500;
+.page-header-inner {
+    position: relative;
+    z-index: 1;
 }
+
+.page-eyebrow {
+    font-family: var(--body-font-family);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+    margin-bottom: 14px;
+}
+
+.page-title {
+    font-family: var(--heading-font-family);
+    font-size: clamp(2.2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: white;
+    line-height: 1.15;
+    margin-bottom: 10px;
+}
+
+.page-subtitle {
+    font-family: var(--body-font-family);
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.72);
+    font-style: italic;
+}
+
+.page-divider { display: none; }
 
 /* TABS */
 .tabs-container {
     display: flex;
     justify-content: center;
     gap: 20px;
-    margin-bottom: 40px;
+    margin: 36px 0 40px;
 }
 
 .tab-btn {
     background: transparent;
     border: 2px solid var(--primary-color);
     color: var(--primary-color);
-    padding: 12px 30px;
-    border-radius: 50px;
-    font-size: 1.1rem;
-    font-weight: 700;
+    padding: 11px 28px;
+    border-radius: var(--border-radius-pill);
+    font-size: 0.95rem;
+    font-family: var(--body-font-family);
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.25s;
 }
 
 .tab-btn.active {
     background: var(--primary-color);
     color: var(--white);
-    box-shadow: 0 5px 15px rgba(85, 139, 110, 0.3);
+    box-shadow: 0 5px 15px rgba(44, 85, 48, 0.2);
 }
 
 .tab-btn:hover:not(.active) {
-    background: rgba(85, 139, 110, 0.1);
+    background: rgba(44, 85, 48, 0.08);
 }
 
 .main-content {
@@ -290,18 +323,19 @@ const joinWorkshop = (workshop) => {
 
 /* GLASS FORM */
 .glass-form {
-    background: var(--white);
-    padding: 40px;
-    border-radius: 30px;
-    box-shadow: 0 15px 50px rgba(0,0,0,0.05); /* Premium shadow */
-    border: 1px solid rgba(0,0,0,0.05);
+    background: var(--surface);
+    padding: 36px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 8px 32px var(--shadow-color);
+    border: 1px solid var(--border-color);
 }
 
 .glass-form h3 {
     text-align: center;
     margin-bottom: 25px;
-    color: var(--primary-dark);
-    font-size: 1.8rem;
+    color: var(--primary-color);
+    font-family: var(--heading-font-family);
+    font-size: 1.6rem;
 }
 
 .form-group {
@@ -311,48 +345,48 @@ const joinWorkshop = (workshop) => {
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    font-weight: 700;
-    font-size: 0.95rem;
+    font-weight: 600;
+    font-size: 0.9rem;
     color: var(--text-color);
 }
 
 .form-group input, .form-group select, .form-group textarea {
     width: 100%;
-    padding: 14px;
-    border: 2px solid #eee;
-    background: #fdfdfd;
-    border-radius: 12px;
-    font-family: inherit;
-    font-size: 1rem;
-    transition: all 0.3s;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border-color);
+    background: var(--bg-color);
+    border-radius: var(--border-radius);
+    font-family: var(--body-font-family);
+    font-size: 0.95rem;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
     color: var(--text-color);
 }
 
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-    border-color: var(--accent-color);
-    background: var(--white);
+    border-color: var(--primary-color);
+    background: var(--surface);
     outline: none;
-    box-shadow: 0 0 0 4px rgba(224, 122, 95, 0.1); /* Coral glow */
+    box-shadow: 0 0 0 3px rgba(44, 85, 48, 0.1);
 }
 
 .btn-submit {
     width: 100%;
-    background: var(--accent-color);
+    background: var(--primary-color);
     color: var(--white);
-    padding: 16px;
+    padding: 14px;
     border: none;
-    border-radius: 12px;
-    font-weight: 800;
+    border-radius: var(--border-radius-pill);
+    font-weight: 700;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1rem;
     margin-top: 10px;
-    transition: transform 0.3s;
-    box-shadow: 0 5px 15px rgba(224, 122, 95, 0.25);
+    transition: background-color 0.25s ease, transform 0.2s ease;
+    box-shadow: 0 5px 15px rgba(44, 85, 48, 0.2);
 }
 
 .btn-submit:hover {
-    transform: translateY(-3px);
-    background-color: #d66a4e;
+    transform: translateY(-2px);
+    background-color: var(--primary-dark);
 }
 
 /* WORKSHOPS */
@@ -378,17 +412,17 @@ const joinWorkshop = (workshop) => {
 }
 
 .workshop-card {
-    background: var(--white);
-    border-radius: 25px;
+    background: var(--surface);
+    border-radius: var(--border-radius-lg);
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    transition: transform 0.3s;
-    border: 1px solid rgba(85, 139, 110, 0.1);
+    box-shadow: 0 4px 20px var(--shadow-color);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid var(--border-color);
 }
 
 .workshop-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(85, 139, 110, 0.15); /* Sage glow */
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(44, 85, 48, 0.14);
 }
 
 .card-img {
@@ -403,13 +437,13 @@ const joinWorkshop = (workshop) => {
 
 .date-badge {
     display: inline-block;
-    background: #eef5f0; /* Light sage bg */
-    color: var(--primary-dark);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    background: rgba(44, 85, 48, 0.08);
+    color: var(--primary-color);
+    padding: 5px 12px;
+    border-radius: var(--border-radius-pill);
+    font-size: 0.82rem;
     font-weight: 700;
-    margin-bottom: 15px;
+    margin-bottom: 14px;
 }
 
 .card-info h3 {
@@ -443,15 +477,16 @@ const joinWorkshop = (workshop) => {
 
 .btn-join {
     width: 100%;
-    padding: 14px;
+    padding: 12px;
     border: 2px solid var(--primary-color);
     background: transparent;
-    border-radius: 12px;
-    font-weight: 700;
+    border-radius: var(--border-radius-pill);
+    font-weight: 600;
     color: var(--primary-color);
     cursor: pointer;
-    transition: all 0.3s;
-    font-size: 1rem;
+    transition: all 0.25s;
+    font-size: 0.95rem;
+    font-family: var(--body-font-family);
 }
 
 .btn-join:hover {

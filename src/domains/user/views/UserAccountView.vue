@@ -1,9 +1,14 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import { authStore } from '../../auth/store.js';
 
+const { t } = useI18n();
 const router = useRouter();
-const user = ref(null);
+
+// ✅ User state comes reactively from authStore
+const user = computed(() => authStore.user);
 
 // Form State
 const isEditing = ref(false);
@@ -17,53 +22,48 @@ const form = ref({
 const orders = ref([]);
 
 onMounted(async () => {
-    // 1. Get user
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-        user.value = JSON.parse(storedUser);
-        // Init form
-        form.value = { ...user.value };
+    if (!authStore.isLoggedIn) {
+        router.push('/login');
+        return;
+    }
 
-        // 2. Fetch Orders
-        try {
-            const res = await fetch(`/api/orders?userId=${user.value.id}&_sort=id&_order=desc`);
-            if (res.ok) {
-                orders.value = await res.json();
-            }
-        } catch (e) {
-            console.error("Error fetching orders:", e);
+    // Init form with current user data
+    form.value = { ...authStore.user };
+
+    // Fetch user orders
+    try {
+        const res = await fetch(`/api/orders?userId=${authStore.user.id}&_sort=id&_order=desc`);
+        if (res.ok) {
+            orders.value = await res.json();
         }
-    } else {
-        router.push('/login'); // Protected route
+    } catch (e) {
+        console.error("Error fetching orders:", e);
     }
 });
 
 const toggleEdit = () => {
     if (isEditing.value) {
-        // Cancel logic: reset to saved
-        form.value = { ...user.value }; 
+        form.value = { ...authStore.user }; // Reset on cancel
     }
     isEditing.value = !isEditing.value;
 };
 
 const saveProfile = async () => {
-    // Basic validation
     if (!form.value.name || !form.value.lastName || !form.value.phone) {
-        alert("Por favor completa todos los campos requeridos.");
+        alert(t('account.error_required'));
         return;
     }
 
-    // Update Local State
-    user.value = { ...form.value };
-    localStorage.setItem('user', JSON.stringify(user.value));
+    // ✅ Update via authStore — no reload() needed
+    authStore.updateUser({ ...form.value });
 
-    // Optional: Try to update backend (mock)
+    // Sync with backend
     try {
-        if (user.value.id) {
-             await fetch(`/api/users/${user.value.id}`, {
+        if (authStore.user.id) {
+            await fetch(`/api/users/${authStore.user.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(user.value)
+                body: JSON.stringify(authStore.user)
             });
         }
     } catch (e) {
@@ -71,18 +71,12 @@ const saveProfile = async () => {
     }
 
     isEditing.value = false;
-    alert("¡Perfil actualizado correctamente!");
-    
-    // Force reload to update header instantly
-    window.location.reload(); 
+    alert(t('account.success_update'));
 };
 
 const logout = () => {
-    localStorage.removeItem('user');
+    authStore.logout(); // ✅ Clears state + localStorage, no reload() needed
     router.push('/');
-    setTimeout(() => {
-        window.location.reload(); // Ensure header updates
-    }, 100);
 };
 </script>
 
@@ -144,12 +138,12 @@ const logout = () => {
             <!-- RIGHT COLUMN: MY ORDERS -->
              <div class="account-card orders-card">
                 <div class="card-header">
-                    <h3>Mis Pedidos 📦</h3>
+                    <h3>{{ $t('account.my_orders') }}</h3>
                 </div>
                 
                 <div v-if="orders.length === 0" class="empty-orders">
-                    <p>Aún no has realizado pedidos.</p>
-                    <RouterLink to="/menu" class="btn-link">Ir al Menú</RouterLink>
+                    <p>{{ $t('account.no_orders') }}</p>
+                    <RouterLink to="/menu" class="btn-link">{{ $t('account.go_menu') }}</RouterLink>
                 </div>
 
                 <div v-else class="orders-list">
@@ -160,12 +154,12 @@ const logout = () => {
                         </div>
                         <div class="order-body">
                             <div class="order-summary">
-                                <span class="item-count">{{ order.items.length }} productos</span>
+                                <span class="item-count">{{ $t('account.order_items', { count: order.items.length }) }}</span>
                                 <span class="total-price">S/ {{ order.total }}</span>
                             </div>
                             <ul class="order-items-preview">
                                 <li v-for="item in order.items" :key="item.id">
-                                    {{ item.quantity }}x {{ item.title }}
+                                    {{ item.quantity }}x {{ $t(`db_products.${item.id}.title`, item.title) }}
                                 </li>
                             </ul>
                         </div>

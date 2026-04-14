@@ -1,9 +1,14 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import { authStore } from '../store.js';
 
+const { t } = useI18n();
 const isLogin = ref(true);
 const router = useRouter();
+const errorMsg = ref('');
+const isLoading = ref(false);
 
 // Form Data Refs
 const form = ref({
@@ -17,65 +22,64 @@ const form = ref({
 
 const toggleMode = () => {
     isLogin.value = !isLogin.value;
-    // Reset form
+    errorMsg.value = '';
     form.value = { firstName: '', lastName: '', phone: '', email: '', password: '', confirmPassword: '' };
 };
 
 const handleLogin = async () => {
+    errorMsg.value = '';
     if (!form.value.email || !form.value.password) {
-        alert("Por favor completa todos los campos.");
+        errorMsg.value = t('auth.error_fill_all');
         return;
     }
 
+    isLoading.value = true;
     try {
-        // Search user by email and password using json-server filter
         const response = await fetch(`/api/users?email=${form.value.email}&password=${form.value.password}`);
         const users = await response.json();
 
         if (users.length > 0) {
-            const user = users[0];
-            // Store user in local storage
-            localStorage.setItem('user', JSON.stringify(user));
-            
-            // Redirect home and reload
+            authStore.login(users[0]); // ✅ Use authStore — no reload() needed
             router.push('/');
-            setTimeout(() => window.location.reload(), 100);
         } else {
-            alert("Correo o contraseña incorrectos.");
+            errorMsg.value = t('auth.error_credentials');
         }
     } catch (error) {
         console.error('Login error:', error);
-        alert("Hubo un error al intentar iniciar sesión.");
+        errorMsg.value = t('auth.error_generic');
+    } finally {
+        isLoading.value = false;
     }
 };
 
 const handleRegister = async () => {
-    // Basic Validation
+    errorMsg.value = '';
+
     if (form.value.password !== form.value.confirmPassword) {
-        alert("Las contraseñas no coinciden.");
+        errorMsg.value = t('auth.error_mismatch');
         return;
     }
 
+    isLoading.value = true;
     try {
-        // Check if user already exists
         const checkResponse = await fetch(`/api/users?email=${form.value.email}`);
         const existingUsers = await checkResponse.json();
 
         if (existingUsers.length > 0) {
-            alert("Este correo ya está registrado.");
+            errorMsg.value = t('auth.error_email_taken');
             return;
         }
 
-        // Create new user object
         const newUser = {
-            name: form.value.firstName, // Storing first name as 'name' for compatibility
+            name: form.value.firstName,
             lastName: form.value.lastName,
             phone: form.value.phone,
             email: form.value.email,
-            password: form.value.password // NOTE: In a real app, never store plain text passwords!
+            password: form.value.password,
+            role: 'user',
+            coupons: []
         };
 
-        // Save to json-server
         const response = await fetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -83,15 +87,17 @@ const handleRegister = async () => {
         });
 
         if (response.ok) {
-            alert("Registro exitoso! Ahora inicia sesión.");
-            toggleMode();
+            const created = await response.json();
+            authStore.login(created); // ✅ Auto-login after register
+            router.push('/');
         } else {
-            alert("Error al registrar usuario.");
+            errorMsg.value = t('auth.error_generic');
         }
-
     } catch (error) {
         console.error('Registration error:', error);
-        alert("Hubo un error de conexión.");
+        errorMsg.value = t('auth.error_generic');
+    } finally {
+        isLoading.value = false;
     }
 };
 </script>
@@ -100,7 +106,12 @@ const handleRegister = async () => {
     <div class="auth-container">
         <div class="auth-card">
             <h2>{{ isLogin ? $t('auth.login_title') : $t('auth.register_title') }}</h2>
-            
+
+            <!-- Error Banner -->
+            <div v-if="errorMsg" class="error-banner">
+                ⚠️ {{ errorMsg }}
+            </div>
+
             <!-- Login Form -->
             <form v-if="isLogin" @submit.prevent="handleLogin" key="login-form">
                 <div class="form-group">
@@ -113,7 +124,9 @@ const handleRegister = async () => {
                     <input type="password" v-model="form.password" placeholder="••••••••" required>
                 </div>
 
-                <button type="submit" class="btn-primary full-width">{{ $t('auth.login_btn') }}</button>
+                <button type="submit" class="btn-primary full-width" :disabled="isLoading">
+                    {{ isLoading ? $t('auth.loading') : $t('auth.login_btn') }}
+                </button>
             </form>
 
             <!-- Register Form -->
@@ -149,7 +162,9 @@ const handleRegister = async () => {
                     <input type="password" v-model="form.confirmPassword" placeholder="••••••••" required>
                 </div>
 
-                <button type="submit" class="btn-primary full-width">{{ $t('auth.register_btn') }}</button>
+                <button type="submit" class="btn-primary full-width" :disabled="isLoading">
+                    {{ isLoading ? $t('auth.loading') : $t('auth.register_btn') }}
+                </button>
             </form>
 
             <div class="auth-footer">
@@ -240,5 +255,28 @@ input:focus {
     color: var(--accent-color);
     font-weight: 700;
     text-decoration: none;
+}
+
+.error-banner {
+    background: #fff0f0;
+    border: 1px solid #ffcccc;
+    color: #c0392b;
+    padding: 10px 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    text-align: left;
+    animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 </style>

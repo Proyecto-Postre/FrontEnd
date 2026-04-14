@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { cart } from '../../cart/store';
 
-const props = defineProps({ // Assign props to variable to use in script if needed
+const props = defineProps({
     product: {
         type: Object,
         required: true
@@ -14,64 +14,62 @@ const isAdded = ref(false);
 const handleOrder = () => {
     cart.addToCart(props.product);
     isAdded.value = true;
-    
-    setTimeout(() => {
-        isAdded.value = false;
-    }, 2000);
+    setTimeout(() => { isAdded.value = false; }, 2000);
 };
 </script>
 
 <template>
     <div class="product-card">
+        <!-- Image -->
         <div class="card-image">
-            <!-- Using the placeholder if no image provided, or the asset -->
-            <img :src="product.image || '/assets/ejemplo.avif'" :alt="product.title" loading="lazy">
-            <span class="price-tag">{{ product.price }}</span>
+            <img :src="product.image || '/assets/ejemplo.avif'" :alt="$t(`db_products.${product.id}.title`, product.title)" loading="lazy" />
+            <span class="product-category">{{ $t(`catalog.categories.${product.category.toLowerCase()}`, product.category) }}</span>
         </div>
+
+        <!-- Content -->
         <div class="card-content">
-            <h3>{{ product.title }}</h3>
-            <p>{{ product.description }}</p>
-            <button 
-                class="btn-order" 
-                :class="{ 'added': isAdded }"
+            <h3 class="card-title">{{ $t(`db_products.${product.id}.title`, product.title) }}</h3>
+            <p class="card-price">{{ product.price }} <span class="price-note">{{ $t('catalog.price_note') }}</span></p>
+            <p class="card-description">{{ $t(`db_products.${product.id}.desc`, product.description) }}</p>
+
+            <button
+                class="btn-agregar"
+                :class="{ 'is-added': isAdded }"
                 @click.stop="handleOrder"
                 :disabled="isAdded"
             >
+                <svg v-if="!isAdded" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 {{ isAdded ? $t('catalog.added') : $t('catalog.add_to_cart') }}
-                <svg v-if="!isAdded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
             </button>
         </div>
     </div>
 </template>
 
 <style scoped>
-/* Mobile adjustments for the card itself */
-@media (max-width: 768px) {
-    .product-card {
-        border-radius: 12px; /* Smaller radius */
-    }
-}
+/* ── Card Shell ────────────────────────────────────────────── */
 .product-card {
-    background: #fff;
-    border-radius: 20px;
+    background: var(--surface);
+    border-radius: var(--border-radius-lg);
     overflow: hidden;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 12px var(--shadow-color);
     display: flex;
     flex-direction: column;
     height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(44, 32, 12, 0.13);
 }
 
+/* ── Image ─────────────────────────────────────────────────── */
 .card-image {
     position: relative;
-    height: 250px;
-    background-color: #f0f0f0;
+    height: 200px;
+    background: var(--surface-alt);
     overflow: hidden;
 }
 
@@ -79,112 +77,114 @@ const handleOrder = () => {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    height: 100%;
-    object-fit: cover;
     transition: transform 0.5s ease;
-}
-
-@media (max-width: 768px) {
-    .card-image {
-        height: 140px; /* Reduce image height on mobile */
-    }
+    display: block;
 }
 
 .product-card:hover .card-image img {
-    transform: scale(1.05);
+    transform: scale(1.06);
 }
 
-.price-tag {
+.product-category {
     position: absolute;
-    top: 15px;
-    right: 15px;
-    background-color: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(5px);
-    padding: 8px 15px;
-    border-radius: 20px;
+    top: 12px;
+    left: 12px;
+    background: rgba(248, 244, 238, 0.92);
+    backdrop-filter: blur(4px);
+    color: var(--primary-color);
+    font-size: 0.72rem;
     font-weight: 700;
-    color: #1a1a1a;
-    font-size: 0.95rem;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: var(--border-radius-pill);
+    border: 1px solid var(--border-color);
 }
 
+/* ── Content ───────────────────────────────────────────────── */
 .card-content {
-    padding: 25px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    gap: 8px;
 }
 
-.card-content h3 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #1a1a1a;
-}
-
-.card-content p {
-    font-size: 0.95rem;
-    color: #666;
-    margin-bottom: 20px;
-    line-height: 1.5;
-    flex-grow: 1; /* Pushes button down if text is short */
-}
-
-.btn-order {
-    background-color: #1a1a1a;
-    color: #fff;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 12px;
+.card-title {
+    font-family: var(--heading-font-family);
+    font-size: 1.15rem;
     font-weight: 600;
+    color: var(--text-color);
+    line-height: 1.3;
+}
+
+.card-price {
+    font-family: var(--body-font-family);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.price-note {
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--text-light);
+}
+
+.card-description {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    flex-grow: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ── Button ────────────────────────────────────────────────── */
+.btn-agregar {
+    margin-top: 6px;
+    width: 100%;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-pill);
+    padding: 11px 18px;
+    font-family: var(--body-font-family);
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    transition: background-color 0.3s ease, gap 0.3s ease;
-    width: 100%;
+    gap: 8px;
+    transition: background-color 0.25s ease, transform 0.2s ease;
 }
 
-.btn-order:hover {
-    background-color: #D99578;
-    gap: 15px;
+.btn-agregar:hover:not(:disabled) {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
 }
 
-.btn-order.added {
-    background-color: #D99578; /* Same as hover color */
-    color: white;
-    transform: scale(1.05);
+.btn-agregar.is-added {
+    background-color: var(--accent-color);
     cursor: default;
+    transform: none;
 }
 
+/* ── Mobile ────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-    .card-content {
-        padding: 12px; /* Reduce padding */
-    }
-    .card-content h3 {
-        font-size: 1rem; /* Smaller title */
-        margin-bottom: 5px;
-    }
-    .card-content p {
-        font-size: 0.8rem; /* Smaller description */
-        margin-bottom: 10px;
-        display: -webkit-box;
-        -webkit-line-clamp: 2; /* Limit text lines */
-        line-clamp: 2; /* Standard property */
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-    .price-tag {
-        top: 8px;
-        right: 8px;
-        padding: 4px 10px;
-        font-size: 0.8rem;
-    }
-    .btn-order {
-        padding: 8px 12px;
-        font-size: 0.9rem;
-        border-radius: 8px;
-    }
+    .card-image { height: 160px; }
+
+    .card-content { padding: 16px; }
+
+    .card-title { font-size: 1rem; }
 }
 </style>

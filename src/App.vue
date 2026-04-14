@@ -34,6 +34,7 @@ provide('openModal', openModal);
 
 <style>
 .app-main {
-  padding-top: 80px; /* Offset for fixed header */
+    /* New header has 2 rows: brand bar (~55px) + nav row (~52px) = ~107px */
+    padding-top: 107px;
 }
 </style>

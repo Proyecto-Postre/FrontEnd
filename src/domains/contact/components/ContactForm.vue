@@ -4,8 +4,7 @@
             <div class="contact-grid">
                 <div class="contact-text">
                     <h2 class="section-title">{{ $t('contact.title') }}</h2>
-                    <p>¿Quieres que trabajemos juntos? Ingresa tus datos y nos pondremos en contacto contigo en
-                        breve. Esperamos tener noticias tuyas pronto.</p>
+                    <p>{{ $t('contact.subtitle') }}</p>
                 </div>
                 <div class="contact-form-wrapper">
                     <!-- FormSubmit Configuration -->
@@ -17,20 +16,20 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="nombre">{{ $t('contact.name') }} <span class="required-text">(obligatorio)</span></label>
+                                <label for="nombre">{{ $t('contact.name') }} <span class="required-text">{{ $t('contact.required') }}</span></label>
                                 <input type="text" name="name" id="nombre" class="form-input" required>
                             </div>
                             <div class="form-group">
-                                <label for="apellido">Apellido</label>
+                                <label for="apellido">{{ $t('contact.lastname') }}</label>
                                 <input type="text" name="apellido" id="apellido" class="form-input">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="email">{{ $t('contact.email') }} <span class="required-text">(obligatorio)</span></label>
+                            <label for="email">{{ $t('contact.email') }} <span class="required-text">{{ $t('contact.required') }}</span></label>
                             <input type="email" name="email" id="email" class="form-input" required>
                         </div>
                         <div class="form-group">
-                            <label for="mensaje">{{ $t('contact.message') }} <span class="required-text">(obligatorio)</span></label>
+                            <label for="mensaje">{{ $t('contact.message') }} <span class="required-text">{{ $t('contact.required') }}</span></label>
                             <textarea name="message" id="mensaje" class="form-input" rows="4" required></textarea>
                         </div>
                         <button type="submit" class="btn-primary">{{ $t('contact.send') }}</button>
@@ -47,9 +46,9 @@
 
 <style scoped>
 .contact-section {
-    background-color: #EBE9E4;
-    color: #1a1a1a;
-    padding: 100px 0;
+    background-color: var(--surface-alt);
+    color: var(--text-color);
+    padding: 90px 0;
 }
 .contact-grid {
     display: grid;
@@ -67,8 +66,8 @@
 }
 .contact-text p {
     font-size: 1rem;
-    line-height: 1.6;
-    color: #4a4a4a;
+    line-height: 1.7;
+    color: var(--text-muted);
     max-width: 90%;
 }
 .contact-form {
@@ -101,18 +100,19 @@
 }
 .form-input {
     width: 100%;
-    padding: 12px 20px;
-    background-color: transparent;
-    border: 1px solid #1a1a1a;
-    border-radius: 50px;
+    padding: 12px 18px;
+    background-color: var(--surface);
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--border-radius-pill);
     font-family: var(--body-font-family);
-    font-size: 1rem;
+    font-size: 0.95rem;
+    color: var(--text-color);
     outline: none;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 .form-input:focus {
-    background-color: rgba(255, 255, 255, 0.5);
-    border-color: #000;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(44, 85, 48, 0.1);
 }
 textarea.form-input {
     border-radius: 20px;

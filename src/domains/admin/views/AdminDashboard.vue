@@ -373,7 +373,7 @@ const removeCouponFromUser = async (couponId) => {
                             <td>
                                 <ul style="list-style:none; padding:0; margin:0; font-size:0.9rem;">
                                     <li v-for="item in order.items" :key="item.id">
-                                        {{ item.quantity }}x {{ item.title }}
+                                        {{ item.quantity }}x {{ $t(`db_products.${item.id}.title`, item.title) }}
                                     </li>
                                 </ul>
                             </td>
@@ -407,7 +407,7 @@ const removeCouponFromUser = async (couponId) => {
             <div class="chart-container">
                 <div v-for="product in topSellingProducts" :key="product.id" class="chart-row">
                     <div class="chart-label">
-                         <span>{{ product.title }}</span>
+                         <span>{{ $t(`db_products.${product.id}.title`, product.title) }}</span>
                     </div>
                     <div class="chart-bar-container">
                         <div 
@@ -510,9 +510,9 @@ const removeCouponFromUser = async (couponId) => {
                             <td>
                                 <img :src="product.image || '/assets/ejemplo.avif'" class="thumb" />
                             </td>
-                            <td>{{ product.title }}</td>
+                            <td>{{ $t(`db_products.${product.id}.title`, product.title) }}</td>
                             <td>
-                                <span class="badge" :class="product.category">{{ product.category }}</span>
+                                <span class="badge" :class="product.category">{{ $t(`catalog.categories.${product.category.toLowerCase()}`, product.category) }}</span>
                             </td>
                             <!-- 
                             <td style="text-align:center; cursor:pointer;" @click="toggleFeatured(product)" title="Clic para destacar en Inicio">
@@ -520,7 +520,7 @@ const removeCouponFromUser = async (couponId) => {
                             </td> 
                             -->
                             <td>{{ product.price }}</td>
-                            <td class="desc-cell">{{ product.description }}</td>
+                            <td class="desc-cell">{{ $t(`db_products.${product.id}.desc`, product.description) }}</td>
                             <td class="actions-cell">
                                 <button @click="editProduct(product)" class="btn-icon edit" :title="t('admin.actions.edit')">✏️</button>
                                 <button @click="deleteProduct(product.id)" class="btn-icon delete" :title="t('admin.actions.delete')">🗑️</button>

@@ -1,7 +1,8 @@
 <script setup>
-import { cart } from '../store'; // Adjust import based on location
+import { cart } from '../store';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { authStore } from '../../auth/store.js';
 
 const { t } = useI18n();
 
@@ -24,7 +25,7 @@ const checkout = async () => {
 
     // 1. Update Sales Count & Create Order Record
     try {
-        // A. Sales Count (Sequential execution to prevent json-server write conflicts)
+        // A. Sales Count (Sequential to prevent json-server write conflicts)
         for (const item of cart.items) {
             try {
                 const res = await fetch(`/api/products/${item.id}`);
@@ -42,15 +43,13 @@ const checkout = async () => {
             }
         }
 
-        // B. Create Persistent Order
-        // Dynamic User Data
-        const storedUser = localStorage.getItem('user');
-        const currentUser = storedUser ? JSON.parse(storedUser) : null;
+        // B. Create Persistent Order - ✅ Use authStore instead of localStorage directly
+        const currentUser = authStore.user;
 
         const newOrder = {
-            id: Date.now().toString(), // Simple ID
+            id: Date.now().toString(),
             date: new Date().toISOString(),
-            userId: currentUser ? currentUser.id : 1, // Fallback to 1 (Jafeth) if guest
+            userId: currentUser ? currentUser.id : null,
             userName: currentUser ? `${currentUser.name} ${currentUser.lastName}` : "Invitado",
             items: cart.items.map(i => ({
                 id: i.id,
@@ -59,7 +58,7 @@ const checkout = async () => {
                 price: i.price
             })),
             total: cart.totalPrice,
-            status: 'pendiente' // pendiente | atendido | cancelado
+            status: 'pendiente'
         };
 
         await fetch('/api/orders', {
@@ -88,37 +87,30 @@ const checkout = async () => {
     message += `\n\n*${t('cart.total')}: S/ ${cart.totalPrice.toFixed(2)}*`;
     message += "\n\nQuedo atento a la confirmación.";
 
-    const phoneNumber = "51998265700"; // Replace with real number
+    const phoneNumber = "51998265700";
     const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     
     window.open(url, '_blank');
     
-    // Consume coupon after checkout if personal
-    if (cart.coupon && cart.coupon.isPersonal) {
-        // Remove from user coupons in DB
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            const user = JSON.parse(storedUser);
-            // Filter out used coupon
-            const updatedCoupons = (user.coupons || []).filter(c => c.code !== cart.coupon.code);
-            
-            try {
-                await fetch(`/api/users/${user.id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ coupons: updatedCoupons })
-                });
+    // Consume coupon after checkout if personal - ✅ Use authStore
+    if (cart.coupon && cart.coupon.isPersonal && authStore.user) {
+        const updatedCoupons = (authStore.user.coupons || []).filter(c => c.code !== cart.coupon.code);
+        
+        try {
+            await fetch(`/api/users/${authStore.user.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ coupons: updatedCoupons })
+            });
 
-                // Update Local Storage
-                user.coupons = updatedCoupons;
-                localStorage.setItem('user', JSON.stringify(user));
-            } catch (e) {
-                console.error("Failed to consume coupon", e);
-            }
+            // ✅ Update via authStore — keeps state in sync
+            authStore.updateUser({ coupons: updatedCoupons });
+        } catch (e) {
+            console.error("Failed to consume coupon", e);
         }
     }
     
-    cart.removeCoupon(); // Clear from cart state
+    cart.removeCoupon();
     cart.clearCart();
 };
 
@@ -131,10 +123,8 @@ const handleApplyCoupon = () => {
     const code = couponCodeInput.value.trim().toUpperCase();
     if (!code) return;
 
-    // Get User Coupons
-    const storedUser = localStorage.getItem('user');
-    const user = storedUser ? JSON.parse(storedUser) : null;
-    const userCoupons = user ? (user.coupons || []) : [];
+    // ✅ Get user coupons from authStore
+    const userCoupons = authStore.user ? (authStore.user.coupons || []) : [];
 
     const success = cart.applyCoupon(code, userCoupons);
     if (success) {
@@ -155,7 +145,7 @@ const handleApplyCoupon = () => {
                     <img :src="item.image || '/assets/ejemplo.avif'" :alt="item.title" class="item-img">
                     
                     <div class="item-details">
-                        <h3>{{ item.title }}</h3>
+                        <h3>{{ t(`db_products.${item.id}.title`, item.title) }}</h3>
                         <p class="item-price">{{ item.price }}</p>
                     </div>
 

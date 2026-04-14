@@ -3,6 +3,29 @@ import HomeView from '../views/HomeView.vue'
 import MenuView from '../views/MenuView.vue'
 import AboutView from '../views/AboutView.vue'
 import ContactView from '../views/ContactView.vue'
+import { authStore } from '../domains/auth/store.js'
+
+// ─── Guards ──────────────────────────────────────────────────────────────────
+
+/** Requires the user to be logged in. Redirects to /login if not. */
+const requireAuth = () => {
+    if (!authStore.isLoggedIn) {
+        return { name: 'login' };
+    }
+};
+
+/** Requires the user to have the 'admin' role. Redirects to / if not. */
+const requireAdmin = () => {
+    if (!authStore.isLoggedIn) return { name: 'login' };
+    if (!authStore.isAdmin)    return { name: 'home' };
+};
+
+/** Redirect already-logged-in users away from the login page. */
+const redirectIfLoggedIn = () => {
+    if (authStore.isLoggedIn) return { name: 'home' };
+};
+
+// ─── Routes ──────────────────────────────────────────────────────────────────
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,7 +46,7 @@ const router = createRouter({
             component: () => import('../views/ServicesView.vue')
         },
         {
-            path: '/nosotros', // Changed from /about to /nosotros for Spanish URL
+            path: '/nosotros',
             name: 'about',
             component: AboutView
         },
@@ -35,17 +58,20 @@ const router = createRouter({
         {
             path: '/login',
             name: 'login',
-            component: () => import('../domains/auth/views/AuthView.vue')
+            component: () => import('../domains/auth/views/AuthView.vue'),
+            beforeEnter: redirectIfLoggedIn   // Don't show login to logged-in users
         },
         {
             path: '/para-ti',
             name: 'profile',
-            component: () => import('../domains/user/views/ProfileView.vue')
+            component: () => import('../domains/user/views/ProfileView.vue'),
+            beforeEnter: requireAuth          // Must be logged in
         },
         {
             path: '/cuenta',
             name: 'account',
-            component: () => import('../domains/user/views/UserAccountView.vue')
+            component: () => import('../domains/user/views/UserAccountView.vue'),
+            beforeEnter: requireAuth          // Must be logged in
         },
         {
             path: '/carrito',
@@ -55,11 +81,16 @@ const router = createRouter({
         {
             path: '/admin',
             name: 'admin',
-            component: () => import('../domains/admin/views/AdminDashboard.vue')
+            component: () => import('../domains/admin/views/AdminDashboard.vue'),
+            beforeEnter: requireAdmin         // Must be admin
+        },
+        {
+            // Catch-all: redirect unknown routes to home
+            path: '/:pathMatch(.*)*',
+            redirect: { name: 'home' }
         }
     ],
-    scrollBehavior(to, from, savedPosition) {
-        // Always scroll to top on route change
+    scrollBehavior() {
         return { top: 0 }
     }
 })
