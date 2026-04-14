@@ -1,8 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
+import { workshopStore } from '../domains/catalog/workshopStore.js';
 
 const { t } = useI18n();
+const router = useRouter();
 
 const activeTab = ref('catering'); // 'catering' | 'workshops'
 
@@ -15,29 +18,8 @@ const form = ref({
     message: ''
 });
 
-// Mock Data for Workshops (Ideally this comes from DB too, but for speed we keep static or minimal translation)
-// For fully dynamic i18n on mock data, we could use keys, but let's assume specific Workshops are in Spanish for now 
-// OR we can make a titleKey. Given user request "absolutely everything", I should try.
-const workshops = [
-    {
-        id: 1,
-        title: "Masterclass: Decoración de Tortas",
-        date: "20 Diciembre, 2024",
-        time: "10:00 AM - 2:00 PM",
-        price: "S/ 150.00",
-        image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        description: "Aprende técnicas avanzadas de alisado, bordes perfectos y uso de boquillas."
-    },
-    {
-        id: 2,
-        title: "Taller de Barismo en Casa",
-        date: "28 Diciembre, 2024",
-        time: "4:00 PM - 7:00 PM",
-        price: "S/ 80.00",
-        image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        description: "Descubre cómo preparar el café perfecto sin máquinas costosas."
-    }
-];
+// Use data from store
+const workshops = workshopStore.items;
 
 // Actions
 const sendCateringRequest = () => {
@@ -50,9 +32,8 @@ const sendCateringRequest = () => {
     window.open(`https://wa.me/51998265700?text=${encodeURIComponent(text)}`, '_blank');
 };
 
-const joinWorkshop = (workshop) => {
-    const text = `Hola! Quiero inscribirme al taller (Workshop): *${workshop.title}* del ${workshop.date}.`;
-    window.open(`https://wa.me/51998265700?text=${encodeURIComponent(text)}`, '_blank');
+const goToWorkshop = (id) => {
+    router.push(`/taller/${id}`);
 };
 </script>
 
@@ -144,18 +125,20 @@ const joinWorkshop = (workshop) => {
                     </div>
 
                     <div class="workshops-grid">
-                        <div v-for="workshop in workshops" :key="workshop.id" class="workshop-card">
+                        <div v-for="workshop in workshops" :key="workshop.id" class="workshop-card" @click="goToWorkshop(workshop.id)">
                             <div class="card-img" :style="{ backgroundImage: `url(${workshop.image})` }"></div>
                             <div class="card-info">
                                 <div class="date-badge">{{ workshop.date }}</div>
                                 <h3>{{ workshop.title }}</h3>
+                                <!-- Hide description on mobile, styled in CSS -->
                                 <p class="desc">{{ workshop.description }}</p>
                                 <div class="meta">
                                     <span>🕒 {{ workshop.time }}</span>
                                     <span class="price-highlight">{{ workshop.price }}</span>
                                 </div>
-                                <button class="btn-join" @click="joinWorkshop(workshop)">
-                                    {{ t('services.btn_join') }}
+                                <!-- Button serves as visual cue, whole card is clickable -->
+                                <button class="btn-join">
+                                    Ver Detalles
                                 </button>
                             </div>
                         </div>
@@ -418,6 +401,7 @@ const joinWorkshop = (workshop) => {
     box-shadow: 0 4px 20px var(--shadow-color);
     transition: transform 0.3s, box-shadow 0.3s;
     border: 1px solid var(--border-color);
+    cursor: pointer;
 }
 
 .workshop-card:hover {
@@ -457,6 +441,11 @@ const joinWorkshop = (workshop) => {
     margin-bottom: 20px;
     font-size: 1rem;
     line-height: 1.6;
+    /* Limit lines for cleaner grid */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .meta {
@@ -500,6 +489,9 @@ const joinWorkshop = (workshop) => {
         grid-template-columns: 1fr;
         gap: 40px;
     }
+    .page-header::after {
+        display: none;
+    }
     .hero-content h1 {
         font-size: 2.2rem;
     }
@@ -514,6 +506,12 @@ const joinWorkshop = (workshop) => {
     .main-content {
         padding-left: 15px;
         padding-right: 15px;
+    }
+    .workshop-card .desc {
+        display: none;
+    }
+    .workshop-card .btn-join {
+        display: none;
     }
 }
 </style>

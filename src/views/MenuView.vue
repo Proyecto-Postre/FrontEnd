@@ -172,4 +172,10 @@ const categories = [
         white-space: nowrap;
     }
 }
+
+@media (max-width: 900px) {
+    .page-header::after {
+        display: none;
+    }
+}
 </style>

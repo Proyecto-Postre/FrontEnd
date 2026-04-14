@@ -4,7 +4,6 @@ import Marquee from '../domains/marketing/components/Marquee.vue';
 import CatalogSection from '../domains/catalog/components/CatalogSection.vue'; // We can reuse logic or make a Preview
 import AboutSection from '../domains/brand/components/AboutSection.vue';
 import TestimonialsSection from '../domains/marketing/components/TestimonialsSection.vue';
-import ContactForm from '../domains/contact/components/ContactForm.vue';
 
 // For Home, maybe we want just a preview of Catalog? 
 // For now, let's include the full sections as per user "Inicio" request (Aggregator)
@@ -35,8 +34,6 @@ import ContactForm from '../domains/contact/components/ContactForm.vue';
 
         <!-- Social Proof -->
         <TestimonialsSection />
-
-        <ContactForm />
     </div>
 </template>
 

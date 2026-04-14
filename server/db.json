@@ -18,7 +18,7 @@
       "description": "Para los amantes del cacao. Bizcocho húmedo con ganache de chocolate 70%.",
       "image": "",
       "isFeatured": true,
-      "sales": 4
+      "sales": 6
     },
     {
       "id": 3,
@@ -180,6 +180,38 @@
     {
       "id": "1776135056607",
       "date": "2026-04-14T02:50:56.607Z",
+      "userId": 1,
+      "userName": "Jafeth Worren Ynga Amado",
+      "items": [
+        {
+          "id": 2,
+          "title": "Chocolate Intenso",
+          "quantity": 1,
+          "price": "S/ 90.00"
+        }
+      ],
+      "total": 90,
+      "status": "pendiente"
+    },
+    {
+      "id": "1776145754299",
+      "date": "2026-04-14T05:49:14.299Z",
+      "userId": 1,
+      "userName": "Jafeth Worren Ynga Amado",
+      "items": [
+        {
+          "id": 2,
+          "title": "Chocolate Intenso",
+          "quantity": 1,
+          "price": "S/ 90.00"
+        }
+      ],
+      "total": 90,
+      "status": "pendiente"
+    },
+    {
+      "id": "1776145763380",
+      "date": "2026-04-14T05:49:23.380Z",
       "userId": 1,
       "userName": "Jafeth Worren Ynga Amado",
       "items": [

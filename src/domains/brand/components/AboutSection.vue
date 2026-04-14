@@ -1,15 +1,7 @@
 <script setup>
-import { inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-const openModal = inject('openModal');
-
-const handleOpenModal = () => {
-    if (openModal) {
-        openModal('about');
-    }
-};
 </script>
 
 <template>
@@ -19,7 +11,6 @@ const handleOpenModal = () => {
                 <div class="about-text-content">
                     <h2 class="section-title" v-html="t('brand.title')"></h2>
                     <p>{{ t('brand.description') }}</p>
-                    <button class="btn-primary" @click.prevent="handleOpenModal">{{ t('brand.cta') }}</button>
                 </div>
                 <!-- Images using empty boxes with src="" as requested -->
                 <div class="about-image-wide">

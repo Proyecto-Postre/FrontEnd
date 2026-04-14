@@ -47,19 +47,26 @@ const handleOpenModal = () => {
                 </div>
                 <!-- Mini stats -->
                 <div class="hero-stats">
-                    <div class="stat">
-                        <strong>+500</strong>
-                        <span>{{ $t('hero.stat_orders') }}</span>
+                    <div class="stat-chip">
+                        <span class="stat-icon">📦</span>
+                        <div class="stat-text">
+                            <strong>+500</strong>
+                            <span>{{ $t('hero.stat_orders') }}</span>
+                        </div>
                     </div>
-                    <div class="stat-divider"></div>
-                    <div class="stat">
-                        <strong>100%</strong>
-                        <span>{{ $t('hero.stat_natural') }}</span>
+                    <div class="stat-chip">
+                        <span class="stat-icon">🌿</span>
+                        <div class="stat-text">
+                            <strong>100%</strong>
+                            <span>{{ $t('hero.stat_natural') }}</span>
+                        </div>
                     </div>
-                    <div class="stat-divider"></div>
-                    <div class="stat">
-                        <strong>⭐ 4.9</strong>
-                        <span>{{ $t('hero.stat_rating') }}</span>
+                    <div class="stat-chip">
+                        <span class="stat-icon">⭐</span>
+                        <div class="stat-text">
+                            <strong>4.9</strong>
+                            <span>{{ $t('hero.stat_rating') }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -178,34 +185,43 @@ const handleOpenModal = () => {
 .hero-stats {
     display: flex;
     align-items: center;
-    gap: 24px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border-color);
+    gap: 16px;
+    padding-top: 20px;
     margin-top: 10px;
+    flex-wrap: wrap;
 }
 
-.stat {
+.stat-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    padding: 8px 16px;
+    border-radius: var(--border-radius-pill);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.stat-icon {
+    font-size: 1.2rem;
+}
+
+.stat-text {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    line-height: 1.2;
 }
 
-.stat strong {
+.stat-text strong {
     font-family: var(--body-font-family);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: var(--text-color);
+    color: var(--primary-color);
 }
 
-.stat span {
-    font-size: 0.78rem;
+.stat-text span {
+    font-size: 0.72rem;
     color: var(--text-muted);
-}
-
-.stat-divider {
-    width: 1px;
-    height: 32px;
-    background: var(--border-color);
 }
 
 /* ── Responsive ───────────────────────────────────────────── */
@@ -229,6 +245,14 @@ const handleOpenModal = () => {
 @media (max-width: 600px) {
     .hero { padding: 40px 0 0; }
     .hero-img { height: 250px; }
-    .hero-stats { gap: 14px; }
+    .hero-stats { 
+        gap: 10px; 
+        justify-content: center;
+        padding-top: 10px;
+    }
+    .stat-chip {
+        padding: 6px 12px;
+    }
+    .stat-text strong { font-size: 0.9rem; }
 }
 </style>

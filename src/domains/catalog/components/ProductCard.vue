@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { cart } from '../../cart/store';
 
 const props = defineProps({
@@ -10,8 +11,14 @@ const props = defineProps({
 });
 
 const isAdded = ref(false);
+const router = useRouter();
 
-const handleOrder = () => {
+const goToDetail = () => {
+    router.push(`/producto/${props.product.id}`);
+};
+
+const handleOrder = (event) => {
+    event.stopPropagation(); // Prevenir que abra la tarjeta al hacer click en el botón de escritorio
     cart.addToCart(props.product);
     isAdded.value = true;
     setTimeout(() => { isAdded.value = false; }, 2000);
@@ -19,7 +26,7 @@ const handleOrder = () => {
 </script>
 
 <template>
-    <div class="product-card">
+    <div class="product-card" @click="goToDetail" role="button" tabindex="0">
         <!-- Image -->
         <div class="card-image">
             <img :src="product.image || '/assets/ejemplo.avif'" :alt="$t(`db_products.${product.id}.title`, product.title)" loading="lazy" />
@@ -29,7 +36,7 @@ const handleOrder = () => {
         <!-- Content -->
         <div class="card-content">
             <h3 class="card-title">{{ $t(`db_products.${product.id}.title`, product.title) }}</h3>
-            <p class="card-price">{{ product.price }} <span class="price-note">{{ $t('catalog.price_note') }}</span></p>
+            <p class="card-price">{{ product.price }}</p>
             <p class="card-description">{{ $t(`db_products.${product.id}.desc`, product.description) }}</p>
 
             <button
@@ -58,6 +65,7 @@ const handleOrder = () => {
     flex-direction: column;
     height: 100%;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
 }
 
 .product-card:hover {
@@ -128,11 +136,7 @@ const handleOrder = () => {
     gap: 6px;
 }
 
-.price-note {
-    font-size: 0.72rem;
-    font-weight: 400;
-    color: var(--text-light);
-}
+
 
 .card-description {
     font-size: 0.85rem;
@@ -181,10 +185,35 @@ const handleOrder = () => {
 
 /* ── Mobile ────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-    .card-image { height: 160px; }
+    .card-image { 
+        height: auto; 
+        aspect-ratio: 4 / 3; 
+    }
 
-    .card-content { padding: 16px; }
+    .card-content { 
+        padding: 20px 15px; 
+        gap: 10px;
+        align-items: center; 
+        text-align: center;
+    }
 
-    .card-title { font-size: 1rem; }
+    .card-title { 
+        font-size: 1.3rem; 
+        line-height: 1.3;
+    }
+    
+    .card-price {
+        font-size: 1.2rem;
+        justify-content: center;
+    }
+
+    /* Ocultamos descripción y botón porque al hacer clic lleva al detalle (estilo AliExpress simplificado) */
+    .card-description {
+        display: none !important;
+    }
+
+    .btn-agregar {
+        display: none !important;
+    }
 }
 </style>

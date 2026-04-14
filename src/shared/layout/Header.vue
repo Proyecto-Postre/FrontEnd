@@ -57,7 +57,7 @@
                 </nav>
 
                 <!-- Right Icons -->
-                <div class="header-icons">
+                <div class="header-icons-left mobile-only">
                     <!-- Language toggle -->
                     <button class="icon-btn lang-btn" @click="toggleLanguage" :title="$t('header.language')">
                         {{ locale.toUpperCase() }}
@@ -68,6 +68,19 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         <span v-if="user" class="user-name">{{ displayName }}</span>
                     </RouterLink>
+                </div>
+
+                <div class="header-icons">
+                    <!-- Language toggle (Desktop hidden on mobile left) -->
+                    <button class="icon-btn lang-btn desktop-only" @click="toggleLanguage" :title="$t('header.language')">
+                        {{ locale.toUpperCase() }}
+                    </button>
+
+                    <!-- User / Account (Desktop hidden on mobile left) -->
+                    <RouterLink :to="user ? '/cuenta' : '/login'" class="icon-btn desktop-only" :title="$t('header.account')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span v-if="user" class="user-name">{{ displayName }}</span>
+                    </RouterLink>
 
                     <!-- Cart -->
                     <RouterLink to="/carrito" class="icon-btn cart-btn" title="Carrito">
@@ -75,7 +88,7 @@
                         <span v-if="cart.totalItems > 0" class="cart-badge">{{ cart.totalItems }}</span>
                     </RouterLink>
 
-                    <!-- Hamburger (Mobile only) -->
+                    <!-- Hamburger -->
                     <button class="hamburger-btn" @click="toggleMenu" aria-label="Menu">
                         <span :class="{ open: isMenuOpen }"></span>
                         <span :class="{ open: isMenuOpen }"></span>
@@ -294,12 +307,14 @@ const handleSearch = () => {
 }
 
 /* ── Header Icons ──────────────────────────────────────────── */
-.header-icons {
+.header-icons, .header-icons-left {
     display: flex;
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
 }
+
+.mobile-only { display: none; }
 
 .icon-btn {
     background: none;
@@ -379,6 +394,13 @@ const handleSearch = () => {
 
 /* ── Mobile ────────────────────────────────────────────────── */
 @media (max-width: 900px) {
+    .desktop-only { display: none; }
+    .mobile-only { display: flex; }
+    
+    .nav-inner {
+        justify-content: space-between;
+    }
+
     .search-bar { display: none; }
     .hamburger-btn { display: flex; }
 

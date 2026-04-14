@@ -384,8 +384,8 @@ const handleOrder = (product) => {
     }
 
     .products-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 columns for better visibility */
-        gap: 15px; /* Reduced gap for mobile */
+        grid-template-columns: 1fr;
+        gap: 25px;
     }
     
     .catalog-section {

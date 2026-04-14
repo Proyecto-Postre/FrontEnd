@@ -41,6 +41,16 @@ const router = createRouter({
             component: MenuView
         },
         {
+            path: '/producto/:id',
+            name: 'product-detail',
+            component: () => import('../domains/catalog/views/ProductDetailView.vue')
+        },
+        {
+            path: '/taller/:id',
+            name: 'workshop-detail',
+            component: () => import('../domains/catalog/views/WorkshopDetailView.vue')
+        },
+        {
             path: '/servicios',
             name: 'services',
             component: () => import('../views/ServicesView.vue')

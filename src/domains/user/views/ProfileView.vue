@@ -233,10 +233,16 @@ onMounted(async () => {
     position: absolute;
     top: -20px;
     right: -20px;
-    /* Standard container width instead of breakout to prevent layout issues */
     width: 100%;
     margin-bottom: 40px;
     background: rgba(255,255,255,0.1);
     border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
 }
 </style>

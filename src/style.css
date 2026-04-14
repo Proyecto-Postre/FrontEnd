@@ -163,3 +163,26 @@ body {
   font-size: 1.4rem;
   opacity: 0.5;
 }
+
+/* ── Global Mobile Responsive ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px; 
+    line-height: 1.5;
+  }
+  
+  .container {
+    width: 92%; 
+  }
+  
+  .section-title {
+    font-size: 2rem !important; 
+  }
+  
+  .btn-primary, .btn-accent, .btn-outline {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    width: 100%; /* Better tap targets for mobile on default buttons */
+    justify-content: center;
+  }
+}

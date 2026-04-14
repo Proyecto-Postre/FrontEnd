@@ -77,4 +77,10 @@ const { t } = useI18n();
 }
 
 .page-divider { display: none; }
+
+@media (max-width: 900px) {
+    .page-header::after {
+        display: none;
+    }
+}
 </style>
