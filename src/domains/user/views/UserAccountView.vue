@@ -36,6 +36,10 @@ onMounted(async () => {
         if (res.ok) {
             const freshUser = await res.json();
             authStore.updateUser(freshUser);
+        } else if (res.status === 401 || res.status === 403) {
+            authStore.logout();
+            router.push('/login');
+            return;
         }
     } catch (e) {
         console.warn('Could not refresh profile:', e);

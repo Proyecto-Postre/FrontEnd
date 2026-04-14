@@ -112,7 +112,7 @@
         "name": "Name",
         "lastname": "Last Name",
         "phone": "Phone",
-        "email": "Email",
+        "email": "Email or Username",
         "password": "Password",
         "confirm_password": "Confirm Password",
         "login_btn": "Sign In",
@@ -123,7 +123,7 @@
         "error_generic": "An error occurred. Please try again.",
         "error_mismatch": "Passwords do not match.",
         "error_fill_all": "Please fill in all fields.",
-        "error_credentials": "Incorrect email or password.",
+        "error_credentials": "Incorrect email/username or password.",
         "error_email_taken": "This email is already registered.",
         "loading": "Loading..."
     },

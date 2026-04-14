@@ -35,11 +35,11 @@ const handleLogin = async () => {
 
     isLoading.value = true;
     try {
-        // Step 1: Sign in — username IS the email in this backend
+        // Step 1: Sign in
         const res = await fetch('/api/v1/Authentication/sign-in', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: form.value.email, password: form.value.password })
+            body: JSON.stringify({ usernameOrEmail: form.value.email, password: form.value.password })
         });
 
         if (!res.ok) {
@@ -79,6 +79,11 @@ const handleRegister = async () => {
         return;
     }
 
+    if (form.value.password.length < 6) {
+        errorMsg.value = 'La contraseña debe tener al menos 6 caracteres.';
+        return;
+    }
+
     if (form.value.password !== form.value.confirmPassword) {
         errorMsg.value = t('auth.error_mismatch');
         return;
@@ -86,17 +91,14 @@ const handleRegister = async () => {
 
     isLoading.value = true;
     try {
-        // Step 1: Register — username = email, extra fields stored in FirstName etc.
+        // Step 1: Register
         const signUpRes = await fetch('/api/v1/Authentication/sign-up', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                username:  form.value.email,
-                password:  form.value.password,
-                firstName: form.value.firstName,
-                lastName:  form.value.lastName,
+                username:  form.value.firstName, // Generate username from firstName
                 email:     form.value.email,
-                phone:     form.value.phone
+                password:  form.value.password
             })
         });
 
@@ -114,7 +116,7 @@ const handleRegister = async () => {
         const signInRes = await fetch('/api/v1/Authentication/sign-in', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: form.value.email, password: form.value.password })
+            body: JSON.stringify({ usernameOrEmail: form.value.email, password: form.value.password })
         });
 
         if (!signInRes.ok) {
@@ -180,7 +182,7 @@ const handleRegister = async () => {
             <form v-if="isLogin" @submit.prevent="handleLogin" key="login-form">
                 <div class="form-group">
                     <label>{{ $t('auth.email') }}</label>
-                    <input type="email" v-model="form.email" placeholder="tucorreo@ejemplo.com" required>
+                    <input type="text" v-model="form.email" placeholder="Usuario o Correo" required>
                 </div>
 
                 <div class="form-group">
