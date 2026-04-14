@@ -32,7 +32,7 @@
                             v-for="item in suggestions"
                             :key="item.id"
                             class="suggestion-item"
-                            @click="router.push({ path: '/menu', query: { q: item.title } }); searchQuery = item.title"
+                            @click="router.push({ path: '/menu', query: { q: item.title } }); searchQuery = item.title; showSuggestions = false"
                         >
                             {{ item.title }}
                         </div>
