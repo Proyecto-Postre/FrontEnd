@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://backend-q47c.onrender.com',
         changeOrigin: true,
       }
     }
