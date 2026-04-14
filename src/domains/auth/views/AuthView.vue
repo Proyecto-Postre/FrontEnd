@@ -60,10 +60,17 @@ const handleLogin = async () => {
         }
 
         const userData = await profileRes.json();
-        authStore.login(userData, token);
-        router.push('/');
+        
+        // Final Security: Ensure userData exists and token is valid
+        if (userData && token) {
+            console.log('Login successful for:', userData.username || userData.Username);
+            authStore.login(userData, token);
+            router.push('/');
+        } else {
+            throw new Error('Invalid user data received from profile endpoint');
+        }
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('Detailed Login Error:', error);
         errorMsg.value = t('auth.error_generic');
     } finally {
         isLoading.value = false;

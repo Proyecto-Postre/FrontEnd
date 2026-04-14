@@ -26,14 +26,16 @@ export const authStore = reactive({
     },
 
     get isAdmin() {
-        // Backend returns role as string 'Admin' (PascalCase)
-        return this.user?.role === 'Admin' || this.user?.role === 'admin';
+        // Handle both lowercase and PascalCase from various API serializers
+        const role = (this.user?.role || this.user?.Role || '').toString().toLowerCase();
+        return role === 'admin';
     },
 
     get displayName() {
         if (!this.user) return '';
-        const first = (this.user.firstName || this.user.name || '').split(' ')[0];
-        const last  = (this.user.lastName  || '').split(' ')[0];
+        // Resilient access to firstName/FirstName
+        const first = (this.user.firstName || this.user.FirstName || this.user.name || this.user.username || this.user.Username || '').toString().split(' ')[0];
+        const last  = (this.user.lastName  || this.user.LastName || '').toString().split(' ')[0];
         return `${first} ${last}`.trim();
     },
 
