@@ -10,13 +10,14 @@ const router = useRouter();
 // ✅ User state comes reactively from authStore
 const user = computed(() => authStore.user);
 
-// Form State
+// Form State — aligned with backend field names (firstName, lastName)
 const isEditing = ref(false);
 const form = ref({
-    name: '',
+    firstName: '',
     lastName: '',
     phone: '',
-    email: ''
+    email: '',
+    address: ''
 });
 
 const orders = ref([]);
@@ -27,47 +28,73 @@ onMounted(async () => {
         return;
     }
 
-    // Init form with current user data
-    form.value = { ...authStore.user };
-
-    // Fetch user orders
+    // Re-fetch fresh profile from backend (always up to date)
     try {
-        const res = await fetch(`/api/orders?userId=${authStore.user.id}&_sort=id&_order=desc`);
+        const res = await fetch('/api/v1/users/me', {
+            headers: { ...authStore.authHeaders }
+        });
         if (res.ok) {
-            orders.value = await res.json();
+            const freshUser = await res.json();
+            authStore.updateUser(freshUser);
         }
     } catch (e) {
-        console.error("Error fetching orders:", e);
+        console.warn('Could not refresh profile:', e);
     }
+
+    // Init form with current user data
+    form.value = {
+        firstName: authStore.user.firstName || '',
+        lastName:  authStore.user.lastName  || '',
+        phone:     authStore.user.phone     || '',
+        email:     authStore.user.email     || authStore.user.username || '',
+        address:   authStore.user.address   || ''
+    };
 });
 
 const toggleEdit = () => {
     if (isEditing.value) {
-        form.value = { ...authStore.user }; // Reset on cancel
+        // Reset on cancel
+        form.value = {
+            firstName: authStore.user.firstName || '',
+            lastName:  authStore.user.lastName  || '',
+            phone:     authStore.user.phone     || '',
+            email:     authStore.user.email     || authStore.user.username || '',
+            address:   authStore.user.address   || ''
+        };
     }
     isEditing.value = !isEditing.value;
 };
 
 const saveProfile = async () => {
-    if (!form.value.name || !form.value.lastName || !form.value.phone) {
+    if (!form.value.firstName || !form.value.lastName || !form.value.phone) {
         alert(t('account.error_required'));
         return;
     }
 
-    // ✅ Update via authStore — no reload() needed
-    authStore.updateUser({ ...form.value });
-
-    // Sync with backend
     try {
-        if (authStore.user.id) {
-            await fetch(`/api/users/${authStore.user.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(authStore.user)
-            });
+        const res = await fetch(`/api/v1/users/${authStore.user.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                ...authStore.authHeaders
+            },
+            body: JSON.stringify({
+                firstName: form.value.firstName,
+                lastName:  form.value.lastName,
+                email:     form.value.email,
+                phone:     form.value.phone,
+                address:   form.value.address || ''
+            })
+        });
+
+        if (res.ok) {
+            const updated = await res.json();
+            authStore.updateUser(updated);
+        } else {
+            console.warn('Backend update failed:', res.status);
         }
     } catch (e) {
-        console.warn("Could not sync with backend", e);
+        console.warn('Could not sync with backend:', e);
     }
 
     isEditing.value = false;
@@ -75,7 +102,7 @@ const saveProfile = async () => {
 };
 
 const logout = () => {
-    authStore.logout(); // ✅ Clears state + localStorage, no reload() needed
+    authStore.logout();
     router.push('/');
 };
 </script>
@@ -105,7 +132,7 @@ const logout = () => {
                     <div class="form-row">
                         <div class="form-group">
                             <label>{{ $t('auth.name') }}</label>
-                            <input type="text" v-model="form.name" :disabled="!isEditing" required>
+                            <input type="text" v-model="form.firstName" :disabled="!isEditing" required>
                         </div>
                         <div class="form-group">
                             <label>{{ $t('auth.lastname') }}</label>

@@ -35,15 +35,33 @@ const handleLogin = async () => {
 
     isLoading.value = true;
     try {
-        const response = await fetch(`/api/users?email=${form.value.email}&password=${form.value.password}`);
-        const users = await response.json();
+        // Step 1: Sign in — username IS the email in this backend
+        const res = await fetch('/api/v1/Authentication/sign-in', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: form.value.email, password: form.value.password })
+        });
 
-        if (users.length > 0) {
-            authStore.login(users[0]); // ✅ Use authStore — no reload() needed
-            router.push('/');
-        } else {
+        if (!res.ok) {
             errorMsg.value = t('auth.error_credentials');
+            return;
         }
+
+        const { token } = await res.json();
+
+        // Step 2: Fetch full user profile using the JWT
+        const profileRes = await fetch('/api/v1/users/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!profileRes.ok) {
+            errorMsg.value = t('auth.error_generic');
+            return;
+        }
+
+        const userData = await profileRes.json();
+        authStore.login(userData, token);
+        router.push('/');
     } catch (error) {
         console.error('Login error:', error);
         errorMsg.value = t('auth.error_generic');
@@ -55,6 +73,12 @@ const handleLogin = async () => {
 const handleRegister = async () => {
     errorMsg.value = '';
 
+    if (!form.value.firstName || !form.value.lastName || !form.value.phone ||
+        !form.value.email    || !form.value.password) {
+        errorMsg.value = t('auth.error_fill_all');
+        return;
+    }
+
     if (form.value.password !== form.value.confirmPassword) {
         errorMsg.value = t('auth.error_mismatch');
         return;
@@ -62,37 +86,77 @@ const handleRegister = async () => {
 
     isLoading.value = true;
     try {
-        const checkResponse = await fetch(`/api/users?email=${form.value.email}`);
-        const existingUsers = await checkResponse.json();
+        // Step 1: Register — username = email, extra fields stored in FirstName etc.
+        const signUpRes = await fetch('/api/v1/Authentication/sign-up', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username:  form.value.email,
+                password:  form.value.password,
+                firstName: form.value.firstName,
+                lastName:  form.value.lastName,
+                email:     form.value.email,
+                phone:     form.value.phone
+            })
+        });
 
-        if (existingUsers.length > 0) {
-            errorMsg.value = t('auth.error_email_taken');
+        if (!signUpRes.ok) {
+            const errData = await signUpRes.json().catch(() => ({}));
+            if (signUpRes.status === 409 || errData?.message?.toLowerCase().includes('exist')) {
+                errorMsg.value = t('auth.error_email_taken');
+            } else {
+                errorMsg.value = t('auth.error_generic');
+            }
             return;
         }
 
-        const newUser = {
-            name: form.value.firstName,
-            lastName: form.value.lastName,
-            phone: form.value.phone,
-            email: form.value.email,
-            password: form.value.password,
-            role: 'user',
-            coupons: []
-        };
-
-        const response = await fetch('/api/users', {
+        // Step 2: Auto sign-in to get the JWT token
+        const signInRes = await fetch('/api/v1/Authentication/sign-in', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newUser)
+            body: JSON.stringify({ username: form.value.email, password: form.value.password })
         });
 
-        if (response.ok) {
-            const created = await response.json();
-            authStore.login(created); // ✅ Auto-login after register
-            router.push('/');
-        } else {
-            errorMsg.value = t('auth.error_generic');
+        if (!signInRes.ok) {
+            // Registration succeeded but login failed — redirect to login page
+            router.push('/login');
+            return;
         }
+
+        const { id: tokenId, token } = await signInRes.json();
+
+        // Step 3: Fetch full profile to get the real user ID
+        const profileRes = await fetch('/api/v1/users/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const userData = profileRes.ok ? await profileRes.json() : { username: form.value.email };
+        authStore.login(userData, token);
+
+        // Step 4: Save firstName, lastName, phone, email — sign-up only stored username/password
+        if (userData.id) {
+            await fetch(`/api/v1/users/${userData.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    firstName: form.value.firstName,
+                    lastName:  form.value.lastName,
+                    email:     form.value.email,
+                    phone:     form.value.phone,
+                    address:   ''
+                })
+            }).then(async (putRes) => {
+                if (putRes.ok) {
+                    const updated = await putRes.json();
+                    authStore.updateUser(updated);
+                }
+            }).catch(() => {}); // Non-blocking — profile update is best effort
+        }
+
+        router.push('/');
     } catch (error) {
         console.error('Registration error:', error);
         errorMsg.value = t('auth.error_generic');
