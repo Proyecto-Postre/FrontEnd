@@ -9,6 +9,11 @@ const isLogin = ref(true);
 const router = useRouter();
 const errorMsg = ref('');
 const isLoading = ref(false);
+const showPassword = ref(false);
+
+const togglePassword = () => {
+    showPassword.value = !showPassword.value;
+};
 
 // Form Data Refs
 const form = ref({
@@ -70,8 +75,10 @@ const handleLogin = async () => {
             throw new Error('Invalid user data received from profile endpoint');
         }
     } catch (error) {
-        console.error('Detailed Login Error:', error);
-        errorMsg.value = t('auth.error_generic');
+        console.error('--- LOGIN DEBUG ---');
+        console.error('Error Object:', error);
+        console.error('Stack:', error.stack);
+        errorMsg.value = t('auth.error_generic') + ' (Debug: ' + error.message + ')';
     } finally {
         isLoading.value = false;
     }
@@ -194,7 +201,12 @@ const handleRegister = async () => {
 
                 <div class="form-group">
                     <label>{{ $t('auth.password') }}</label>
-                    <input type="password" v-model="form.password" placeholder="••••••••" required>
+                    <div class="password-input-wrapper">
+                        <input :type="showPassword ? 'text' : 'password'" v-model="form.password" placeholder="••••••••" required>
+                        <button type="button" class="eye-btn" @click="togglePassword">
+                            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+                        </button>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn-primary full-width" :disabled="isLoading">
@@ -227,7 +239,12 @@ const handleRegister = async () => {
 
                 <div class="form-group">
                     <label>{{ $t('auth.password') }}</label>
-                    <input type="password" v-model="form.password" placeholder="••••••••" required>
+                    <div class="password-input-wrapper">
+                        <input :type="showPassword ? 'text' : 'password'" v-model="form.password" placeholder="••••••••" required>
+                        <button type="button" class="eye-btn" @click="togglePassword">
+                            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+                        </button>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -308,6 +325,35 @@ input:focus {
 .btn-primary.full-width {
     width: 100%;
     margin-top: 10px;
+}
+
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrapper input {
+    padding-right: 45px;
+}
+
+.eye-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    color: #888;
+    transition: color 0.3s;
+}
+
+.eye-btn:hover {
+    color: var(--primary-color);
 }
 
 .form-row-split {
