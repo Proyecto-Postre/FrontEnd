@@ -134,7 +134,7 @@ const handleRegister = async () => {
         <!-- Visual Section (Imagery) -->
         <div class="auth-visual">
             <div class="visual-overlay"></div>
-            <img src="/C:/Users/Jafeth/.gemini/antigravity/brain/4c8c9031-7359-4a6f-b7ce-8e4be4e823df/auth_background_pastries_1776224402023.png" alt="Pastries" class="bg-img">
+            <img src="/assets/auth_bg.png" alt="Pastries" class="bg-img">
             <div class="visual-content">
                 <RouterLink to="/" class="logo-link">
                     <span class="logo-leaf">🌿</span>
