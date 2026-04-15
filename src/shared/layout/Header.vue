@@ -63,10 +63,13 @@
                         {{ locale.toUpperCase() }}
                     </button>
 
-                    <!-- User / Account -->
-                    <RouterLink :to="user ? '/cuenta' : '/login'" class="icon-btn" :title="$t('header.account')">
+                    <!-- User / Auth -->
+                    <template v-if="!user">
+                        <RouterLink to="/login" class="nav-item">Iniciar</RouterLink>
+                    </template>
+                    <RouterLink v-else to="/cuenta" class="icon-btn" :title="$t('header.account')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <span v-if="user" class="user-name">{{ displayName }}</span>
+                        <span class="user-name">{{ displayName }}</span>
                     </RouterLink>
                 </div>
 
@@ -76,10 +79,14 @@
                         {{ locale.toUpperCase() }}
                     </button>
 
-                    <!-- User / Account (Desktop hidden on mobile left) -->
-                    <RouterLink :to="user ? '/cuenta' : '/login'" class="icon-btn desktop-only" :title="$t('header.account')">
+                    <!-- User / Auth -->
+                    <div v-if="!user" class="auth-buttons desktop-only">
+                        <RouterLink to="/login" class="btn-auth-outline">Iniciar</RouterLink>
+                        <RouterLink to="/registro" class="btn-auth-filled">Registrar</RouterLink>
+                    </div>
+                    <RouterLink v-else to="/cuenta" class="icon-btn desktop-only" :title="$t('header.account')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <span v-if="user" class="user-name">{{ displayName }}</span>
+                        <span class="user-name">{{ displayName }}</span>
                     </RouterLink>
 
                     <!-- Cart -->
@@ -368,6 +375,45 @@ const handleSearch = () => {
     justify-content: center;
     align-items: center;
     border: 2px solid var(--surface);
+}
+
+/* ── Auth Buttons ────────────────────────────────────────── */
+.auth-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-auth-outline, .btn-auth-filled {
+    font-family: var(--body-font-family);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 7px 16px;
+    border-radius: var(--border-radius-pill);
+    text-decoration: none;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+}
+
+.btn-auth-outline {
+    color: var(--primary-color);
+    border: 1.5px solid var(--primary-color);
+}
+
+.btn-auth-outline:hover {
+    background: rgba(44, 85, 48, 0.05);
+}
+
+.btn-auth-filled {
+    background: var(--primary-color);
+    color: white;
+    border: 1.5px solid var(--primary-color);
+}
+
+.btn-auth-filled:hover {
+    background: #1e3d23;
+    border-color: #1e3d23;
+    transform: translateY(-1px);
 }
 
 /* ── Hamburger ─────────────────────────────────────────────── */

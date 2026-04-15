@@ -68,8 +68,14 @@ const router = createRouter({
         {
             path: '/login',
             name: 'login',
-            component: () => import('../domains/auth/views/AuthView.vue'),
+            component: () => import('../domains/auth/views/LoginView.vue'),
             beforeEnter: redirectIfLoggedIn   // Don't show login to logged-in users
+        },
+        {
+            path: '/registro',
+            name: 'register',
+            component: () => import('../domains/auth/views/SignupView.vue'),
+            beforeEnter: redirectIfLoggedIn
         },
         {
             path: '/para-ti',
