@@ -1,16 +1,18 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, provide } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { authStore } from '../../auth/store.js';
 
 const { t } = useI18n();
 
+// ─── State ──────────────────────────────────────────────────
+const activeTab = ref('orders'); // 'orders' | 'inventory' | 'users' | 'analytics' | 'reviews'
 const products = ref([]);
 const users = ref([]);
-const activeTab = ref('orders'); // 'products' | 'users' | 'analytics' | 'orders'
+const orders = ref([]);
+const testimonials = ref([]);
+const reviewsSearch = ref('');
 const isEditing = ref(false);
-const orders = ref([]); // New State
-const testimonials = ref([]); // Reviews State
-const reviewsSearch = ref(''); // Search Query
 const currentProduct = ref({});
 const fileName = ref('');
 
@@ -18,87 +20,54 @@ const emptyProduct = {
     title: '',
     price: '',
     description: '',
-    category: 'Tortas', // default
+    category: 'Tortas',
     image: '',
-
     popular: false,
     isFeatured: false,
     sales: 0
 };
 
-// Fetch data
-const fetchProducts = async () => {
+// ─── Data Fetching ──────────────────────────────────────────
+const fetchData = async () => {
     try {
-        const res = await fetch('/api/products');
-        products.value = await res.json();
+        const [prodRes, userRes, orderRes, testRes] = await Promise.all([
+            fetch('/api/products'),
+            fetch('/api/users'),
+            fetch('/api/orders'),
+            fetch('/api/testimonials')
+        ]);
+        products.value = await prodRes.json();
+        users.value = await userRes.json();
+        orders.value = (await orderRes.json()).reverse();
+        testimonials.value = await testRes.json();
     } catch (e) {
-        console.error("Error fetching products:", e);
+        console.error("Error fetching dashboard data:", e);
     }
 };
 
-const fetchUsers = async () => {
-    try {
-        const res = await fetch('/api/users');
-        users.value = await res.json();
-    } catch (e) {
-        console.error("Error fetching users:", e);
-    }
-};
+onMounted(fetchData);
 
-const fetchOrders = async () => {
-    try {
-        const res = await fetch('/api/orders');
-        orders.value = (await res.json()).reverse(); // Newest first
-    } catch (e) {
-        console.error("Error fetching orders:", e);
-    }
-};
+// ─── Analytics Helpers ──────────────────────────────────────
+const topSellingProducts = computed(() => {
+    return [...products.value].sort((a, b) => (b.sales || 0) - (a.sales || 0)).slice(0, 5);
+});
 
-const fetchTestimonials = async () => {
-    try {
-        const res = await fetch('/api/testimonials');
-        testimonials.value = await res.json();
-    } catch (e) {
-        console.error("Error fetching testimonials:", e);
-    }
-};
+const maxSales = computed(() => {
+    return Math.max(...products.value.map(p => p.sales || 0), 100);
+});
 
-const deleteTestimonial = async (id) => {
-    if (!confirm("¿Eliminar este comentario permanentemente?")) return;
-    try {
-        await fetch(`/api/testimonials/${id}`, { method: 'DELETE' });
-        await fetchTestimonials();
-    } catch (e) {
-        alert("Error al eliminar comentario");
-    }
-};
+const totalRevenue = computed(() => {
+    return orders.value.reduce((acc, order) => acc + (order.total || 0), 0);
+});
 
-const toggleTestimonialSelection = async (review) => {
-    // Check limit
-    if (!review.isSelected && testimonials.value.filter(t => t.isSelected).length >= 3) {
-        alert("Solo puedes seleccionar hasta 3 testimonios.");
-        return;
-    }
-
-    try {
-        const newVal = !review.isSelected;
-        await fetch(`/api/testimonials/${review.id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ isSelected: newVal })
-        });
-        review.isSelected = newVal; // Optimistic update
-    } catch (e) {
-        alert("Error al actualizar el estado");
-    }
-};
-
+// ─── Filters ────────────────────────────────────────────────
 const filteredTestimonials = computed(() => {
     if (!reviewsSearch.value) return testimonials.value;
     const q = reviewsSearch.value.toLowerCase();
     return testimonials.value.filter(t => t.name.toLowerCase().includes(q));
 });
 
+// ─── Actions ────────────────────────────────────────────────
 const updateOrderStatus = async (order, newStatus) => {
     try {
         await fetch(`/api/orders/${order.id}`, {
@@ -106,112 +75,40 @@ const updateOrderStatus = async (order, newStatus) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus })
         });
-        order.status = newStatus; // Optimistic update
-    } catch(e) {
-        alert("Error updating status");
-    }
-};
-
-onMounted(() => {
-    fetchProducts();
-    fetchUsers();
-    fetchOrders(); 
-    fetchTestimonials(); 
-});
-
-// Computed for Analytics
-
-const topSellingProducts = computed(() => {
-    return [...products.value].sort((a, b) => (b.sales || 0) - (a.sales || 0)).slice(0, 5);
-});
-// Max sales for chart scaling
-const maxSales = computed(() => {
-    return Math.max(...products.value.map(p => p.sales || 0), 100);
-});
-
-// Toggle Featured - REMOVED (Now Auto-Sales Only)
-/*
-const toggleFeatured = async (product) => {
-    // ... logic removed ...
-};
-*/
-
-// Form Actions
-const openAddModal = () => {
-    currentProduct.value = { ...emptyProduct };
-    isEditing.value = true;
-};
-
-const editProduct = (product) => {
-    currentProduct.value = { ...product };
-    isEditing.value = true;
-};
-
-const currentUser = ref({});
-
-const closeMode = () => {
-    isEditing.value = false;
-    currentProduct.value = {};
-};
-
-// ... CRUD Operations for Products ...
-
-// User Management
-const deleteUser = async (id) => {
-    if (id === currentUser.value.id) {
-        alert(t('admin.alerts.delete_self'));
-        return;
-    }
-    if (!confirm(t('admin.alerts.confirm_delete_user'))) return;
-
-    try {
-        await fetch(`/api/users/${id}`, { method: 'DELETE' });
-        await fetchUsers(); // Refresh list
-    } catch (e) {
-        alert(t('admin.alerts.error_delete_user'));
-    }
-};
-
-
-
-// CRUD Operations
-const saveProduct = async () => {
-    const isNew = !currentProduct.value.id;
-    const url = isNew ? '/api/products' : `/api/products/${currentProduct.value.id}`;
-    const method = isNew ? 'POST' : 'PUT';
-    
-    // Ensure clean price formatting
-    if (!currentProduct.value.price.startsWith('S/ ')) {
-        // If user just typed "30", format it. If they typed "S/ 30", leave it.
-        // Simple check, sophisticated regex can be better but this works for simple Admin usage.
-        const cleanVal = currentProduct.value.price.replace(/[^0-9.]/g, '');
-        currentProduct.value.price = `S/ ${parseFloat(cleanVal).toFixed(2)}`;
-    }
-
-    try {
-        await fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(currentProduct.value)
-        });
-        
-        await fetchProducts(); // Refresh list
-        closeMode();
-        alert(isNew ? t('admin.alerts.success_add') : t('admin.alerts.success_update'));
-    } catch (e) {
-        alert(t('admin.alerts.error_save'));
-    }
+        order.status = newStatus;
+    } catch(e) { alert("Error updating status"); }
 };
 
 const deleteProduct = async (id) => {
     if (!confirm(t('admin.alerts.confirm_delete_product'))) return;
-
     try {
         await fetch(`/api/products/${id}`, { method: 'DELETE' });
-        await fetchProducts();
-    } catch (e) {
-        alert(t('admin.alerts.error_delete_product'));
+        products.value = products.value.filter(p => p.id !== id);
+    } catch (e) { alert(t('admin.alerts.error_delete_product')); }
+};
+
+const saveProduct = async () => {
+    const isNew = !currentProduct.value.id;
+    const url = isNew ? '/api/products' : `/api/products/${currentProduct.value.id}`;
+    const method = isNew ? 'POST' : 'PUT';
+
+    // Format price if needed
+    if (currentProduct.value.price && !currentProduct.value.price.toString().startsWith('S/ ')) {
+        const cleanVal = currentProduct.value.price.toString().replace(/[^0-9.]/g, '');
+        currentProduct.value.price = `S/ ${parseFloat(cleanVal).toFixed(2)}`;
     }
+
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentProduct.value)
+        });
+        if (res.ok) {
+            await fetchData();
+            isEditing.value = false;
+        }
+    } catch (e) { alert(t('admin.alerts.error_save')); }
 };
 
 const handleFileUpload = (event) => {
@@ -219,416 +116,276 @@ const handleFileUpload = (event) => {
     if (file) {
         fileName.value = file.name;
         const reader = new FileReader();
-        reader.onload = (e) => {
-            currentProduct.value.image = e.target.result; // Base64 string
-        };
+        reader.onload = (e) => { currentProduct.value.image = e.target.result; };
         reader.readAsDataURL(file);
     }
 };
 
-// COUPONS MANAGEMENT
-const showCouponsModal = ref(false);
-const selectedUser = ref(null);
-const newCoupon = ref({
-    code: '',
-    discount: 10, // Percent
-    desc: ''
-});
-
-const openCouponsModal = (user) => {
-    selectedUser.value = { ...user };
-    // Ensure coupons array exists
-    if (!selectedUser.value.coupons) selectedUser.value.coupons = [];
-    newCoupon.value = { code: '', discount: 10, desc: '' };
-    showCouponsModal.value = true;
-};
-
-const closeCouponsModal = () => {
-    showCouponsModal.value = false;
-    selectedUser.value = null;
-};
-
-const addCouponToUser = async () => {
-    if (!newCoupon.value.code || !newCoupon.value.discount) return;
-
-    // Create coupon object
-    const coupon = {
-        id: Date.now(),
-        code: newCoupon.value.code.toUpperCase(),
-        value: newCoupon.value.discount / 100, // Store as decimal (0.10)
-        desc: newCoupon.value.desc || `${newCoupon.value.discount}% OFF`,
-        type: 'percent'
-    };
-
-    // Update local state
-    selectedUser.value.coupons.push(coupon);
-
-    // Persist
+const toggleTestimonialSelection = async (review) => {
+    if (!review.isSelected && testimonials.value.filter(t => t.isSelected).length >= 3) {
+        alert("Máximo 3 testimonios");
+        return;
+    }
     try {
-        await fetch(`/api/users/${selectedUser.value.id}`, {
+        const newVal = !review.isSelected;
+        await fetch(`/api/testimonials/${review.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ coupons: selectedUser.value.coupons })
+            body: JSON.stringify({ isSelected: newVal })
         });
-        
-        // Refresh users list to reflect changes in main table
-        const userIndex = users.value.findIndex(u => u.id === selectedUser.value.id);
-        if (userIndex !== -1) {
-            users.value[userIndex].coupons = selectedUser.value.coupons;
-        }
-
-        newCoupon.value = { code: '', discount: 10, desc: '' };
-        alert(t('admin.alerts.coupon_added'));
-    } catch (e) {
-        alert(t('admin.alerts.error_save'));
-    }
+        review.isSelected = newVal;
+    } catch (e) { alert("Error al actualizar"); }
 };
 
-const removeCouponFromUser = async (couponId) => {
-    if (!confirm(t('admin.alerts.confirm_delete'))) return;
-
-    selectedUser.value.coupons = selectedUser.value.coupons.filter(c => c.id !== couponId);
-
+const deleteTestimonial = async (id) => {
+    if (!confirm("¿Eliminar comentario?")) return;
     try {
-        await fetch(`/api/users/${selectedUser.value.id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ coupons: selectedUser.value.coupons })
-        });
-        
-         // Refresh users list
-        const userIndex = users.value.findIndex(u => u.id === selectedUser.value.id);
-        if (userIndex !== -1) {
-            users.value[userIndex].coupons = selectedUser.value.coupons;
-        }
-    } catch (e) {
-        alert(t('admin.alerts.error_save'));
-    }
+        await fetch(`/api/testimonials/${id}`, { method: 'DELETE' });
+        testimonials.value = testimonials.value.filter(t => t.id !== id);
+    } catch (e) { alert("Error al eliminar"); }
 };
 </script>
 
 <template>
-    <div class="admin-dashboard container">
-        <div class="dashboard-header">
-            <h1>{{ t('admin.title') }}</h1>
-            <p>{{ t('admin.subtitle') }}</p>
-        </div>
-
-        <!-- TABS NAVIGATION -->
-        <div class="tabs-nav">
-             <button 
-                class="tab-btn" 
-                :class="{ active: activeTab === 'orders' }"
-                @click="activeTab = 'orders'"
-            >
-                Pedidos 📦
-            </button>
-            <button 
-                class="tab-btn" 
-                :class="{ active: activeTab === 'products' }"
-                @click="activeTab = 'products'"
-            >
-                {{ t('admin.tab_inventory') }}
-            </button>
-            <button 
-                class="tab-btn" 
-                :class="{ active: activeTab === 'users' }"
-                @click="activeTab = 'users'"
-            >
-                {{ t('admin.tab_users') }}
-            </button>
-            <button 
-                class="tab-btn" 
-                :class="{ active: activeTab === 'analytics' }"
-                @click="activeTab = 'analytics'"
-            >
-                Estadísticas 📊
-            </button>
-            <button 
-                class="tab-btn" 
-                :class="{ active: activeTab === 'reviews' }"
-                @click="activeTab = 'reviews'"
-            >
-                Reseñas 💬
-            </button>
-        </div>
-
-        <!-- ORDERS TAB -->
-        <div v-if="activeTab === 'orders'" class="orders-tab">
-            <div class="table-responsive">
-                <table class="products-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Cliente</th>
-                            <th>Items</th>
-                            <th>Total</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="order in orders" :key="order.id">
-                            <td>{{ new Date(order.date).toLocaleDateString() }}</td>
-                            <td>{{ order.userName }}</td>
-                            <td>
-                                <ul style="list-style:none; padding:0; margin:0; font-size:0.9rem;">
-                                    <li v-for="item in order.items" :key="item.id">
-                                        {{ item.quantity }}x {{ $t(`db_products.${item.id}.title`, item.title) }}
-                                    </li>
-                                </ul>
-                            </td>
-                            <td style="font-weight:bold;">S/ {{ order.total.toFixed(2) }}</td>
-                            <td>
-                                <select 
-                                    @change="updateOrderStatus(order, $event.target.value)"
-                                    :value="order.status"
-                                    class="status-select"
-                                    :class="order.status"
-                                >
-                                    <option value="pendiente">Pendiente</option>
-                                    <option value="atendido">Atendido</option>
-                                    <option value="cancelado">Cancelado</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr v-if="orders.length === 0">
-                            <td colspan="5" style="text-align:center; padding: 30px; color: #999;">
-                                No hay pedidos registrados aún.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+    <div class="admin-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <span class="leaf">🌿</span>
+                <h2>Admin Console</h2>
             </div>
-        </div>
 
-        <!-- ANALYTICS TAB -->
-        <div v-if="activeTab === 'analytics'" class="analytics-tab">
-            <h2 class="section-title">Lo que más quiere la gente (Top Ventas)</h2>
-            <div class="chart-container">
-                <div v-for="product in topSellingProducts" :key="product.id" class="chart-row">
-                    <div class="chart-label">
-                         <span>{{ $t(`db_products.${product.id}.title`, product.title) }}</span>
+            <nav class="sidebar-nav">
+                <button @click="activeTab = 'orders'" :class="{ active: activeTab === 'orders' }">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                    Pedidos
+                </button>
+                <button @click="activeTab = 'inventory'" :class="{ active: activeTab === 'inventory' }">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    Inventario
+                </button>
+                <button @click="activeTab = 'users'" :class="{ active: activeTab === 'users' }">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    Usuarios
+                </button>
+                <button @click="activeTab = 'analytics'" :class="{ active: activeTab === 'analytics' }">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    Métricas
+                </button>
+                <button @click="activeTab = 'reviews'" :class="{ active: activeTab === 'reviews' }">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    Reseñas
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>Admin: {{ authStore.displayName }}</p>
+                <button @click="authStore.logout(); $router.push('/')" class="logout-btn">Salir</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-viewport">
+            <!-- Header Stats -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <span class="label">Total Pedidos</span>
+                    <span class="value">{{ orders.length }}</span>
+                </div>
+                <div class="stat-card highlight">
+                    <span class="label">Ingresos</span>
+                    <span class="value">S/ {{ totalRevenue.toFixed(2) }}</span>
+                </div>
+                <div class="stat-card">
+                    <span class="label">Productos</span>
+                    <span class="value">{{ products.length }}</span>
+                </div>
+                <div class="stat-card">
+                    <span class="label">Usuarios</span>
+                    <span class="value">{{ users.length }}</span>
+                </div>
+            </section>
+
+            <!-- Table Sections -->
+            <section class="content-body shadow-card">
+                <!-- Orders Tab -->
+                <div v-if="activeTab === 'orders'">
+                    <div class="table-header">
+                        <h2>Pedidos Recientes</h2>
                     </div>
-                    <div class="chart-bar-container">
-                        <div 
-                            class="chart-bar" 
-                            :style="{ width: (product.sales / maxSales * 100) + '%' }"
-                        >
-                            <span class="chart-value">{{ product.sales }} ventas</span>
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="order in orders" :key="order.id">
+                                <td>{{ new Date(order.timestamp || order.date).toLocaleDateString() }}</td>
+                                <td>{{ order.userName }}</td>
+                                <td class="bold">S/ {{ order.total.toFixed(2) }}</td>
+                                <td>
+                                    <select 
+                                        :value="order.status" 
+                                        @change="updateOrderStatus(order, $event.target.value)"
+                                        class="status-dropdown" :class="order.status"
+                                    >
+                                        <option value="pendiente">Pendiente</option>
+                                        <option value="atendido">Atendido</option>
+                                        <option value="cancelado">Cancelado</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Inventory Tab -->
+                <div v-if="activeTab === 'inventory'">
+                    <div class="table-header">
+                        <h2>Gestión de Inventario</h2>
+                        <button class="btn-primary" @click="isEditing = true; currentProduct = { ...emptyProduct }">+ Nuevo Producto</button>
+                    </div>
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Img</th>
+                                <th>Nombre</th>
+                                <th>Precio</th>
+                                <th>Categoría</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="p in products" :key="p.id">
+                                <td><img :src="p.image" class="thumb-round"></td>
+                                <td>{{ p.title }}</td>
+                                <td class="bold">{{ p.price }}</td>
+                                <td><span class="tag">{{ p.category }}</span></td>
+                                <td class="actions">
+                                    <button @click="currentProduct = { ...p }; isEditing = true" class="btn-edit">✏️</button>
+                                    <button @click="deleteProduct(p.id)" class="btn-delete">🗑️</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Users Tab -->
+                <div v-if="activeTab === 'users'">
+                    <div class="table-header">
+                        <h2>Usuarios del Sistema</h2>
+                    </div>
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="u in users" :key="u.id">
+                                <td>{{ u.name || (u.firstName + ' ' + u.lastName) }}</td>
+                                <td>{{ u.email }}</td>
+                                <td><span class="tag role" :class="u.role">{{ u.role || 'user' }}</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Metrics Tab -->
+                <div v-if="activeTab === 'analytics'" class="analytics-pane">
+                    <div class="table-header">
+                        <h2>Rendimiento de Ventas</h2>
+                    </div>
+                    <div class="bars-container">
+                        <div v-for="p in topSellingProducts" :key="p.id" class="bar-row">
+                            <span class="bar-label">{{ p.title }}</span>
+                            <div class="bar-track">
+                                <div class="bar-fill" :style="{ width: (p.sales / maxSales * 100) + '%' }">
+                                    <span class="bar-value">{{ p.sales }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="quick-stats">
-                 <div class="stat-card">
-                    <h3>Total Productos</h3>
-                    <p>{{ products.length }}</p>
-                 </div>
-                 <div class="stat-card">
-                    <h3>Usuarios Registrados</h3>
-                    <p>{{ users.length }}</p>
-                 </div>
-            </div>
-        </div>
 
-        <!-- REVIEWS TAB -->
-        <div v-if="activeTab === 'reviews'" class="reviews-tab">
-            <div class="search-bar-container">
-                <input 
-                    v-model="reviewsSearch" 
-                    placeholder="Buscar por nombre de usuario..." 
-                    class="search-input"
-                />
-            </div>
-            
-            <div class="table-responsive">
-                <table class="products-table">
-                    <thead>
-                        <tr>
-                            <th>Usuario</th>
-                            <th>Comentario</th>
-                            <th>Calif.</th>
-                            <th>Destacar (Max 3)</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="review in filteredTestimonials" :key="review.id">
-                            <td style="font-weight:bold;">{{ review.name }}</td>
-                            <td class="desc-cell" :title="review.text">{{ review.text }}</td>
-                            <td>
-                                <span style="color:#FFD700;">{{ '★'.repeat(review.stars) }}</span>
-                            </td>
-                            <td style="text-align:center;">
-                                <button 
-                                    @click="toggleTestimonialSelection(review)" 
-                                    class="btn-icon"
-                                    :style="{ opacity: review.isSelected ? 1 : 0.3 }"
-                                    :title="review.isSelected ? 'Quitar de Inicio' : 'Mostrar en Inicio'"
-                                >
-                                    📌
-                                </button>
-                            </td>
-                            <td class="actions-cell">
-                                <button @click="deleteTestimonial(review.id)" class="btn-icon delete" title="Eliminar Comentario">🗑️</button>
-                            </td>
-                        </tr>
-                        <tr v-if="filteredTestimonials.length === 0">
-                            <td colspan="4" style="text-align:center; padding:30px; color:#999;">
-                                No se encontraron reseñas.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- PRODUCTS TAB -->
-        <div v-if="activeTab === 'products'">
-            <div class="actions-bar">
-                <button class="btn-primary" @click="openAddModal">
-                    {{ t('admin.btn_add') }}
-                </button>
-            </div>
-
-            <div class="table-responsive">
-                <table class="products-table">
-                    <thead>
-                        <tr>
-                            <th>{{ t('admin.table.image') }}</th>
-                            <th>{{ t('admin.table.name') }}</th>
-                            <th>{{ t('admin.table.category') }}</th>
-                            <!-- <th>Destacado ⭐</th> REMOVED -->
-                            <th>{{ t('admin.table.price') }}</th>
-                            <th>{{ t('admin.table.description') }}</th>
-                            <th>{{ t('admin.table.actions') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="product in products" :key="product.id">
-                            <td>
-                                <img :src="product.image || '/assets/ejemplo.avif'" class="thumb" />
-                            </td>
-                            <td>{{ $t(`db_products.${product.id}.title`, product.title) }}</td>
-                            <td>
-                                <span class="badge" :class="product.category">{{ $t(`catalog.categories.${product.category.toLowerCase()}`, product.category) }}</span>
-                            </td>
-                            <!-- 
-                            <td style="text-align:center; cursor:pointer;" @click="toggleFeatured(product)" title="Clic para destacar en Inicio">
-                                <span :style="{ opacity: product.isFeatured ? 1 : 0.2, fontSize: '1.5rem' }">⭐</span>
-                            </td> 
-                            -->
-                            <td>{{ product.price }}</td>
-                            <td class="desc-cell">{{ $t(`db_products.${product.id}.desc`, product.description) }}</td>
-                            <td class="actions-cell">
-                                <button @click="editProduct(product)" class="btn-icon edit" :title="t('admin.actions.edit')">✏️</button>
-                                <button @click="deleteProduct(product.id)" class="btn-icon delete" :title="t('admin.actions.delete')">🗑️</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- USERS TAB -->
-        <div v-if="activeTab === 'users'" class="users-section">
-            <div class="table-responsive">
-                <table class="products-table">
-                    <thead>
-                        <tr>
-                            <th>{{ t('admin.table.name') }}</th>
-                            <th>{{ t('admin.table.lastname') }}</th>
-                            <th>{{ t('admin.table.email') }}</th>
-                            <th>{{ t('admin.table.phone') }}</th>
-                            <th>{{ t('admin.table.role') }}</th>
-                            <th>{{ t('admin.table.actions') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="user in users" :key="user.id">
-                            <td>{{ user.name }}</td>
-                            <td>{{ user.lastname || user.lastName }}</td>
-                            <td>{{ user.email }}</td>
-                            <td>{{ user.phone }}</td>
-                            <td>
-                                <span class="badge" :class="user.role === 'admin' ? 'admin-role' : 'user-role'">
-                                    {{ user.role || 'user' }}
-                                </span>
-                            </td>
-                            <td class="actions-cell">
-                                <button 
-                                    v-if="user.id !== currentUser.id"
-                                    @click="deleteUser(user.id)" 
-                                    class="btn-icon delete" 
-                                    :title="t('admin.actions.delete_user')"
-                                >
-                                    🗑️
-                                </button>
-                                <button 
-                                    @click="openCouponsModal(user)" 
-                                    class="btn-icon" 
-                                    :title="t('admin.actions.manage_coupons')"
-                                >
-                                    🎟️
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Modal / Form Overlay -->
-        <div v-if="isEditing" class="modal-overlay">
-            <div class="modal-content">
-                <h2>{{ currentProduct.id ? t('admin.form.edit_title') : t('admin.form.new_title') }}</h2>
-                
-                <form @submit.prevent="saveProduct" class="product-form">
-                    <div class="form-group">
-                        <label>{{ t('admin.form.product_name') }}</label>
-                        <input v-model="currentProduct.title" required placeholder="Ej: Torta de Chocolate" />
+                <!-- Reviews Tab -->
+                <div v-if="activeTab === 'reviews'">
+                    <div class="table-header">
+                        <h2>Comentarios de Clientes</h2>
+                        <input v-model="reviewsSearch" placeholder="🔍 Buscar autor..." class="sub-search">
                     </div>
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Autor</th>
+                                <th>Comentario</th>
+                                <th>Estrellas</th>
+                                <th>Inicio</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="r in filteredTestimonials" :key="r.id">
+                                <td class="bold">{{ r.name }}</td>
+                                <td class="long-text">{{ r.text }}</td>
+                                <td class="stars">{{ '★'.repeat(r.stars) }}</td>
+                                <td>
+                                    <button @click="toggleTestimonialSelection(r)" :class="{ picked: r.isSelected }" class="btn-pin">
+                                        📌
+                                    </button>
+                                </td>
+                                <td><button @click="deleteTestimonial(r.id)" class="btn-delete">🗑️</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>{{ t('admin.form.price') }}</label>
-                            <input v-model="currentProduct.price" required placeholder="0.00" />
+        <!-- Edit Modal Overlay -->
+        <div v-if="isEditing" class="modal-backdrop">
+            <div class="modal-card animator-slide-up">
+                <h3>{{ currentProduct.id ? 'Editar Producto' : 'Nuevo Producto' }}</h3>
+                <form @submit.prevent="saveProduct" class="modern-form">
+                    <div class="g-2">
+                        <div class="field">
+                            <label>Nombre</label>
+                            <input v-model="currentProduct.title" required>
                         </div>
-                        <div class="form-group">
-                            <label>{{ t('admin.form.category') }}</label>
-                            <select v-model="currentProduct.category">
-                                <option value="Tortas">Tortas</option>
-                                <option value="Postres">Postres</option>
-                                <option value="Bebidas">Bebidas</option>
-                            </select>
+                        <div class="field">
+                            <label>Precio</label>
+                            <input v-model="currentProduct.price" required placeholder="0.00">
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label>{{ t('admin.form.image_label') }}</label>
-                        <div class="file-upload-container">
-                            <label for="file-upload" class="custom-file-upload">
-                                {{ t('admin.form.select_image') }}
-                            </label>
-                            <input id="file-upload" type="file" @change="handleFileUpload" accept="image/*" />
-                            <span v-if="fileName" class="file-name">{{ fileName }}</span>
-                            <span v-else class="file-name placeholder">{{ t('admin.form.no_file') }}</span>
-                        </div>
-                        
-                        <div v-if="currentProduct.image" class="image-preview">
-                            <img :src="currentProduct.image" alt="Vista previa" />
+                    <div class="field">
+                        <label>Categoría</label>
+                        <select v-model="currentProduct.category">
+                            <option>Tortas</option>
+                            <option>Postres</option>
+                            <option>Bebidas</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Imagen</label>
+                        <div class="file-box">
+                            <input type="file" @change="handleFileUpload" id="adm-up">
+                            <label for="adm-up" class="file-btn">Seleccionar Archivo</label>
+                            <span>{{ fileName || 'Ninguna imagen seleccionada' }}</span>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label>{{ t('admin.form.description') }}</label>
+                    <div class="field">
+                        <label>Descripción</label>
                         <textarea v-model="currentProduct.description" rows="3"></textarea>
                     </div>
-
-                    <div class="form-actions">
-                        <button type="button" class="btn-cancel" @click="closeMode">{{ t('admin.form.cancel') }}</button>
-                        <button type="submit" class="btn-save">{{ t('admin.form.save') }}</button>
+                    <div class="modal-actions">
+                        <button type="button" @click="isEditing = false" class="btn-ghost">Cancelar</button>
+                        <button type="submit" class="btn-solid">Guardar cambios</button>
                     </div>
                 </form>
             </div>
@@ -637,405 +394,183 @@ const removeCouponFromUser = async (couponId) => {
 </template>
 
 <style scoped>
-.admin-dashboard {
-    padding: 60px 20px;
-    min-height: 80vh;
-}
-
-/* Coupons Styles */
-.coupons-list-container {
-    background: #f9f9f9;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 20px;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.empty-coupons {
-    text-align: center;
-    color: #999;
-    font-style: italic;
-}
-
-.coupons-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.coupon-item {
+/* ── Reset & Container ─────────────────────────────────────── */
+.admin-layout {
     display: flex;
-    justify-content: space-between;
+    min-height: 100vh;
+    background: #f8faf9;
+    color: #2c3e50;
+    font-family: var(--body-font-family);
+}
+
+/* ── Sidebar ───────────────────────────────────────────────── */
+.sidebar {
+    width: 260px;
+    background: #1e2925;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.sidebar-brand {
+    display: flex;
     align-items: center;
-    background: white;
-    padding: 10px;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    border: 1px dashed #ccc;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+.sidebar-brand h2 { font-size: 1.2rem; font-weight: 700; color: #4a7c6a; }
+.sidebar-brand .leaf { font-size: 1.4rem; }
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
 }
 
-.coupon-code {
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-right: 10px;
-    background: #e0f0e0;
-    padding: 2px 6px;
-    border-radius: 4px;
+.sidebar-nav button {
+    background: transparent;
+    border: none;
+    color: #e2e8f0;
+    padding: 12px 16px;
+    border-radius: 10px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.add-coupon-form {
-    border-top: 1px solid #eee;
+.sidebar-nav button:hover, .sidebar-nav button.active {
+    background: #4a7c6a;
+    color: white;
+}
+
+.sidebar-footer {
     padding-top: 20px;
+    border-top: 1px solid #ffffff1a;
+}
+.logout-btn { background: transparent; border: 1px solid #ffffff2a; color: #cbd5e0; width: 100%; padding: 10px; border-radius: 8px; margin-top: 10px; cursor: pointer; }
+.logout-btn:hover { background: #e53e3e; color: white; border-color: #e53e3e; }
+
+/* ── Main Viewport ─────────────────────────────────────────── */
+.main-viewport {
+    flex: 1;
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.add-coupon-form h3 {
-    margin-bottom: 10px;
-    font-size: 1rem;
-    color: var(--text-color);
-}
-
-.input-code {
-    text-transform: uppercase;
-    font-weight: 700;
-}
-
-.input-desc {
-    width: 100%;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-}
-
-
-.dashboard-header {
-    text-align: center;
+/* Stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
     margin-bottom: 40px;
 }
 
-.dashboard-header h1 {
-    font-family: var(--heading-font-family);
-    color: var(--text-color);
-}
-
-.actions-bar {
-    margin-bottom: 20px;
+.stat-card {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
+    gap: 8px;
+}
+.stat-card.highlight { border-left: 4px solid #4a7c6a; }
+.stat-card .label { color: #8898aa; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
+.stat-card .value { font-size: 1.8rem; font-weight: 800; color: #1e2925; }
+
+/* Content Body */
+.content-body {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
 }
 
-.products-table {
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+.table-header h2 { font-size: 1.4rem; font-weight: 700; }
+
+.premium-table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    border-radius: 10px;
-    overflow: hidden;
 }
 
-.products-table th, .products-table td {
-    padding: 15px;
+.premium-table th {
     text-align: left;
-    border-bottom: 1px solid #eee;
-}
-
-.products-table th {
-    background: #f4f4f4;
-    font-weight: 700;
-}
-
-.thumb {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border-radius: 5px;
-}
-
-.desc-cell {
-    max-width: 200px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: #777;
-    font-size: 0.9rem;
-}
-
-.badge {
-    padding: 3px 8px;
-    border-radius: 12px;
+    color: #8898aa;
     font-size: 0.8rem;
-    text-transform: capitalize;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f1f5f9;
+    text-transform: uppercase;
 }
 
-.tabs-nav {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 30px;
+.premium-table td {
+    padding: 20px 0;
+    border-bottom: 1px solid #f8faf9;
+    font-size: 0.95rem;
 }
 
-.tab-btn {
-    background: none;
+.bold { font-weight: 700; color: #1e2925; }
+.thumb-round { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+.tag { background: #f1f5f9; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.tag.role.admin { background: #1e2925; color: white; }
+
+.status-dropdown {
     border: none;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #888;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all 0.3s;
-}
-
-.tab-btn.active {
-    color: var(--primary-color);
-    border-bottom: 3px solid var(--primary-color);
-}
-
-.tab-btn:hover {
-    color: var(--primary-color);
-}
-
-.badge.Tortas { background: #ffe0e0; color: #d64545; }
-.badge.Postres { background: #e0f0ff; color: #007bff; }
-.badge.Bebidas { background: #e0ffe0; color: #28a745; }
-
-.badge.admin-role { background: #333; color: #fff; }
-.badge.user-role { background: #eee; color: #666; }
-
-.btn-icon {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    padding: 5px;
-    transition: transform 0.2s;
-}
-
-.btn-icon:hover {
-    transform: scale(1.2);
-}
-
-/* Modal Styles */
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-    color: var(--text-color);
-}
-
-.form-group input, .form-group select, .form-group textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
+    padding: 6px 12px;
     border-radius: 8px;
-    font-family: inherit;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.btn-save {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.btn-cancel {
-    background: #eee;
-    color: #666;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.image-preview {
-    margin-top: 10px;
-    text-align: center;
-}
-
-.image-preview img {
-    max-width: 100%;
-    max-height: 200px;
-    border-radius: 10px;
-    border: 2px solid #eee;
-}
-
-/* Custom File Upload */
-.file-upload-container {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 10px;
-}
-
-input[type="file"] {
-    display: none;
-}
-
-.custom-file-upload {
-    border: 1px solid #ccc;
-    display: inline-block;
-    padding: 10px 20px;
-    cursor: pointer;
-    background: #f9f9f9;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.3s;
-    color: #555;
-    white-space: nowrap;
-}
-
-.custom-file-upload:hover {
-    background: #eee;
-    border-color: #999;
-}
-
-.file-name {
-    color: #666;
-    font-size: 0.9rem;
-    font-style: italic;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 200px;
-}
-
-.file-name.placeholder {
-    color: #aaa;
-}
-
-/* Analytics Styles */
-.chart-container {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    margin-bottom: 30px;
-}
-
-.chart-row {
-    margin-bottom: 20px;
-}
-
-.chart-label {
-    margin-bottom: 5px;
-    font-weight: 600;
-    color: #555;
-    font-size: 0.9rem;
-}
-
-.chart-bar-container {
-    background: #f0f0f0;
-    border-radius: 10px;
-    height: 30px;
-    width: 100%;
-    overflow: hidden;
-}
-
-.chart-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--primary-color), #4a7c6a);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    padding-left: 10px;
-    transition: width 1s ease-out;
-    white-space: nowrap;
-}
-
-.chart-value {
-    color: white;
+    font-weight: 700;
     font-size: 0.85rem;
-    font-weight: 700;
-    margin-left: 10px;
-}
-
-.quick-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-}
-
-.stat-card {
-    background: var(--white);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    text-align: center;
-}
-
-.stat-card h3 {
-    font-size: 1rem;
-    color: #888;
-    margin-bottom: 10px;
-}
-
-.stat-card p {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary-color);
-}
-.status-select {
-    padding: 5px 10px;
-    border-radius: 20px;
-    border: none;
-    font-weight: 600;
     cursor: pointer;
 }
+.status-dropdown.pendiente { background: #fff7ed; color: #c2410c; }
+.status-dropdown.atendido { background: #f0fdf4; color: #15803d; }
+.status-dropdown.cancelado { background: #fef2f2; color: #b91c1c; }
 
-.status-select.pendiente { background: #fff3cd; color: #856404; }
-.status-select.atendido { background: #d4edda; color: #155724; }
-.status-select.cancelado { background: #f8d7da; color: #721c24; }
+/* ── Metrics Pane ──────────────────────────────────────────── */
+.bars-container { display: flex; flex-direction: column; gap: 20px; }
+.bar-row { display: grid; grid-template-columns: 180px 1fr; align-items: center; gap: 20px; }
+.bar-label { font-weight: 600; font-size: 0.9rem; }
+.bar-track { background: #f1f5f9; height: 12px; border-radius: 6px; overflow: hidden; }
+.bar-fill { background: #4a7c6a; height: 100%; border-radius: 6px; position: relative; transition: width 1s; }
+.bar-value { position: absolute; right: 10px; top: -20px; font-size: 0.75rem; color: #4a7c6a; font-weight: 700; }
 
-.search-bar-container {
-    margin-bottom: 20px;
+/* ── Modal & Forms ───────────────────────────────────────── */
+.modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center; z-index: 2000;
 }
-.search-input {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #eee;
-    border-radius: 10px;
-    font-size: 1rem;
+.modal-card { background: white; width: 500px; border-radius: 24px; padding: 40px; }
+.modern-form { display: flex; flex-direction: column; gap: 20px; }
+.g-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.field label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 0.85rem; color: #64748b; }
+.field input, .field select, .field textarea { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 12px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; }
+
+.btn-solid { background: #4a7c6a; color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+.btn-ghost { background: transparent; border: none; color: #64748b; font-weight: 600; cursor: pointer; }
+.btn-primary { background: #4a7c6a; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+
+/* Animations */
+.animator-slide-up { animation: slideUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+@media (max-width: 900px) {
+    .sidebar { display: none; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
 }
 </style>

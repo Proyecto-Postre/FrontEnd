@@ -1,6 +1,6 @@
 <script setup>
-import { ref, provide, onMounted } from 'vue';
-import { RouterView } from 'vue-router';
+import { ref, provide, onMounted, computed } from 'vue';
+import { RouterView, useRoute } from 'vue-router';
 import Header from './shared/layout/Header.vue';
 import Footer from './shared/layout/Footer.vue';
 import Modal from './shared/ui/Modal.vue';
@@ -18,6 +18,9 @@ const openModal = (type) => {
 // Provide to all children
 provide('openModal', openModal);
 
+const route = useRoute();
+const isAuthPage = computed(() => ['login', 'register'].includes(route.name));
+
 // Global Authentication Check on Startup
 onMounted(async () => {
     if (authStore.isLoggedIn) {
@@ -26,8 +29,8 @@ onMounted(async () => {
                 headers: { ...authStore.authHeaders }
             });
             if (res.status === 401 || res.status === 403) {
-                console.log('Session expired. Logging out automatically.');
-                authStore.logout(); // The token is no longer valid
+                console.warn('Profile fetch failed during refresh, keeping existing session info.');
+                // We do NOT logout() here to avoid breaking persistence when profile endpoint has issues
             } else if (res.ok) {
                 const freshUser = await res.json();
                 authStore.updateUser(freshUser); // Keep profile cleanly synced
@@ -40,14 +43,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Header />
+  <Header v-if="!isAuthPage" />
   
-  <main class="app-main">
+  <main :class="{ 'app-main': !isAuthPage, 'auth-main': isAuthPage }">
     <!-- router-view loads the component for the current URL -->
     <RouterView /> 
   </main>
 
-  <Footer />
+  <Footer v-if="!isAuthPage" />
   
   <!-- Global components -->
   <Modal :isOpen="showModal" :type="modalType" @close="showModal = false" />
@@ -57,5 +60,11 @@ onMounted(async () => {
 .app-main {
     /* New header has 2 rows: brand bar (~55px) + nav row (~52px) = ~107px */
     padding-top: 107px;
+}
+
+.auth-main {
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
 }
 </style>

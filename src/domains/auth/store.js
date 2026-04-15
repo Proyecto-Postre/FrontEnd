@@ -22,12 +22,17 @@ export const authStore = reactive({
 
     // ─── Getters ────────────────────────────────────────────────
     get isLoggedIn() {
-        return !!this.user && !!this.token;
+        // More robust check: both state and direct localStorage as backup
+        const hasToken = this.token || localStorage.getItem(TOKEN_KEY);
+        const hasUser  = this.user  || localStorage.getItem(USER_KEY);
+        return !!hasToken && !!hasUser;
     },
 
     get isAdmin() {
-        // Handle both lowercase and PascalCase from various API serializers
-        const role = (this.user?.role || this.user?.Role || '').toString().toLowerCase();
+        // Robust role checking (casing and nesting)
+        const u = this.user || loadUser();
+        if (!u) return false;
+        const role = (u.role || u.Role || '').toString().toLowerCase();
         return role === 'admin';
     },
 

@@ -52,7 +52,7 @@
                     <RouterLink to="/servicios" class="nav-item" @click="closeMenu">{{ $t('header.services') }}</RouterLink>
                     <RouterLink to="/nosotros" class="nav-item" @click="closeMenu">{{ $t('header.about') }}</RouterLink>
                     <RouterLink to="/contacto" class="nav-item" @click="closeMenu">{{ $t('header.contact') }}</RouterLink>
-                    <RouterLink v-if="user && user.role === 'admin'" to="/admin" class="nav-item nav-item--admin" @click="closeMenu">{{ $t('header.admin_panel') }}</RouterLink>
+                    <RouterLink v-if="authStore.isAdmin" to="/admin" class="nav-item nav-item--admin" @click="closeMenu">{{ $t('header.admin_panel') }}</RouterLink>
                     <RouterLink v-if="user" to="/para-ti" class="nav-item" @click="closeMenu">{{ $t('header.for_you') }}</RouterLink>
                 </nav>
 
@@ -64,7 +64,7 @@
                     </button>
 
                     <!-- User / Auth -->
-                    <template v-if="!user">
+                    <template v-if="!authStore.isLoggedIn">
                         <RouterLink to="/login" class="nav-item">Iniciar</RouterLink>
                     </template>
                     <RouterLink v-else to="/cuenta" class="icon-btn" :title="$t('header.account')">
@@ -80,7 +80,7 @@
                     </button>
 
                     <!-- User / Auth -->
-                    <div v-if="!user" class="auth-buttons desktop-only">
+                    <div v-if="!authStore.isLoggedIn" class="auth-buttons desktop-only">
                         <RouterLink to="/login" class="btn-auth-outline">Iniciar</RouterLink>
                         <RouterLink to="/registro" class="btn-auth-filled">Registrar</RouterLink>
                     </div>
