@@ -21,6 +21,7 @@ const form = ref({
     lastName: '',
     phone: '',
     email: '',
+    identifier: '', // New field for login (can be email or username)
     password: '',
     confirmPassword: ''
 });
@@ -28,12 +29,12 @@ const form = ref({
 const toggleMode = () => {
     isLogin.value = !isLogin.value;
     errorMsg.value = '';
-    form.value = { firstName: '', lastName: '', phone: '', email: '', password: '', confirmPassword: '' };
+    form.value = { firstName: '', lastName: '', phone: '', email: '', identifier: '', password: '', confirmPassword: '' };
 };
 
 const handleLogin = async () => {
     errorMsg.value = '';
-    if (!form.value.email || !form.value.password) {
+    if (!form.value.identifier || !form.value.password) {
         errorMsg.value = t('auth.error_fill_all');
         return;
     }
@@ -44,7 +45,7 @@ const handleLogin = async () => {
         const res = await fetch('/api/v1/Authentication/sign-in', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usernameOrEmail: form.value.email, password: form.value.password })
+            body: JSON.stringify({ usernameOrEmail: form.value.identifier, password: form.value.password })
         });
 
         if (!res.ok) {
@@ -108,7 +109,10 @@ const handleRegister = async () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                username:  form.value.firstName, // Generate username from firstName
+                username:  form.value.firstName, // Use firstName as requested
+                firstName: form.value.firstName,
+                lastName:  form.value.lastName,
+                phone:     form.value.phone,
                 email:     form.value.email,
                 password:  form.value.password
             })
@@ -147,29 +151,6 @@ const handleRegister = async () => {
         const userData = profileRes.ok ? await profileRes.json() : { username: form.value.email };
         authStore.login(userData, token);
 
-        // Step 4: Save firstName, lastName, phone, email — sign-up only stored username/password
-        if (userData.id) {
-            await fetch(`/api/v1/users/${userData.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    firstName: form.value.firstName,
-                    lastName:  form.value.lastName,
-                    email:     form.value.email,
-                    phone:     form.value.phone,
-                    address:   ''
-                })
-            }).then(async (putRes) => {
-                if (putRes.ok) {
-                    const updated = await putRes.json();
-                    authStore.updateUser(updated);
-                }
-            }).catch(() => {}); // Non-blocking — profile update is best effort
-        }
-
         router.push('/');
     } catch (error) {
         console.error('Registration error:', error);
@@ -194,7 +175,7 @@ const handleRegister = async () => {
             <form v-if="isLogin" @submit.prevent="handleLogin" key="login-form">
                 <div class="form-group">
                     <label>{{ $t('auth.email') }}</label>
-                    <input type="text" v-model="form.email" placeholder="Usuario o Correo" required>
+                    <input type="text" v-model="form.identifier" placeholder="Usuario o Correo" required>
                 </div>
 
                 <div class="form-group">
