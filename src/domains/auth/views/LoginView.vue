@@ -60,8 +60,8 @@ const handleLogin = async () => {
         let userData = { 
             id: authData.id, 
             username: authData.username,
-            role: authData.role, // Capture role from login response
-            firstName: authData.username // Fallback to username
+            role: authData.role || authData.Role || 'user', // Capture role with casing resilience
+            firstName: authData.username 
         };
 
         try {

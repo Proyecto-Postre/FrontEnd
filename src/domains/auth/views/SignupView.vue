@@ -95,7 +95,7 @@ const handleRegister = async () => {
         let userData = { 
             id: authData.id, 
             username: authData.username,
-            role: authData.role, // Capture role from login response
+            role: authData.role || authData.Role || 'user', // Capture role with casing resilience
             firstName: form.value.firstName.trim(),
             lastName: form.value.lastName.trim()
         };

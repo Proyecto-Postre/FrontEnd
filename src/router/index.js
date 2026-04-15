@@ -7,22 +7,30 @@ import { authStore } from '../domains/auth/store.js'
 
 // ─── Guards ──────────────────────────────────────────────────────────────────
 
+const checkSession = () => {
+    const token = localStorage.getItem('dulcefe_token');
+    const userRaw = localStorage.getItem('dulcefe_user');
+    if (!token || !userRaw) return null;
+    try { return JSON.parse(userRaw); } catch { return null; }
+};
+
 /** Requires the user to be logged in. Redirects to /login if not. */
 const requireAuth = () => {
-    if (!authStore.isLoggedIn) {
-        return { name: 'login' };
-    }
+    if (!checkSession()) return { name: 'login' };
 };
 
 /** Requires the user to have the 'admin' role. Redirects to / if not. */
 const requireAdmin = () => {
-    if (!authStore.isLoggedIn) return { name: 'login' };
-    if (!authStore.isAdmin)    return { name: 'home' };
+    const user = checkSession();
+    if (!user) return { name: 'login' };
+    
+    const role = (user.role || user.Role || user.ROLE || '').toString().toLowerCase();
+    if (role !== 'admin') return { name: 'home' };
 };
 
 /** Redirect already-logged-in users away from the login page. */
 const redirectIfLoggedIn = () => {
-    if (authStore.isLoggedIn) return { name: 'home' };
+    if (checkSession()) return { name: 'home' };
 };
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
