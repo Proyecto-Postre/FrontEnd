@@ -37,17 +37,20 @@ export const authStore = reactive({
     get isAdmin() {
         const u = this.user || loadUser();
         if (!u) return false;
-        // Aggressive role matching (casing and nesting)
+        // Super aggressive role matching
         const roleStr = (u.role || u.Role || u.ROLE || '').toString().toLowerCase();
-        return roleStr === 'admin';
+        return roleStr === 'admin' || roleStr === 'administrator';
     },
 
     get displayName() {
         const u = this.user || loadUser();
         if (!u) return '';
-        const first = (u.firstName || u.FirstName || u.name || u.username || u.Username || '').toString().split(' ')[0];
-        const last  = (u.lastName  || u.LastName || '').toString().split(' ')[0];
-        return `${first} ${last}`.trim() || u.username || 'Usuario';
+        // Prioritize firstName + lastName, fallback to name or username
+        const first = (u.firstName || u.FirstName || '').toString().trim();
+        const last  = (u.lastName  || u.LastName  || '').toString().trim();
+        
+        if (first || last) return `${first} ${last}`.trim();
+        return u.name || u.username || u.Username || 'Usuario';
     },
 
     get authHeaders() {
@@ -61,7 +64,7 @@ export const authStore = reactive({
 
     // ─── Actions ────────────────────────────────────────────────
     login(userData, token) {
-        console.log('[AUTH] Logging in user:', userData.username, 'with role:', (userData.role || userData.Role));
+        console.log('[AUTH] Logging in user:', userData.username, 'with role:', (userData.role || userData.Role || 'user'));
         this.user  = userData;
         this.token = token;
         localStorage.setItem(USER_KEY,  JSON.stringify(userData));
@@ -69,7 +72,12 @@ export const authStore = reactive({
     },
 
     updateUser(updatedData) {
-        this.user = { ...(this.user || {}), ...updatedData };
+        if (!updatedData) return;
+        // Merge without losing existing critical info if missing in update
+        this.user = { 
+            ...(this.user || {}), 
+            ...updatedData 
+        };
         localStorage.setItem(USER_KEY, JSON.stringify(this.user));
     },
 

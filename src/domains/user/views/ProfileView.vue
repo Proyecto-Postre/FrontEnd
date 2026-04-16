@@ -30,7 +30,7 @@ onMounted(async () => {
         <div class="page-header" v-if="user">
             <div class="container page-header-inner">
                 <p class="page-eyebrow">✦ Dulce Fe ✦</p>
-                <h2 class="page-title">{{ $t('profile.welcome', { name: user.name }) }}</h2>
+                <h2 class="page-title">{{ $t('profile.welcome', { name: authStore.displayName }) }}</h2>
                 <p class="page-subtitle">{{ $t('profile.welcome_sub') }}</p>
                 <div class="page-divider"></div>
             </div>

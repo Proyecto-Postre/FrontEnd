@@ -46,6 +46,15 @@ const handleLogin = async () => {
             
             if (res.status === 401) {
                 errorMsg.value = t('auth.error_credentials');
+            } else if (res.status === 400) {
+                if (errorData.errors) {
+                    const firstKey = Object.keys(errorData.errors)[0];
+                    errorMsg.value = errorData.errors[firstKey][0];
+                } else if (Array.isArray(errorData) && errorData.length > 0) {
+                    errorMsg.value = errorData[0].errorMessage || errorData[0];
+                } else {
+                    errorMsg.value = errorData.message || 'Credenciales inválidas o formato incorrecto.';
+                }
             } else {
                 errorMsg.value = errorData.message || 'Error del servidor al intentar entrar.';
             }

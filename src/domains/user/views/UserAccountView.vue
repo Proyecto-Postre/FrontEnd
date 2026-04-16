@@ -33,25 +33,32 @@ onMounted(async () => {
         const res = await fetch('/api/v1/users/me', {
             headers: { ...authStore.authHeaders }
         });
+        
         if (res.ok) {
             const freshUser = await res.json();
             authStore.updateUser(freshUser);
         } else if (res.status === 401 || res.status === 403) {
-            authStore.logout();
-            router.push('/login');
-            return;
+            // ONLY logout if we are absolutely sure the session is gone (e.g., no token in state)
+            if (!authStore.token) {
+                authStore.logout();
+                router.push('/login');
+                return;
+            } else {
+                console.warn('[ACCOUNT] Profile fetch returned 401/403, but token exists. Possibly a server config issue. Staying on page.');
+            }
         }
     } catch (e) {
-        console.warn('Could not refresh profile:', e);
+        console.warn('[ACCOUNT] Could not refresh profile from backend:', e);
     }
 
-    // Init form with current user data
+    // Init form with the BEST AVAILABLE data
+    const u = authStore.user || {};
     form.value = {
-        firstName: authStore.user.firstName || '',
-        lastName:  authStore.user.lastName  || '',
-        phone:     authStore.user.phone     || '',
-        email:     authStore.user.email     || authStore.user.username || '',
-        address:   authStore.user.address   || ''
+        firstName: u.firstName || u.FirstName || '',
+        lastName:  u.lastName  || u.LastName  || '',
+        phone:     u.phone     || u.Phone     || '',
+        email:     u.email     || u.Email     || u.username || u.Username || '',
+        address:   u.address   || u.Address   || ''
     };
 });
 
