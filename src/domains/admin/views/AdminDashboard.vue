@@ -76,13 +76,13 @@ const filteredTestimonials = computed(() => {
 // ─── Actions ────────────────────────────────────────────────
 const updateOrderStatus = async (order, newStatus) => {
     try {
-        await fetch(`/api/v1/orders/${order.id}`, {
+        await fetch(`/api/v1/admin/orders/${order.id}/status`, {
             method: 'PATCH',
             headers: { 
                 'Content-Type': 'application/json',
                 ...authStore.authHeaders
             },
-            body: JSON.stringify({ status: newStatus })
+            body: JSON.stringify(newStatus) // Sending string directly as expected by [FromBody] string status
         });
         order.status = newStatus;
     } catch(e) { alert("Error updating status"); }
@@ -137,28 +137,24 @@ const handleFileUpload = (event) => {
 };
 
 const toggleTestimonialSelection = async (review) => {
-    if (!review.isSelected && testimonials.value.filter(t => t.isSelected).length >= 3) {
-        alert("Máximo 3 testimonios");
-        return;
-    }
     try {
-        const newVal = !review.isSelected;
-        await fetch(`/api/v1/testimonials/${review.id}`, {
+        const res = await fetch(`/api/v1/admin/testimonials/${review.id}/pin`, {
             method: 'PATCH',
             headers: { 
-                'Content-Type': 'application/json',
                 ...authStore.authHeaders
-            },
-            body: JSON.stringify({ isSelected: newVal })
+            }
         });
-        review.isSelected = newVal;
+        if (res.ok) {
+            const updated = await res.json();
+            review.isPinned = updated.isPinned; // Backend uses isPinned
+        }
     } catch (e) { alert("Error al actualizar"); }
 };
 
 const deleteTestimonial = async (id) => {
     if (!confirm("¿Eliminar comentario?")) return;
     try {
-        await fetch(`/api/v1/testimonials/${id}`, { 
+        await fetch(`/api/v1/admin/testimonials/${id}`, { 
             method: 'DELETE',
             headers: { ...authStore.authHeaders }
         });
