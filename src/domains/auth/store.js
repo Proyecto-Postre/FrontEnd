@@ -37,20 +37,37 @@ export const authStore = reactive({
     get isAdmin() {
         const u = this.user || loadUser();
         if (!u) return false;
-        // Super aggressive role matching
-        const roleStr = (u.role || u.Role || u.ROLE || '').toString().toLowerCase();
+        // Resilient role matching: handles role/Role/ROLE and 'admin'/'administrator'
+        const rawRole = u.role || u.Role || u.ROLE || '';
+        const roleStr = rawRole.toString().toLowerCase().trim();
         return roleStr === 'admin' || roleStr === 'administrator';
+    },
+
+    get isUser() {
+        const u = this.user || loadUser();
+        if (!u) return false;
+        const rawRole = u.role || u.Role || u.ROLE || '';
+        const roleStr = rawRole.toString().toLowerCase().trim();
+        return roleStr === 'customer' || roleStr === 'user' || roleStr === 'client';
     },
 
     get displayName() {
         const u = this.user || loadUser();
         if (!u) return '';
-        // Prioritize firstName + lastName, fallback to name or username
+        
+        // 1. Prioritize firstName + lastName (case insensitive search)
         const first = (u.firstName || u.FirstName || '').toString().trim();
         const last  = (u.lastName  || u.LastName  || '').toString().trim();
-        
         if (first || last) return `${first} ${last}`.trim();
-        return u.name || u.username || u.Username || 'Usuario';
+
+        // 2. Fallback to name or username
+        const name = (u.name || u.Name || '').toString().trim();
+        if (name) return name;
+
+        const user = (u.username || u.Username || '').toString().trim();
+        if (user) return user;
+
+        return 'Usuario';
     },
 
     get authHeaders() {

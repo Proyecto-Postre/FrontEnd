@@ -8,10 +8,18 @@ import { authStore } from '../domains/auth/store.js'
 // ─── Guards ──────────────────────────────────────────────────────────────────
 
 const checkSession = () => {
-    const token = localStorage.getItem('dulcefe_token');
-    const userRaw = localStorage.getItem('dulcefe_user');
-    if (!token || !userRaw) return null;
-    try { return JSON.parse(userRaw); } catch { return null; }
+    // Check both memory and persistence
+    const hasToken = !!(authStore.token || localStorage.getItem('dulcefe_token'));
+    const hasUser  = !!(authStore.user  || localStorage.getItem('dulcefe_user'));
+    
+    if (!hasToken || !hasUser) return null;
+    
+    try { 
+        const userRaw = localStorage.getItem('dulcefe_user');
+        return userRaw ? JSON.parse(userRaw) : authStore.user; 
+    } catch { 
+        return authStore.user; 
+    }
 };
 
 /** Requires the user to be logged in. Redirects to /login if not. */

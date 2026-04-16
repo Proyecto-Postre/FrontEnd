@@ -62,17 +62,19 @@ const handleLogin = async () => {
         }
 
         const authData = await res.json();
-        // authData is expected to be: { id, username, token }
-        const token = authData.token;
+        // authData is expected to be: { id, username, token, firstName, lastName, role }
+        const token = authData.token || authData.Token;
         
-        // 2. Fetch full profile (RESILIENT)
+        // 2. Fetch full profile (RESILIENT & IMMEDIATE)
         let userData = { 
-            id: authData.id, 
-            username: authData.username,
-            role: authData.role || authData.Role || 'user', // Capture role with casing resilience
-            firstName: authData.username 
+            id: authData.id || authData.Id, 
+            username: authData.username || authData.Username,
+            role: authData.role || authData.Role || 'customer',
+            firstName: authData.firstName || authData.FirstName,
+            lastName: authData.lastName || authData.LastName
         };
 
+        // Try to fetch even fresher profile if possible, but don't block
         try {
             const profileRes = await fetch('/api/v1/users/me', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -81,18 +83,20 @@ const handleLogin = async () => {
             if (profileRes.ok) {
                 const freshProfile = await profileRes.json();
                 userData = { ...userData, ...freshProfile };
-                console.log('[DEBUG] Profile loaded successfully');
-            } else {
-                console.warn('[DEBUG] Profile fetch failed (401?), logging in anyway with basic data');
+                console.log('[DEBUG] Profile sync successful');
             }
         } catch (e) {
-            console.error('[DEBUG] Profile fetch error:', e);
+            console.warn('[DEBUG] Immediate profile sync failed, using login data only');
         }
 
-        // 3. Finalize Login (Unblocked)
+        // 3. Finalize Login & Redirect
         authStore.login(userData, token);
-        console.log('[DEBUG] Login finalized. Redirecting...');
-        router.push('/');
+        console.log('[DEBUG] Login finalized. Redirecting to Profile...');
+        
+        // Use a small timeout to let the store settle
+        setTimeout(() => {
+            router.push('/para-ti');
+        }, 100);
         
     } catch (error) {
         console.error('[DEBUG] Unexpected handleLogin error:', error);

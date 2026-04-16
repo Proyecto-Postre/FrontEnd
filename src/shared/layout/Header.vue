@@ -67,7 +67,7 @@
                     <template v-if="!authStore.isLoggedIn">
                         <RouterLink to="/login" class="nav-item">Iniciar</RouterLink>
                     </template>
-                    <RouterLink v-else to="/cuenta" class="icon-btn" :title="$t('header.account')">
+                    <RouterLink v-else to="/para-ti" class="icon-btn" :title="$t('header.account')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         <span class="user-name">{{ displayName }}</span>
                     </RouterLink>
@@ -84,7 +84,7 @@
                         <RouterLink to="/login" class="btn-auth-outline">Iniciar</RouterLink>
                         <RouterLink to="/registro" class="btn-auth-filled">Registrar</RouterLink>
                     </div>
-                    <RouterLink v-else to="/cuenta" class="icon-btn desktop-only" :title="$t('header.account')">
+                    <RouterLink v-else to="/para-ti" class="icon-btn desktop-only" :title="$t('header.account')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         <span class="user-name">{{ displayName }}</span>
                     </RouterLink>
