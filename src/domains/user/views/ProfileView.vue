@@ -31,7 +31,10 @@ onMounted(async () => {
             <div class="container page-header-inner">
                 <p class="page-eyebrow">✦ Dulce Fe ✦</p>
                 <h2 class="page-title">{{ $t('profile.welcome', { name: authStore.displayName }) }}</h2>
-                <p class="page-subtitle">{{ $t('profile.welcome_sub') }}</p>
+                <p class="page-subtitle">{{ authStore.isAdmin ? 'Estás visualizando la vista de cliente. Como administrador, puedes gestionar todo desde tu consola.' : $t('profile.welcome_sub') }}</p>
+                <div v-if="authStore.isAdmin" class="admin-shortcut">
+                    <RouterLink to="/admin" class="btn-admin-go">Ir al Panel de Control ➔</RouterLink>
+                </div>
                 <div class="page-divider"></div>
             </div>
         </div>
@@ -137,6 +140,29 @@ onMounted(async () => {
 }
 
 .page-divider { display: none; }
+
+.admin-shortcut {
+    margin-top: 20px;
+}
+
+.btn-admin-go {
+    background: var(--accent-color);
+    color: var(--primary-color) !important;
+    padding: 10px 24px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(212, 163, 115, 0.3);
+}
+
+.btn-admin-go:hover {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
+}
 
 .profile-content {
     min-height: 60vh;

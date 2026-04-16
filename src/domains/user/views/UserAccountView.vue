@@ -36,15 +36,18 @@ onMounted(async () => {
         
         if (res.ok) {
             const freshUser = await res.json();
+            console.log('[ACCOUNT] Profile synced successfully');
             authStore.updateUser(freshUser);
         } else if (res.status === 401 || res.status === 403) {
-            // ONLY logout if we are absolutely sure the session is gone (e.g., no token in state)
-            if (!authStore.token) {
+            // HIGHLY CONSERVATIVE: Only logout if we are explicitly sure there is no token
+            // This prevents the "flash and logout" if the server has a transient issue
+            if (!authStore.isLoggedIn) {
+                console.error('[ACCOUNT] Unauthorized access detected and no session found. Redirecting to login.');
                 authStore.logout();
                 router.push('/login');
                 return;
             } else {
-                console.warn('[ACCOUNT] Profile fetch returned 401/403, but token exists. Possibly a server config issue. Staying on page.');
+                console.warn('[ACCOUNT] Profile fetch returned 401/403, but session exists in store. Keeping session active.');
             }
         }
     } catch (e) {

@@ -28,18 +28,24 @@ const emptyProduct = {
 };
 
 // ─── Data Fetching ──────────────────────────────────────────
+// ─── Data Fetching ──────────────────────────────────────────
 const fetchData = async () => {
     try {
+        console.log('[DEBUG] Admin dashboard fetching fresh data...');
+        const headers = { ...authStore.authHeaders };
+        
         const [prodRes, userRes, orderRes, testRes] = await Promise.all([
-            fetch('/api/products'),
-            fetch('/api/users'),
-            fetch('/api/orders'),
-            fetch('/api/testimonials')
+            fetch('/api/v1/admin/products', { headers }),
+            fetch('/api/v1/users', { headers }),
+            fetch('/api/v1/admin/orders', { headers }),
+            fetch('/api/v1/admin/testimonials', { headers })
         ]);
-        products.value = await prodRes.json();
-        users.value = await userRes.json();
-        orders.value = (await orderRes.json()).reverse();
-        testimonials.value = await testRes.json();
+
+        if (prodRes.ok) products.value = await prodRes.json();
+        if (userRes.ok) users.value = await userRes.json();
+        if (orderRes.ok) orders.value = (await orderRes.json()).reverse();
+        if (testRes.ok) testimonials.value = await testRes.json();
+        
     } catch (e) {
         console.error("Error fetching dashboard data:", e);
     }
@@ -70,9 +76,12 @@ const filteredTestimonials = computed(() => {
 // ─── Actions ────────────────────────────────────────────────
 const updateOrderStatus = async (order, newStatus) => {
     try {
-        await fetch(`/api/orders/${order.id}`, {
+        await fetch(`/api/v1/orders/${order.id}`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                ...authStore.authHeaders
+            },
             body: JSON.stringify({ status: newStatus })
         });
         order.status = newStatus;
@@ -82,14 +91,17 @@ const updateOrderStatus = async (order, newStatus) => {
 const deleteProduct = async (id) => {
     if (!confirm(t('admin.alerts.confirm_delete_product'))) return;
     try {
-        await fetch(`/api/products/${id}`, { method: 'DELETE' });
+        await fetch(`/api/v1/admin/products/${id}`, { 
+            method: 'DELETE',
+            headers: { ...authStore.authHeaders }
+        });
         products.value = products.value.filter(p => p.id !== id);
     } catch (e) { alert(t('admin.alerts.error_delete_product')); }
 };
 
 const saveProduct = async () => {
     const isNew = !currentProduct.value.id;
-    const url = isNew ? '/api/products' : `/api/products/${currentProduct.value.id}`;
+    const url = isNew ? '/api/v1/admin/products' : `/api/v1/admin/products/${currentProduct.value.id}`;
     const method = isNew ? 'POST' : 'PUT';
 
     // Format price if needed
@@ -101,7 +113,10 @@ const saveProduct = async () => {
     try {
         const res = await fetch(url, {
             method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                ...authStore.authHeaders
+            },
             body: JSON.stringify(currentProduct.value)
         });
         if (res.ok) {
@@ -128,9 +143,12 @@ const toggleTestimonialSelection = async (review) => {
     }
     try {
         const newVal = !review.isSelected;
-        await fetch(`/api/testimonials/${review.id}`, {
+        await fetch(`/api/v1/testimonials/${review.id}`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                ...authStore.authHeaders
+            },
             body: JSON.stringify({ isSelected: newVal })
         });
         review.isSelected = newVal;
@@ -140,7 +158,10 @@ const toggleTestimonialSelection = async (review) => {
 const deleteTestimonial = async (id) => {
     if (!confirm("¿Eliminar comentario?")) return;
     try {
-        await fetch(`/api/testimonials/${id}`, { method: 'DELETE' });
+        await fetch(`/api/v1/testimonials/${id}`, { 
+            method: 'DELETE',
+            headers: { ...authStore.authHeaders }
+        });
         testimonials.value = testimonials.value.filter(t => t.id !== id);
     } catch (e) { alert("Error al eliminar"); }
 };

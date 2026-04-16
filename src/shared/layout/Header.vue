@@ -48,12 +48,12 @@
                     </div>
 
                     <RouterLink to="/" class="nav-item" @click="closeMenu">{{ $t('header.home') }}</RouterLink>
-                    <RouterLink to="/menu" class="nav-item nav-item--featured" @click="closeMenu">{{ $t('header.menu_btn') }}</RouterLink>
-                    <RouterLink to="/servicios" class="nav-item" @click="closeMenu">{{ $t('header.services') }}</RouterLink>
+                    <RouterLink v-if="!authStore.isAdmin" to="/menu" class="nav-item nav-item--featured" @click="closeMenu">{{ $t('header.menu_btn') }}</RouterLink>
+                    <RouterLink v-if="!authStore.isAdmin" to="/servicios" class="nav-item" @click="closeMenu">{{ $t('header.services') }}</RouterLink>
                     <RouterLink to="/nosotros" class="nav-item" @click="closeMenu">{{ $t('header.about') }}</RouterLink>
                     <RouterLink to="/contacto" class="nav-item" @click="closeMenu">{{ $t('header.contact') }}</RouterLink>
-                    <RouterLink v-if="authStore.isAdmin" to="/admin" class="nav-item nav-item--admin" @click="closeMenu">{{ $t('header.admin_panel') }}</RouterLink>
-                    <RouterLink v-if="user" to="/para-ti" class="nav-item" @click="closeMenu">{{ $t('header.for_you') }}</RouterLink>
+                    <RouterLink v-if="authStore.isAdmin" to="/admin" class="nav-item nav-item--admin" @click="closeMenu">Panel Administrador</RouterLink>
+                    <RouterLink v-if="user && !authStore.isAdmin" to="/para-ti" class="nav-item" @click="closeMenu">{{ $t('header.for_you') }}</RouterLink>
                 </nav>
 
                 <!-- Right Icons -->
@@ -67,7 +67,7 @@
                     <template v-if="!authStore.isLoggedIn">
                         <RouterLink to="/login" class="nav-item">Iniciar</RouterLink>
                     </template>
-                    <RouterLink v-else to="/para-ti" class="icon-btn" :title="$t('header.account')">
+                    <RouterLink v-else :to="authStore.isAdmin ? '/admin' : '/cuenta'" class="icon-btn" :title="$t('header.account')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         <span class="user-name">{{ displayName }}</span>
                     </RouterLink>
@@ -79,12 +79,12 @@
                         {{ locale.toUpperCase() }}
                     </button>
 
-                    <!-- User / Auth -->
+                    <!-- User / Auth (Desktop) -->
                     <div v-if="!authStore.isLoggedIn" class="auth-buttons desktop-only">
                         <RouterLink to="/login" class="btn-auth-outline">Iniciar</RouterLink>
                         <RouterLink to="/registro" class="btn-auth-filled">Registrar</RouterLink>
                     </div>
-                    <RouterLink v-else to="/para-ti" class="icon-btn desktop-only" :title="$t('header.account')">
+                    <RouterLink v-else :to="authStore.isAdmin ? '/admin' : '/cuenta'" class="icon-btn desktop-only" :title="$t('header.account')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         <span class="user-name">{{ displayName }}</span>
                     </RouterLink>

@@ -89,14 +89,21 @@ const handleLogin = async () => {
             console.warn('[DEBUG] Immediate profile sync failed, using login data only');
         }
 
-        // 3. Finalize Login & Redirect
+        // 3. Finalize Login & Redirect based on Role
+        console.log('[DEBUG] Final User Data:', JSON.stringify(userData, null, 2));
         authStore.login(userData, token);
-        console.log('[DEBUG] Login finalized. Redirecting to Profile...');
         
         // Use a small timeout to let the store settle
         setTimeout(() => {
-            router.push('/para-ti');
-        }, 100);
+            console.log('[DEBUG] Redirection Check - IsLoggedIn:', authStore.isLoggedIn, 'IsAdmin:', authStore.isAdmin);
+            if (authStore.isAdmin) {
+                console.log('[DEBUG] Admin detected. Redirecting to Dashboard...');
+                router.push('/admin');
+            } else {
+                console.log('[DEBUG] Customer detected. Redirecting to Profile...');
+                router.push('/para-ti');
+            }
+        }, 300);
         
     } catch (error) {
         console.error('[DEBUG] Unexpected handleLogin error:', error);

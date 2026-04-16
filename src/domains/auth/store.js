@@ -37,8 +37,12 @@ export const authStore = reactive({
     get isAdmin() {
         const u = this.user || loadUser();
         if (!u) return false;
-        // Resilient role matching: handles role/Role/ROLE and 'admin'/'administrator'
-        const rawRole = u.role || u.Role || u.ROLE || '';
+        // Resilient role matching: handles role/Role/ROLE and 'admin'/'administrator' or index 1 from Enum
+        const rawRole = u.role ?? u.Role ?? u.ROLE ?? '';
+        
+        // Handle numeric role index from C# Enum (1 = Admin, 0 = Customer)
+        if (typeof rawRole === 'number') return rawRole === 1;
+        
         const roleStr = rawRole.toString().toLowerCase().trim();
         return roleStr === 'admin' || roleStr === 'administrator';
     },
@@ -46,26 +50,40 @@ export const authStore = reactive({
     get isUser() {
         const u = this.user || loadUser();
         if (!u) return false;
-        const rawRole = u.role || u.Role || u.ROLE || '';
+        const rawRole = u.role ?? u.Role ?? u.ROLE ?? '';
+        if (typeof rawRole === 'number') return rawRole === 0;
+        
         const roleStr = rawRole.toString().toLowerCase().trim();
         return roleStr === 'customer' || roleStr === 'user' || roleStr === 'client';
+    },
+
+    get userRole() {
+        const u = this.user || loadUser();
+        if (!u) return '';
+        return (u.role || u.Role || 'customer').toString().toLowerCase();
     },
 
     get displayName() {
         const u = this.user || loadUser();
         if (!u) return '';
         
-        // 1. Prioritize firstName + lastName (case insensitive search)
+        // 1. Prioritize explicitly saved names
         const first = (u.firstName || u.FirstName || '').toString().trim();
         const last  = (u.lastName  || u.LastName  || '').toString().trim();
         if (first || last) return `${first} ${last}`.trim();
 
-        // 2. Fallback to name or username
+        // 2. Specific check for 'admin' string if it's an admin account
+        if (this.isAdmin) return 'Admin';
+
+        // 3. Fallback to name or username (any casing)
         const name = (u.name || u.Name || '').toString().trim();
         if (name) return name;
 
-        const user = (u.username || u.Username || '').toString().trim();
-        if (user) return user;
+        const email = (u.email || u.Email || '').toString().trim();
+        const username = (u.username || u.Username || '').toString().trim();
+        const display = username || email;
+        
+        if (display) return display.split('@')[0]; // Return everything before @ if it's an email
 
         return 'Usuario';
     },

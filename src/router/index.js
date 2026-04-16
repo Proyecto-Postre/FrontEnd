@@ -6,39 +6,29 @@ import ContactView from '../views/ContactView.vue'
 import { authStore } from '../domains/auth/store.js'
 
 // ─── Guards ──────────────────────────────────────────────────────────────────
-
-const checkSession = () => {
-    // Check both memory and persistence
-    const hasToken = !!(authStore.token || localStorage.getItem('dulcefe_token'));
-    const hasUser  = !!(authStore.user  || localStorage.getItem('dulcefe_user'));
-    
-    if (!hasToken || !hasUser) return null;
-    
-    try { 
-        const userRaw = localStorage.getItem('dulcefe_user');
-        return userRaw ? JSON.parse(userRaw) : authStore.user; 
-    } catch { 
-        return authStore.user; 
-    }
-};
+// Note: We use authStore as the single source of truth for sessions.
+// The store already handles rehydrating from localStorage internally.
 
 /** Requires the user to be logged in. Redirects to /login if not. */
 const requireAuth = () => {
-    if (!checkSession()) return { name: 'login' };
+    if (!authStore.isLoggedIn) {
+        console.warn('[ROUTER] Unauthorized access attempt, redirecting to login');
+        return { name: 'login' };
+    }
 };
 
-/** Requires the user to have the 'admin' role. Redirects to / if not. */
+/** Requires the user to have the 'admin' role. Redirects to home if not. */
 const requireAdmin = () => {
-    const user = checkSession();
-    if (!user) return { name: 'login' };
-    
-    const role = (user.role || user.Role || user.ROLE || '').toString().toLowerCase();
-    if (role !== 'admin') return { name: 'home' };
+    if (!authStore.isLoggedIn) return { name: 'login' };
+    if (!authStore.isAdmin) {
+        console.warn('[ROUTER] Admin access denied for user:', authStore.displayName);
+        return { name: 'home' };
+    }
 };
 
 /** Redirect already-logged-in users away from the login page. */
 const redirectIfLoggedIn = () => {
-    if (checkSession()) return { name: 'home' };
+    if (authStore.isLoggedIn) return { name: 'home' };
 };
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
