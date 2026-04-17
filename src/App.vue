@@ -44,28 +44,27 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Header v-if="!isAuthPage && !isAdminPage" />
+  <Header v-if="!isAuthPage" />
   
   <main :class="{ 'app-main': !isAuthPage && !isAdminPage, 'admin-main': isAdminPage, 'auth-main': isAuthPage }">
     <!-- router-view loads the component for the current URL -->
     <RouterView :key="$route.fullPath" /> 
   </main>
 
-  <Footer v-if="!isAuthPage && !isAdminPage" />
+  <Footer v-if="!isAuthPage" />
   
   <!-- Global components -->
   <Modal :isOpen="showModal" :type="modalType" @close="showModal = false" />
 </template>
 
 <style>
-.app-main {
-    /* New header has 2 rows: brand bar (~55px) + nav row (~52px) = ~107px */
+.app-main, .admin-main {
     padding-top: 107px;
+    min-height: 100vh;
 }
 
 .admin-main {
-    height: 100vh;
-    overflow: hidden;
+    background: #fbf9f6;
 }
 
 .auth-main {

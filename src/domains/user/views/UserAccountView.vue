@@ -30,11 +30,11 @@ const orders = ref([]);
 const syncFormData = () => {
     const u = authStore.user || {};
     form.value = {
-        firstName: u.firstName || '',
-        lastName:  u.lastName  || '',
-        phone:     u.phone     || '',
-        email:     u.email     || u.username || '',
-        address:   u.address   || ''
+        firstName: u.first_name || u.firstName || '',
+        lastName:  u.last_name  || u.lastName  || '',
+        phone:     u.phone      || '',
+        email:     u.email      || u.username || '',
+        address:   u.address    || ''
     };
 };
 
@@ -69,14 +69,22 @@ const saveProfile = async () => {
     if (!form.value.firstName || !form.value.lastName) return;
     isSaving.value = true;
     try {
+        // Prepare payload with DB compatible names
+        const payload = {
+            ...form.value,
+            first_name: form.value.firstName,
+            last_name:  form.value.lastName
+        };
+
         const res = await apiFetch(`/api/v1/users/${authStore.user.id}`, {
             method: 'PUT',
-            body: JSON.stringify(form.value)
+            body: JSON.stringify(payload)
         });
         if (res.ok) {
             const updated = await res.json();
             authStore.updateUser(updated);
             isEditing.value = false;
+            syncFormData();
         }
     } catch (e) {
         console.error('[ACCOUNT] Update error:', e);

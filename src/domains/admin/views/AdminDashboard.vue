@@ -129,7 +129,13 @@ const saveProduct = async () => {
     try {
         const res = await apiFetch(url, {
             method,
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+                ...payload,
+                // Ensure we send field names that match the DB/Backend expectations
+                first_name: payload.first_name,
+                last_name: payload.last_name,
+                is_featured: payload.isFeatured || payload.is_featured
+            })
         });
         
         if (res.ok) {
@@ -137,7 +143,7 @@ const saveProduct = async () => {
             isEditing.value = false;
         } else {
             console.error('[ADMIN] Error saving product:', res.status);
-            alert('Error al guardar el producto.');
+            alert('Error al guardar el producto. Verifica la conexión.');
         }
     } catch (e) {
         console.error('[ADMIN] Save error:', e);
@@ -185,7 +191,8 @@ const toggleTestimonialSelection = async (review) => {
         });
         if (res.ok) {
             const updated = await res.json();
-            review.isPinned = updated.isPinned;
+            // Ensure we sync with the database field 'is_pinned'
+            review.is_pinned = updated.is_pinned !== undefined ? updated.is_pinned : !review.is_pinned;
         }
     } catch (e) { console.error("[ADMIN] Toggle pin error:", e); }
 };
@@ -202,75 +209,53 @@ const deleteTestimonial = async (id) => {
 </script>
 
 <template>
-    <div class="admin-wrapper">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <div class="brand-logo"><Box :size="28" /></div>
-                <div class="brand-info">
-                    <h2>Dulce Fe</h2>
-                    <span>Admin Panel</span>
+    <div class="admin-page-container">
+        <!-- Horizontal Admin Navigation -->
+        <nav class="admin-horizontal-nav shadow-premium">
+            <div class="container nav-tabs-wrapper">
+                <div class="admin-brand-mini">
+                    <Box :size="20" class="icon-accent" />
+                    <span>Panel Admin</span>
                 </div>
-            </div>
-
-            <nav class="sidebar-nav">
-                <button @click="activeTab = 'dashboard'" :class="{ active: activeTab === 'dashboard' }">
-                    <LayoutDashboard :size="20" />
-                    <span>Dashboard</span>
-                </button>
-                <button @click="activeTab = 'orders'" :class="{ active: activeTab === 'orders' }">
-                    <ShoppingBag :size="20" />
-                    <span>Pedidos</span>
-                </button>
-                <button @click="activeTab = 'inventory'" :class="{ active: activeTab === 'inventory' }">
-                    <Box :size="20" />
-                    <span>Inventario</span>
-                </button>
-                <button @click="activeTab = 'users'" :class="{ active: activeTab === 'users' }">
-                    <Users :size="20" />
-                    <span>Usuarios</span>
-                </button>
-                <button @click="activeTab = 'reviews'" :class="{ active: activeTab === 'reviews' }">
-                    <MessageSquare :size="20" />
-                    <span>Reseñas</span>
-                </button>
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="user-pill">
-                    <div class="avatar-sm">{{ authStore.displayName?.charAt(0) }}</div>
-                    <div class="user-meta">
-                        <span class="user-name">{{ authStore.displayName }}</span>
-                        <span class="user-role">Admin</span>
-                    </div>
-                </div>
-                <button @click="authStore.logout(); $router.push('/')" class="logout-link-btn">
-                    <LogOut :size="16" />
-                    <span>Salir</span>
-                </button>
-            </div>
-        </aside>
-
-        <!-- Main Content Area -->
-        <main class="admin-main-content">
-            <header class="admin-header">
-                <div class="header-breadcrumb">
-                    <span class="root">Panel</span>
-                    <span class="separator">/</span>
-                    <span class="current">{{ activeTab.charAt(0).toUpperCase() + activeTab.slice(1) }}</span>
-                </div>
-                <div class="header-actions-top">
-                    <div class="search-wrapper-top">
-                        <Search :size="18" class="search-icon-fixed" />
-                        <input type="text" placeholder="Buscar pedidos, productos o clientes..." class="top-search-input">
-                    </div>
-                    <button @click="fetchData" class="icon-refresh-btn" title="Refrescar datos">
-                        <RefreshCw :size="18" />
+                
+                <div class="tabs-group">
+                    <button @click="activeTab = 'dashboard'" :class="{ active: activeTab === 'dashboard' }">
+                        <LayoutDashboard :size="18" />
+                        <span>Resumen</span>
+                    </button>
+                    <button @click="activeTab = 'orders'" :class="{ active: activeTab === 'orders' }">
+                        <ShoppingBag :size="18" />
+                        <span>Pedidos</span>
+                    </button>
+                    <button @click="activeTab = 'inventory'" :class="{ active: activeTab === 'inventory' }">
+                        <Box :size="18" />
+                        <span>Inventario</span>
+                    </button>
+                    <button @click="activeTab = 'users'" :class="{ active: activeTab === 'users' }">
+                        <Users :size="18" />
+                        <span>Usuarios</span>
+                    </button>
+                    <button @click="activeTab = 'reviews'" :class="{ active: activeTab === 'reviews' }">
+                        <MessageSquare :size="18" />
+                        <span>Reseñas</span>
                     </button>
                 </div>
-            </header>
+                
+                <div class="nav-spacer"></div>
+                
+                <div class="admin-header-actions">
+                    <button @click="fetchData" class="refresh-pill" title="Sincronizar Datos">
+                        <RefreshCw :size="16" />
+                    </button>
+                    <div class="user-chip">
+                        <div class="avatar-xs">{{ authStore.displayName?.charAt(0) }}</div>
+                        <span class="user-label">{{ authStore.displayName }}</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
 
-            <div class="admin-scroll-area">
+            <div class="tab-content-wrapper animator-fade-in">
                 <!-- Dashboard Overview -->
                 <div v-if="activeTab === 'dashboard'" class="tab-content animator-fade-in">
                     <section class="metrics-grid">
@@ -395,39 +380,54 @@ const deleteTestimonial = async (id) => {
                             </button>
                         </div>
                         <div class="table-container">
-                            <table class="modern-table">
+                            <table class="compact-table">
                                 <thead>
                                     <tr>
-                                        <th>Preview</th>
-                                        <th>Nombre</th>
-                                        <th>Precio</th>
-                                        <th>Categoría</th>
-                                        <th>Estatus</th>
-                                        <th>Acciones</th>
+                                        <th class="col-img">Img</th>
+                                        <th class="col-name">Nombre del Producto</th>
+                                        <th class="col-price">Precio</th>
+                                        <th class="col-cat">Categoría</th>
+                                        <th class="col-feat">Estado</th>
+                                        <th class="col-actions">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="p in products" :key="p.id">
-                                        <td>
-                                            <div class="img-preview-box">
+                                    <tr v-for="p in products" :key="p.id" class="product-row">
+                                        <td class="col-img">
+                                            <div class="compact-thumb">
                                                 <img :src="getImgUrl(p.image)" @error="$event.target.src = '/assets/postreejemplo.jpg'">
                                             </div>
                                         </td>
-                                        <td class="bold-cell">{{ p.title }}</td>
-                                        <td class="price-cell">{{ formatPrice(p.price) }}</td>
-                                        <td><span class="cat-pill">{{ p.category }}</span></td>
-                                        <td>
-                                            <span :class="['feat-pill', p.isFeatured ? 'pinned' : '']">
-                                                {{ p.isFeatured ? 'Destacado' : 'Estándar' }}
-                                            </span>
+                                        <td class="col-name">
+                                            <div class="product-info-compact">
+                                                <span class="p-title">{{ p.title }}</span>
+                                                <span class="p-id">ID: #{{ p.id }}</span>
+                                            </div>
                                         </td>
-                                        <td class="action-cell">
-                                            <button @click="currentProduct = { ...p }; isEditing = true" class="action-btn edit" title="Editar">
-                                                <Pencil :size="16" />
-                                            </button>
-                                            <button @click="deleteProduct(p.id)" class="action-btn delete" title="Eliminar">
-                                                <Trash2 :size="16" />
-                                            </button>
+                                        <td class="col-price">
+                                            <span class="p-price">{{ formatPrice(p.price) }}</span>
+                                        </td>
+                                        <td class="col-cat">
+                                            <span class="compact-cat-pill">{{ p.category }}</span>
+                                        </td>
+                                        <td class="col-feat">
+                                            <div v-if="p.is_featured || p.isFeatured" class="status-indicator featured" title="Destacado">
+                                                <Pin :size="12" />
+                                                <span>Destacado</span>
+                                            </div>
+                                            <div v-else class="status-indicator normal">
+                                                <span>Normal</span>
+                                            </div>
+                                        </td>
+                                        <td class="col-actions">
+                                            <div class="row-actions">
+                                                <button @click="currentProduct = { ...p }; isEditing = true" class="mini-action-btn edit" title="Editar">
+                                                    <Pencil :size="14" />
+                                                </button>
+                                                <button @click="deleteProduct(p.id)" class="mini-action-btn delete" title="Eliminar">
+                                                    <Trash2 :size="14" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -454,11 +454,11 @@ const deleteTestimonial = async (id) => {
                                 </thead>
                                 <tbody>
                                     <tr v-for="u in users" :key="u.id">
-                                        <td class="bold-cell">{{ (u.firstName && u.lastName) ? (u.firstName + ' ' + u.lastName) : (u.name || u.username) }}</td>
+                                        <td class="bold-cell">{{ (u.first_name && u.last_name) ? (u.first_name + ' ' + u.last_name) : (u.first_name || u.name || u.username) }}</td>
                                         <td>{{ u.email || u.username }}</td>
                                         <td>
-                                            <span :class="['role-pill', u.role === '1' || u.role === 'admin' ? 'admin' : 'customer']">
-                                                {{ u.role === '1' || u.role === 'admin' ? 'Admin' : 'Cliente' }}
+                                            <span :class="['role-pill', u.role === '1' || u.role === 1 || u.role === 'admin' ? 'admin' : 'customer']">
+                                                {{ u.role === '1' || u.role === 1 || u.role === 'admin' ? 'Admin' : 'Cliente' }}
                                             </span>
                                         </td>
                                         <td><span class="active-dot"></span> Online</td>
@@ -500,9 +500,9 @@ const deleteTestimonial = async (id) => {
                                             </div>
                                         </td>
                                         <td>
-                                            <button @click="toggleTestimonialSelection(r)" :class="{ pinned: r.isPinned }" class="pin-btn">
+                                            <button @click="toggleTestimonialSelection(r)" :class="{ pinned: r.is_pinned }" class="pin-btn">
                                                 <Pin :size="16" />
-                                                <span>{{ r.isPinned ? "Destacado" : "Fijar" }}</span>
+                                                <span>{{ r.is_pinned ? "Destacado" : "Fijar" }}</span>
                                             </button>
                                         </td>
                                         <td>
@@ -513,210 +513,259 @@ const deleteTestimonial = async (id) => {
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
                     </div>
                 </div>
             </div>
-        </main>
 
-        <!-- Edit Modal Overlay -->
-        <div v-if="isEditing" class="modal-backdrop" @click.self="isEditing = false">
-            <div class="modal-card animator-slide-up">
-                <h3>{{ currentProduct.id ? 'Editar Postre' : 'Nuevo Postre' }}</h3>
-                <p class="subtitle">Personaliza los detalles del catálogo</p>
-                
-                <form @submit.prevent="saveProduct" class="modern-form">
-                    <div class="g-2">
-                        <div class="field">
-                            <label>Nombre del Postre</label>
-                            <input v-model="currentProduct.title" required placeholder="Ej: Red Velvet Supreme">
-                        </div>
-                        <div class="field">
-                            <label>Precio (S/)</label>
-                            <input type="number" step="0.01" v-model="currentProduct.price" required placeholder="0.00">
-                        </div>
-                    </div>
-                    <div class="g-2">
-                        <div class="field">
-                            <label>Categoría</label>
-                            <select v-model="currentProduct.category">
-                                <option>Tortas</option>
-                                <option>Postres</option>
-                                <option>Bebidas</option>
-                                <option>Workshops</option>
-                            </select>
-                        </div>
-                        <div class="field">
-                            <label>Estado Destacado</label>
-                            <select v-model="currentProduct.isFeatured">
-                                <option :value="true">Sí, mostrar en inicio</option>
-                                <option :value="false">No, normal</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label>Imagen del Producto</label>
-                        <div class="file-uploader" @click="$refs.fileInput.click()">
-                            <input type="file" ref="fileInput" @change="handleFileUpload" hidden>
-                            <div v-if="currentProduct.image" class="preview">
-                                <img :src="getImgUrl(currentProduct.image)" alt="Preview">
-                                <span>Cambiar imagen</span>
+            <!-- Edit Modal Overlay -->
+            <div v-if="isEditing" class="modal-backdrop" @click.self="isEditing = false">
+                <div class="modal-card animator-slide-up">
+                    <h3>{{ currentProduct.id ? 'Editar Postre' : 'Nuevo Postre' }}</h3>
+                    <p class="subtitle">Personaliza los detalles del catálogo</p>
+                    
+                    <form @submit.prevent="saveProduct" class="modern-form">
+                        <div class="g-2">
+                            <div class="field">
+                                <label>Nombre del Postre</label>
+                                <input v-model="currentProduct.title" required placeholder="Ej: Red Velvet Supreme">
                             </div>
-                            <div v-else class="upload-placeholder">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                                <p>Sube una foto deliciosa</p>
+                            <div class="field">
+                                <label>Precio (S/)</label>
+                                <input type="number" step="0.01" v-model="currentProduct.price" required placeholder="0.00">
                             </div>
                         </div>
-                    </div>
-                    <div class="field">
-                        <label>Descripción sugerente</label>
-                        <textarea v-model="currentProduct.description" rows="3" placeholder="Describe el sabor..."></textarea>
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" @click="isEditing = false" class="btn-ghost">Cancelar</button>
-                        <button type="submit" class="btn-solid" :disabled="isSaving">
-                            <span v-if="isSaving" class="load-spin"></span>
-                            {{ currentProduct.id ? 'Actualizar' : 'Crear Postre' }}
-                        </button>
-                    </div>
-                </form>
+                        <div class="g-2">
+                            <div class="field">
+                                <label>Categoría</label>
+                                <select v-model="currentProduct.category">
+                                    <option>Tortas</option>
+                                    <option>Postres</option>
+                                    <option>Bebidas</option>
+                                    <option>Workshops</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Estado Destacado</label>
+                                <select v-model="currentProduct.is_featured">
+                                    <option :value="true">Sí, mostrar en inicio</option>
+                                    <option :value="false">No, normal</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Imagen del Producto</label>
+                            <div class="file-uploader" @click="$refs.fileInput.click()">
+                                <input type="file" ref="fileInput" @change="handleFileUpload" hidden>
+                                <div v-if="currentProduct.image" class="preview">
+                                    <img :src="getImgUrl(currentProduct.image)" alt="Preview">
+                                    <span>Cambiar imagen</span>
+                                </div>
+                                <div v-else class="upload-placeholder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                    <p>Sube una foto deliciosa</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Descripción sugerente</label>
+                            <textarea v-model="currentProduct.description" rows="3" placeholder="Describe el sabor..."></textarea>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" @click="isEditing = false" class="btn-ghost">Cancelar</button>
+                            <button type="submit" class="btn-solid" :disabled="isSaving">
+                                <span v-if="isSaving" class="load-spin"></span>
+                                {{ currentProduct.id ? 'Actualizar' : 'Crear Postre' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-/* ── Variables & Reset ─────────────────────────────────────── */
-.admin-wrapper {
-    display: flex;
-    height: 100vh;
-    width: 100vw;
-    background: #fbf9f6;
-    color: #2d2a26;
-    font-family: 'Outfit', sans-serif;
-    overflow: hidden;
+.admin-page-container {
+    background-color: var(--bg-color);
+    padding-bottom: 80px;
 }
 
-/* ── Sidebar ───────────────────────────────────────────────── */
-.sidebar {
-    width: 260px;
-    background: #234027; /* Dark Forest Green */
-    color: #f8f4ee;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+/* ── Integrated Horizontal Navigation ──────────────────────── */
+.admin-horizontal-nav {
+    background: white;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0; /* Adjust if your main header is also sticky */
     z-index: 100;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    margin-bottom: 40px;
 }
 
-.sidebar-brand {
-    padding: 30px;
+.nav-tabs-wrapper {
     display: flex;
     align-items: center;
-    gap: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.brand-logo { font-size: 2rem; }
-.brand-info h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin: 0; color: #f8f4ee; }
-.brand-info span { font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
-
-.sidebar-nav {
-    flex: 1;
-    padding: 20px 15px;
-    display: flex;
-    flex-direction: column;
     gap: 8px;
 }
 
-.sidebar-nav button {
+.nav-tabs-wrapper button {
     background: transparent;
     border: none;
-    color: rgba(248, 244, 238, 0.6);
-    padding: 12px 18px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
+    padding: 20px 16px;
+    font-size: 0.9rem;
     font-weight: 600;
+    color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.sidebar-nav button:hover {
-    background: rgba(255,255,255,0.05);
-    color: #f8f4ee;
-}
-
-.sidebar-nav button.active {
-    background: #f8f4ee;
-    color: #234027;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.sidebar-footer {
-    padding: 20px;
-    border-top: 1px solid rgba(255,255,255,0.05);
-}
-
-.user-pill {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 12px;
-    margin-bottom: 12px;
+    gap: 8px;
+    position: relative;
+    transition: all 0.25s ease;
 }
 
-.avatar-sm {
-    width: 32px; height: 32px; background: #e9c46a; color: #234027;
-    border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800;
+.nav-tabs-wrapper button:hover {
+    color: var(--primary-color);
+    background: rgba(44, 85, 48, 0.03);
 }
 
-.user-meta { display: flex; flex-direction: column; }
-.user-name { font-size: 0.85rem; font-weight: 700; color: #f8f4ee; }
-.user-role { font-size: 0.7rem; opacity: 0.5; }
-
-.logout-link-btn {
-    width: 100%; background: rgba(231, 111, 81, 0.1); border: none;
-    color: #e76f51; padding: 10px; border-radius: 10px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700;
+.nav-tabs-wrapper button.active {
+    color: var(--primary-color);
 }
 
-/* ── Main Area ─────────────────────────────────────────────── */
-.admin-main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
+.nav-tabs-wrapper button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 4px 4px 0 0;
 }
 
-.admin-header {
-    height: 70px;
-    background: white;
-    padding: 0 40px;
+.admin-brand-mini {
     display: flex;
     align-items: center;
+    gap: 10px;
+    margin-right: 20px;
+}
+
+.admin-brand-mini span {
+    font-family: 'Playfair Display', serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+
+.tabs-group {
+    display: flex;
+    gap: 4px;
+}
+
+.admin-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.user-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-color);
+    padding: 4px 12px 4px 4px;
+    border-radius: 50px;
+    border: 1px solid var(--border-color);
+}
+
+.avatar-xs {
+    width: 24px;
+    height: 24px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.7rem;
+}
+
+.user-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+/* ── Dashboard Content ─────────────────────────────────────── */
+.dashboard-section-header {
+    display: flex;
     justify-content: space-between;
-    border-bottom: 1px solid #eee;
+    align-items: flex-end;
+    margin-bottom: 30px;
 }
 
-.header-breadcrumb { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 600; color: #999; }
-.header-breadcrumb .current { color: #234027; }
-
-.header-actions-top { display: flex; align-items: center; gap: 20px; }
-.search-wrapper-top { position: relative; width: 300px; }
-.search-icon-fixed { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #ccc; }
-.top-search-input {
-    width: 100%; border: 1.5px solid #eee; padding: 8px 12px 8px 40px;
-    border-radius: 10px; outline: none; transition: 0.2s;
+.breadcrumb-mini {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    letter-spacing: 0.5px;
 }
-.top-search-input:focus { border-color: #234027; box-shadow: 0 0 0 4px rgba(35, 64, 39, 0.05); }
 
-.admin-scroll-area {
-    flex: 1;
-    overflow-y: auto;
-    padding: 30px 40px;
+.breadcrumb-mini strong {
+    color: var(--primary-color);
+    font-weight: 800;
+}
+
+.quick-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.search-box-premium {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box-premium svg {
+    position: absolute;
+    left: 14px;
+    color: var(--text-light);
+}
+
+.mini-search {
+    padding: 10px 15px 10px 42px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    font-size: 0.85rem;
+    width: 200px;
+    transition: 0.3s;
+}
+
+.mini-search:focus {
+    width: 260px;
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.refresh-pill {
+    background: white;
+    border: 1px solid var(--border-color);
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: 0.3s;
+}
+
+.refresh-pill:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: var(--bg-color);
 }
 
 /* ── Dashboard Content ─────────────────────────────────────── */
@@ -775,7 +824,7 @@ const deleteTestimonial = async (id) => {
 .modern-table th { padding: 15px 20px; text-align: left; font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 1px; }
 .modern-table tbody tr { background: #fff; transition: 0.2s; }
 .modern-table tbody tr:hover { transform: scale(1.01); box-shadow: 0 8px 25px rgba(0,0,0,0.05); }
-.modern-table td { padding: 20px; border-top: 1px solid #f5f5f5; border-bottom: 1px solid #f5f5f5; }
+.modern-table td { padding: 12px 20px; border-top: 1px solid #f5f5f5; border-bottom: 1px solid #f5f5f5; }
 .modern-table td:first-child { border-left: 1px solid #f5f5f5; border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
 .modern-table td:last-child { border-right: 1px solid #f5f5f5; border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
 
@@ -790,6 +839,144 @@ const deleteTestimonial = async (id) => {
 .status-select-wrapper select { border: none; background: transparent; font-weight: 700; outline: none; cursor: pointer; }
 .status-select-wrapper select.atendido { color: #38b2ac; }
 .status-select-wrapper select.pendiente { color: #ed8936; }
+
+.img-preview-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.img-preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ── Compact Table (Inventory) ───────────────────────────── */
+.compact-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 4px;
+}
+
+.compact-table th {
+    padding: 10px 15px;
+    text-align: left;
+    font-size: 0.7rem;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #eee;
+}
+
+.product-row {
+    background: white;
+    transition: background 0.2s;
+}
+
+.product-row:hover {
+    background: #fdfdfd;
+}
+
+.product-row td {
+    padding: 8px 15px;
+    border-bottom: 1px solid #f9f9f9;
+    vertical-align: middle;
+}
+
+.compact-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f0f0f0;
+    border: 1px solid #eee;
+}
+
+.compact-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-info-compact {
+    display: flex;
+    flex-direction: column;
+}
+
+.p-title {
+    font-weight: 700;
+    color: #234027;
+    font-size: 0.9rem;
+}
+
+.p-id {
+    font-size: 0.7rem;
+    color: #aaa;
+}
+
+.p-price {
+    font-weight: 700;
+    color: #15803d;
+    font-size: 0.85rem;
+}
+
+.compact-cat-pill {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    background: #f0f4f0;
+    color: #234027;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-indicator.featured {
+    color: #d97706;
+}
+
+.status-indicator.normal {
+    color: #888;
+}
+
+.row-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.mini-action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid #eee;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+    color: #666;
+}
+
+.mini-action-btn:hover {
+    background: #234027;
+    color: white;
+    border-color: #234027;
+}
+
+.mini-action-btn.delete:hover {
+    background: #e76f51;
+    border-color: #e76f51;
+}
 
 /* ── Modal & Fixes ─────────────────────────────────────────── */
 .modal-backdrop {

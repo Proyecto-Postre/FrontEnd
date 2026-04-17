@@ -50,7 +50,12 @@
                     <RouterLink to="/servicios" class="nav-item" @click="closeMenu">{{ $t('header.services') }}</RouterLink>
                     <RouterLink v-if="!authStore.isAdmin" to="/nosotros" class="nav-item" @click="closeMenu">{{ $t('header.about') }}</RouterLink>
                     <RouterLink v-if="!authStore.isAdmin" to="/contacto" class="nav-item" @click="closeMenu">{{ $t('header.contact') }}</RouterLink>
-                    <RouterLink v-if="authStore.isAdmin" to="/admin" class="nav-item nav-item--admin" @click="closeMenu">PANEL DE CONTROL</RouterLink>
+                    
+                    <!-- Admin Tab -->
+                    <RouterLink v-if="authStore.isAdmin" to="/admin" class="nav-item nav-item--admin" @click="closeMenu">
+                        Panel Admin
+                    </RouterLink>
+                    
                     <RouterLink v-if="authStore.isLoggedIn && !authStore.isAdmin" to="/para-ti" class="nav-item" @click="closeMenu">{{ $t('header.for_you') }}</RouterLink>
                 </nav>
 
@@ -352,6 +357,16 @@ const handleSearch = () => {
 
 .nav-item--admin {
     color: var(--accent-color);
+    border: 1.5px solid rgba(233, 196, 106, 0.3);
+    border-radius: 8px;
+    margin-left: 10px;
+}
+
+.nav-item--admin:hover,
+.nav-item--admin.router-link-active {
+    background: var(--accent-color) !important;
+    color: var(--primary-color) !important;
+    border-color: var(--accent-color);
 }
 
 /* ── Header Icons ──────────────────────────────────────────── */
