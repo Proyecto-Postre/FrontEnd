@@ -50,8 +50,8 @@
                     <RouterLink to="/" class="nav-item" @click="closeMenu">{{ $t('header.home') }}</RouterLink>
                     <RouterLink to="/menu" class="nav-item nav-item--featured" @click="closeMenu">{{ $t('header.menu_btn') }}</RouterLink>
                     <RouterLink to="/servicios" class="nav-item" @click="closeMenu">{{ $t('header.services') }}</RouterLink>
-                    <RouterLink to="/nosotros" class="nav-item" @click="closeMenu">{{ $t('header.about') }}</RouterLink>
-                    <RouterLink to="/contacto" class="nav-item" @click="closeMenu">{{ $t('header.contact') }}</RouterLink>
+                    <RouterLink v-if="!authStore.isAdmin" to="/nosotros" class="nav-item" @click="closeMenu">{{ $t('header.about') }}</RouterLink>
+                    <RouterLink v-if="!authStore.isAdmin" to="/contacto" class="nav-item" @click="closeMenu">{{ $t('header.contact') }}</RouterLink>
                     <RouterLink v-if="authStore.isAdmin" to="/admin" class="nav-item nav-item--admin" @click="closeMenu">PANEL DE CONTROL</RouterLink>
                     <RouterLink v-if="authStore.isLoggedIn && !authStore.isAdmin" to="/para-ti" class="nav-item" @click="closeMenu">{{ $t('header.for_you') }}</RouterLink>
                 </nav>
@@ -67,11 +67,12 @@
                     <template v-if="!authStore.isLoggedIn">
                         <RouterLink to="/login" class="nav-item">Iniciar</RouterLink>
                     </template>
-                    <RouterLink v-else :to="authStore.isAdmin ? '/admin' : '/cuenta'" class="icon-btn" :title="$t('header.account')">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <span class="user-name">{{ displayName }}</span>
-                        <span v-if="authStore.isAdmin" class="admin-badge">Admin</span>
-                    </RouterLink>
+                    <div v-else class="user-dropdown-container">
+                        <button class="icon-btn" @click="isUserMenuOpen = !isUserMenuOpen">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <span class="user-name">{{ displayName }}</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="header-icons">
@@ -85,10 +86,33 @@
                         <RouterLink to="/login" class="btn-auth-outline">Iniciar</RouterLink>
                         <RouterLink to="/registro" class="btn-auth-filled">Registrar</RouterLink>
                     </div>
-                    <RouterLink v-else :to="authStore.isAdmin ? '/admin' : '/cuenta'" class="icon-btn desktop-only" :title="$t('header.account')">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <span class="user-name">{{ displayName }}</span>
-                    </RouterLink>
+                    
+                    <div v-else class="user-dropdown-container desktop-only">
+                        <button class="icon-btn" @click="toggleUserMenu" @blur="closeUserMenu">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <span class="user-name">{{ displayName }}</span>
+                            <svg class="chevron" :class="{ open: isUserMenuOpen }" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        
+                        <div v-if="isUserMenuOpen" class="user-dropdown-menu">
+                            <!-- Always show Profile link -->
+                            <RouterLink to="/cuenta" class="dropdown-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                Mi Perfil
+                            </RouterLink>
+
+                            <!-- Show Admin link only for admins -->
+                            <RouterLink v-if="authStore.isAdmin" to="/admin" class="dropdown-item admin-link">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                                Panel de Control
+                            </RouterLink>
+
+                            <button @click="handleLogout" class="dropdown-item logout">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                Cerrar Sesión
+                            </button>
+                        </div>
+                    </div>
 
                     <!-- Cart -->
                     <RouterLink to="/carrito" class="icon-btn cart-btn" title="Carrito">
@@ -141,6 +165,16 @@ const displayName = computed(() => authStore.displayName);
 
 const toggleMenu = () => { isMenuOpen.value = !isMenuOpen.value; };
 const closeMenu  = () => { isMenuOpen.value = false; };
+
+const isUserMenuOpen = ref(false);
+
+const toggleUserMenu = () => { isUserMenuOpen.value = !isUserMenuOpen.value; };
+const closeUserMenu  = () => { setTimeout(() => { isUserMenuOpen.value = false; }, 200); };
+
+const handleLogout = () => {
+    authStore.logout();
+    router.push('/');
+};
 
 const toggleLanguage = () => {
     locale.value = locale.value === 'es' ? 'en' : 'es';
@@ -357,6 +391,73 @@ const handleSearch = () => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.chevron {
+    transition: transform 0.3s;
+    opacity: 0.5;
+}
+.chevron.open { transform: rotate(180deg); }
+
+/* Drodown Menu */
+.user-dropdown-container {
+    position: relative;
+}
+
+.user-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    min-width: 180px;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 1100;
+    animation: dropdownPush 0.2s ease-out;
+}
+
+@keyframes dropdownPush {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.dropdown-item:hover {
+    background: var(--bg-color);
+    color: var(--primary-color);
+}
+
+.dropdown-item.logout {
+    border: none;
+    background: none;
+    cursor: pointer;
+    width: 100%;
+    color: #c53030;
+    margin-top: 4px;
+    border-top: 1px solid var(--border-color);
+    border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+    padding-top: 12px;
+}
+
+.dropdown-item.logout:hover {
+    background: #fff5f5;
 }
 
 .cart-btn { position: relative; }
