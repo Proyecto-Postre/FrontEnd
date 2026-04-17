@@ -3,11 +3,33 @@ import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { authStore } from '../../auth/store.js';
 import { apiFetch } from '../../../api.js';
+import SalesChart from '../components/SalesChart.vue';
+import { 
+  LayoutDashboard, 
+  ShoppingBag, 
+  Box, 
+  Users, 
+  MessageSquare, 
+  LogOut, 
+  Plus, 
+  RefreshCw, 
+  Search, 
+  Pencil, 
+  Trash2, 
+  Pin,
+  TrendingUp,
+  DollarSign,
+  Package,
+  User as UserIcon,
+  CheckCircle,
+  XCircle,
+  Clock
+} from 'lucide-vue-next';
 
 const { t } = useI18n();
 
 // ─── State ──────────────────────────────────────────────────
-const activeTab = ref('orders'); 
+const activeTab = ref('dashboard'); 
 const stats = ref({
     totalUsers: 0,
     totalProducts: 0,
@@ -180,232 +202,321 @@ const deleteTestimonial = async (id) => {
 </script>
 
 <template>
+    <div class="admin-wrapper">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="sidebar-brand">
-                <span class="leaf">🌿</span>
+                <div class="brand-logo"><Box :size="28" /></div>
                 <div class="brand-info">
                     <h2>Dulce Fe</h2>
-                    <span>Panel de Control</span>
+                    <span>Admin Panel</span>
                 </div>
             </div>
 
             <nav class="sidebar-nav">
+                <button @click="activeTab = 'dashboard'" :class="{ active: activeTab === 'dashboard' }">
+                    <LayoutDashboard :size="20" />
+                    <span>Dashboard</span>
+                </button>
                 <button @click="activeTab = 'orders'" :class="{ active: activeTab === 'orders' }">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                    Pedidos
+                    <ShoppingBag :size="20" />
+                    <span>Pedidos</span>
                 </button>
                 <button @click="activeTab = 'inventory'" :class="{ active: activeTab === 'inventory' }">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                    Inventario
+                    <Box :size="20" />
+                    <span>Inventario</span>
                 </button>
                 <button @click="activeTab = 'users'" :class="{ active: activeTab === 'users' }">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    Usuarios
+                    <Users :size="20" />
+                    <span>Usuarios</span>
                 </button>
                 <button @click="activeTab = 'reviews'" :class="{ active: activeTab === 'reviews' }">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                    Reseñas
+                    <MessageSquare :size="20" />
+                    <span>Reseñas</span>
                 </button>
             </nav>
 
             <div class="sidebar-footer">
-                <div class="user-info">
-                    <div class="avatar">{{ authStore.displayName?.charAt(0) }}</div>
-                    <div class="details">
-                        <p class="name">{{ authStore.displayName }}</p>
-                        <p class="role">Administrador</p>
+                <div class="user-pill">
+                    <div class="avatar-sm">{{ authStore.displayName?.charAt(0) }}</div>
+                    <div class="user-meta">
+                        <span class="user-name">{{ authStore.displayName }}</span>
+                        <span class="user-role">Admin</span>
                     </div>
                 </div>
-                <button @click="authStore.logout(); $router.push('/')" class="logout-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                    Cerrar Sesión
+                <button @click="authStore.logout(); $router.push('/')" class="logout-link-btn">
+                    <LogOut :size="16" />
+                    <span>Salir</span>
                 </button>
             </div>
         </aside>
 
         <!-- Main Content Area -->
-        <main class="main-viewport">
-            <!-- Header Stats -->
-            <section class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon orders"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></div>
-                    <div class="stat-content">
-                        <span class="label">Pedidos Totales</span>
-                        <span class="value">{{ stats.totalOrders }}</span>
-                    </div>
+        <main class="admin-main-content">
+            <header class="admin-header">
+                <div class="header-breadcrumb">
+                    <span class="root">Panel</span>
+                    <span class="separator">/</span>
+                    <span class="current">{{ activeTab.charAt(0).toUpperCase() + activeTab.slice(1) }}</span>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon revenue"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
-                    <div class="stat-content">
-                        <span class="label">Ingresos Brutos</span>
-                        <span class="value">S/ {{ stats.totalRevenue.toFixed(2) }}</span>
+                <div class="header-actions-top">
+                    <div class="search-wrapper-top">
+                        <Search :size="18" class="search-icon-fixed" />
+                        <input type="text" placeholder="Buscar pedidos, productos o clientes..." class="top-search-input">
                     </div>
+                    <button @click="fetchData" class="icon-refresh-btn" title="Refrescar datos">
+                        <RefreshCw :size="18" />
+                    </button>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon items"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg></div>
-                    <div class="stat-content">
-                        <span class="label">Productos</span>
-                        <span class="value">{{ stats.totalProducts }}</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon users"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg></div>
-                    <div class="stat-content">
-                        <span class="label">Clientes</span>
-                        <span class="value">{{ stats.totalUsers }}</span>
-                    </div>
-                </div>
-            </section>
+            </header>
 
-            <!-- Table Sections -->
-            <section class="content-body shadow-card">
-                <!-- Orders Tab -->
-                <div v-if="activeTab === 'orders'" class="tab-pane">
-                    <div class="table-header">
-                        <h2>Gestión de Pedidos</h2>
-                        <div class="actions">
-                             <button @click="fetchData" class="btn-refresh">Actualizar</button>
+            <div class="admin-scroll-area">
+                <!-- Dashboard Overview -->
+                <div v-if="activeTab === 'dashboard'" class="tab-content animator-fade-in">
+                    <section class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-icon orders"><TrendingUp :size="24" /></div>
+                            <div class="metric-data">
+                                <span class="m-label">Pedidos Totales</span>
+                                <span class="m-value">{{ stats.totalOrders }}</span>
+                            </div>
                         </div>
+                        <div class="metric-card">
+                            <div class="metric-icon revenue"><DollarSign :size="24" /></div>
+                            <div class="metric-data">
+                                <span class="m-label">Ingresos</span>
+                                <span class="m-value">S/ {{ stats.totalRevenue.toFixed(2) }}</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon products"><Package :size="24" /></div>
+                            <div class="metric-data">
+                                <span class="m-label">Productos</span>
+                                <span class="m-value">{{ stats.totalProducts }}</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon clients"><UserIcon :size="24" /></div>
+                            <div class="metric-data">
+                                <span class="m-label">Clientes</span>
+                                <span class="m-value">{{ stats.totalUsers }}</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="dashboard-grid-dual">
+                        <article class="chart-box shadow-premium">
+                            <div class="box-header">
+                                <h3>Rendimiento de Ventas</h3>
+                                <span>Últimos 30 días</span>
+                            </div>
+                            <SalesChart />
+                        </article>
+                        
+                        <article class="activity-box shadow-premium">
+                            <div class="box-header">
+                                <h3>Actividad Reciente</h3>
+                            </div>
+                            <div class="activity-list">
+                                <div v-for="order in orders.slice(0, 5)" :key="order.id" class="activity-item">
+                                    <div class="activity-icon" :class="order.status">
+                                        <CheckCircle v-if="order.status === 'atendido'" :size="16" />
+                                        <Clock v-else-if="order.status === 'pendiente'" :size="16" />
+                                        <XCircle v-else :size="16" />
+                                    </div>
+                                    <div class="activity-details">
+                                        <p><strong>Pedido #{{ order.id }}</strong> - {{ order.userName || 'Cliente' }}</p>
+                                        <span>{{ new Date(order.timestamp || order.date).toLocaleTimeString() }}</span>
+                                    </div>
+                                    <span class="activity-amount">{{ formatPrice(order.total) }}</span>
+                                </div>
+                            </div>
+                        </article>
                     </div>
-                    <div class="table-responsive">
-                        <table class="premium-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Fecha</th>
-                                    <th>Cliente</th>
-                                    <th>Monto</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="order in orders" :key="order.id">
-                                    <td>#{{ order.id }}</td>
-                                    <td>{{ new Date(order.timestamp || order.date).toLocaleDateString() }}</td>
-                                    <td>{{ order.userName || 'Usuario' }}</td>
-                                    <td class="bold">{{ formatPrice(order.total) }}</td>
-                                    <td>
-                                        <select 
-                                            :value="order.status" 
-                                            @change="updateOrderStatus(order, $event.target.value)"
-                                            class="status-dropdown" :class="order.status"
-                                        >
-                                            <option value="pendiente">Pendiente</option>
-                                            <option value="atendido">Atendido</option>
-                                            <option value="cancelado">Cancelado</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                </div>
+
+                <!-- Orders Tab -->
+                <div v-if="activeTab === 'orders'" class="tab-content animator-fade-in">
+                    <div class="section-card shadow-premium">
+                        <div class="section-header">
+                            <h2>Gestión de Pedidos</h2>
+                            <div class="btn-group">
+                                <button @click="fetchData" class="btn-secondary-outline">
+                                    <RefreshCw :size="16" />
+                                    Actualizar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Fecha</th>
+                                        <th>Cliente</th>
+                                        <th>Monto</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="order in orders" :key="order.id">
+                                        <td><span class="id-pill">#{{ order.id }}</span></td>
+                                        <td>{{ new Date(order.timestamp || order.date).toLocaleDateString() }}</td>
+                                        <td class="user-cell">{{ order.userName || 'Usuario' }}</td>
+                                        <td class="amount-cell">{{ formatPrice(order.total) }}</td>
+                                        <td>
+                                            <div class="status-select-wrapper">
+                                                <select 
+                                                    :value="order.status" 
+                                                    @change="updateOrderStatus(order, $event.target.value)"
+                                                    class="modern-select" :class="order.status"
+                                                >
+                                                    <option value="pendiente">Pendiente</option>
+                                                    <option value="atendido">Atendido</option>
+                                                    <option value="cancelado">Cancelado</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Inventory Tab -->
-                <div v-if="activeTab === 'inventory'" class="tab-pane">
-                    <div class="table-header">
-                        <h2>Catálogo de Productos</h2>
-                        <button class="btn-primary" @click="isEditing = true; currentProduct = { ...emptyProduct }">+ Nuevo Postre</button>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="premium-table">
-                            <thead>
-                                <tr>
-                                    <th>Imagen</th>
-                                    <th>Nombre</th>
-                                    <th>Precio</th>
-                                    <th>Categoría</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="p in products" :key="p.id">
-                                    <td><img :src="getImgUrl(p.image)" class="thumb-round shadow-sm" @error="$event.target.src = '/assets/postreejemplo.jpg'"></td>
-                                    <td class="bold">{{ p.title }}</td>
-                                    <td class="price-cell">{{ formatPrice(p.price) }}</td>
-                                    <td><span class="tag">{{ p.category }}</span></td>
-                                    <td>
-                                        <span :class="['tag', p.isFeatured ? 'featured' : 'standard']">
-                                            {{ p.isFeatured ? 'Destacado' : 'Normal' }}
-                                        </span>
-                                    </td>
-                                    <td class="actions">
-                                        <button @click="currentProduct = { ...p }; isEditing = true" class="btn-icon edit" title="Editar">✏️</button>
-                                        <button @click="deleteProduct(p.id)" class="btn-icon delete" title="Eliminar">🗑️</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div v-if="activeTab === 'inventory'" class="tab-content animator-fade-in">
+                    <div class="section-card shadow-premium">
+                        <div class="section-header">
+                            <h2>Catálogo de Productos</h2>
+                            <button class="btn-primary-admin" @click="isEditing = true; currentProduct = { ...emptyProduct }">
+                                <Plus :size="18" />
+                                Nuevo Postre
+                            </button>
+                        </div>
+                        <div class="table-container">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th>Preview</th>
+                                        <th>Nombre</th>
+                                        <th>Precio</th>
+                                        <th>Categoría</th>
+                                        <th>Estatus</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="p in products" :key="p.id">
+                                        <td>
+                                            <div class="img-preview-box">
+                                                <img :src="getImgUrl(p.image)" @error="$event.target.src = '/assets/postreejemplo.jpg'">
+                                            </div>
+                                        </td>
+                                        <td class="bold-cell">{{ p.title }}</td>
+                                        <td class="price-cell">{{ formatPrice(p.price) }}</td>
+                                        <td><span class="cat-pill">{{ p.category }}</span></td>
+                                        <td>
+                                            <span :class="['feat-pill', p.isFeatured ? 'pinned' : '']">
+                                                {{ p.isFeatured ? 'Destacado' : 'Estándar' }}
+                                            </span>
+                                        </td>
+                                        <td class="action-cell">
+                                            <button @click="currentProduct = { ...p }; isEditing = true" class="action-btn edit" title="Editar">
+                                                <Pencil :size="16" />
+                                            </button>
+                                            <button @click="deleteProduct(p.id)" class="action-btn delete" title="Eliminar">
+                                                <Trash2 :size="16" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Users Tab -->
-                <div v-if="activeTab === 'users'" class="tab-pane">
-                    <div class="table-header">
-                        <h2>Gestión de Usuarios</h2>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="premium-table">
-                            <thead>
-                                <tr>
-                                    <th>Nombre Completo</th>
-                                    <th>Email / Usuario</th>
-                                    <th>Rol actual</th>
-                                    <th>Última Actividad</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="u in users" :key="u.id">
-                                    <td class="bold">{{ (u.firstName && u.lastName) ? (u.firstName + ' ' + u.lastName) : (u.name || u.username) }}</td>
-                                    <td>{{ u.email || u.username }}</td>
-                                    <td>
-                                        <span :class="['tag role-badge', u.role === '1' || u.role === 'admin' ? 'admin' : 'customer']">
-                                            {{ u.role === '1' || u.role === 'admin' ? 'Admin' : 'Cliente' }}
-                                        </span>
-                                    </td>
-                                    <td class="date-cell">Hoy</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div v-if="activeTab === 'users'" class="tab-content animator-fade-in">
+                     <div class="section-card shadow-premium">
+                        <div class="section-header">
+                            <h2>Directorio de Usuarios</h2>
+                        </div>
+                        <div class="table-container">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>Email</th>
+                                        <th>Rol</th>
+                                        <th>Acceso</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="u in users" :key="u.id">
+                                        <td class="bold-cell">{{ (u.firstName && u.lastName) ? (u.firstName + ' ' + u.lastName) : (u.name || u.username) }}</td>
+                                        <td>{{ u.email || u.username }}</td>
+                                        <td>
+                                            <span :class="['role-pill', u.role === '1' || u.role === 'admin' ? 'admin' : 'customer']">
+                                                {{ u.role === '1' || u.role === 'admin' ? 'Admin' : 'Cliente' }}
+                                            </span>
+                                        </td>
+                                        <td><span class="active-dot"></span> Online</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Reviews Tab -->
-                <div v-if="activeTab === 'reviews'" class="tab-pane">
-                    <div class="table-header">
-                        <h2>Reseñas de Clientes</h2>
-                        <input v-model="reviewsSearch" placeholder="🔍 Buscar autor..." class="sub-search">
-                    </div>
-                    <div class="table-responsive">
-                        <table class="premium-table">
-                            <thead>
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>Comentario</th>
-                                    <th>Calificación</th>
-                                    <th>Visibilidad</th>
-                                    <th>Quitar</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="r in testimonials" :key="r.id">
-                                    <td class="bold">{{ r.name }}</td>
-                                    <td class="long-text">{{ r.text }}</td>
-                                    <td class="stars-cell">{{ "★".repeat(r.stars || 5) }}</td>
-                                    <td>
-                                        <button @click="toggleTestimonialSelection(r)" :class="{ pinned: r.isPinned }" class="btn-pin">
-                                            {{ r.isPinned ? "📌 Destacado" : "📍 Fijar" }}
-                                        </button>
-                                    </td>
-                                    <td><button @click="deleteTestimonial(r.id)" class="btn-icon delete">🗑️</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div v-if="activeTab === 'reviews'" class="tab-content animator-fade-in">
+                    <div class="section-card shadow-premium">
+                        <div class="section-header">
+                            <h2>Reseñas de Clientes</h2>
+                            <div class="search-bar-inline">
+                                <Search :size="16" class="search-icon" />
+                                <input v-model="reviewsSearch" placeholder="Buscar autor..." class="premium-inline-input">
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th>Comentario</th>
+                                        <th>Rating</th>
+                                        <th>Fijar</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="r in testimonials" :key="r.id">
+                                        <td class="bold-cell">{{ r.name }}</td>
+                                        <td class="comment-cell">{{ r.text }}</td>
+                                        <td class="stars-cell">
+                                            <div class="star-rating">
+                                                <svg v-for="i in 5" :key="i" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" :class="{ 'star-filled': i <= (r.stars || 5), 'star-empty': i > (r.stars || 5) }"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button @click="toggleTestimonialSelection(r)" :class="{ pinned: r.isPinned }" class="pin-btn">
+                                                <Pin :size="16" />
+                                                <span>{{ r.isPinned ? "Destacado" : "Fijar" }}</span>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <button @click="deleteTestimonial(r.id)" class="action-btn delete">
+                                                <Trash2 :size="16" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
         </main>
 
         <!-- Edit Modal Overlay -->
@@ -475,254 +586,278 @@ const deleteTestimonial = async (id) => {
 </template>
 
 <style scoped>
-/* ── Layout & Theme ────────────────────────────────────────── */
-.admin-layout {
+/* ── Variables & Reset ─────────────────────────────────────── */
+.admin-wrapper {
     display: flex;
-    min-height: 100vh;
-    background: var(--bg-color);
-    color: var(--text-color);
-    font-family: var(--body-font-family);
+    height: 100vh;
+    width: 100vw;
+    background: #fbf9f6;
+    color: #2d2a26;
+    font-family: 'Outfit', sans-serif;
+    overflow: hidden;
 }
 
 /* ── Sidebar ───────────────────────────────────────────────── */
 .sidebar {
-    width: 280px;
-    background: var(--primary-color);
-    color: white;
+    width: 260px;
+    background: #234027; /* Dark Forest Green */
+    color: #f8f4ee;
     display: flex;
     flex-direction: column;
-    padding: 0;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    box-shadow: 10px 0 40px rgba(0,0,0,0.1);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+    z-index: 100;
 }
 
 .sidebar-brand {
-    padding: 40px 30px;
+    padding: 30px;
     display: flex;
     align-items: center;
     gap: 15px;
     border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-.sidebar-brand .leaf { font-size: 2rem; }
-
-.sidebar-brand h2 { 
-    font-family: var(--heading-font-family);
-    font-size: 1.6rem; 
-    color: #fff; 
-    margin: 0; 
-}
+.brand-logo { font-size: 2rem; }
+.brand-info h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin: 0; color: #f8f4ee; }
+.brand-info span { font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
 
 .sidebar-nav {
-    padding: 30px 15px;
+    flex: 1;
+    padding: 20px 15px;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    flex: 1;
 }
 
 .sidebar-nav button {
     background: transparent;
     border: none;
-    color: rgba(255,255,255,0.7);
-    padding: 14px 20px;
-    border-radius: 14px;
-    text-align: left;
+    color: rgba(248, 244, 238, 0.6);
+    padding: 12px 18px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
 }
 
 .sidebar-nav button:hover {
     background: rgba(255,255,255,0.05);
-    color: white;
+    color: #f8f4ee;
 }
 
 .sidebar-nav button.active {
-    background: var(--bg-color);
-    color: var(--primary-color);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    background: #f8f4ee;
+    color: #234027;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .sidebar-footer {
-    padding: 30px;
-    background: rgba(0,0,0,0.1);
+    padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
 }
 
-.user-info {
+.user-pill {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 20px;
-}
-
-.avatar {
-    width: 40px; 
-    height: 40px; 
-    background: var(--accent-color); 
+    padding: 12px;
+    background: rgba(255,255,255,0.03);
     border-radius: 12px;
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-weight: 700; 
-    color: white;
+    margin-bottom: 12px;
 }
 
-.logout-btn {
-    background: rgba(197, 48, 48, 0.2); 
-    border: none; 
-    color: #fc8181; 
+.avatar-sm {
+    width: 32px; height: 32px; background: #e9c46a; color: #234027;
+    border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800;
+}
+
+.user-meta { display: flex; flex-direction: column; }
+.user-name { font-size: 0.85rem; font-weight: 700; color: #f8f4ee; }
+.user-role { font-size: 0.7rem; opacity: 0.5; }
+
+.logout-link-btn {
+    width: 100%; background: rgba(231, 111, 81, 0.1); border: none;
+    color: #e76f51; padding: 10px; border-radius: 10px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700;
+}
+
+/* ── Main Area ─────────────────────────────────────────────── */
+.admin-main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.admin-header {
+    height: 70px;
+    background: white;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #eee;
+}
+
+.header-breadcrumb { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 600; color: #999; }
+.header-breadcrumb .current { color: #234027; }
+
+.header-actions-top { display: flex; align-items: center; gap: 20px; }
+.search-wrapper-top { position: relative; width: 300px; }
+.search-icon-fixed { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #ccc; }
+.top-search-input {
+    width: 100%; border: 1.5px solid #eee; padding: 8px 12px 8px 40px;
+    border-radius: 10px; outline: none; transition: 0.2s;
+}
+.top-search-input:focus { border-color: #234027; box-shadow: 0 0 0 4px rgba(35, 64, 39, 0.05); }
+
+.admin-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px 40px;
+}
+
+/* ── Dashboard Content ─────────────────────────────────────── */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.metric-card {
+    background: white; border-radius: 20px; padding: 24px;
+    display: flex; align-items: center; gap: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+.metric-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.metric-icon.orders { background: #eef2ff; color: #4338ca; }
+.metric-icon.revenue { background: #f0fdf4; color: #15803d; }
+.metric-icon.products { background: #fff7ed; color: #c2410c; }
+.metric-icon.clients { background: #faf5ff; color: #7e22ce; }
+
+.m-label { display: block; font-size: 0.75rem; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
+.m-value { font-size: 1.6rem; font-weight: 800; color: #234027; font-family: 'Playfair Display', serif; }
+
+.dashboard-grid-dual {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 30px;
+}
+
+.chart-box, .activity-box {
+    background: white; border-radius: 24px; padding: 30px;
+}
+
+.box-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 25px; }
+.box-header h3 { font-size: 1.2rem; margin: 0; color: #234027; }
+.box-header span { font-size: 0.8rem; color: #999; }
+
+.activity-list { display: flex; flex-direction: column; gap: 15px; }
+.activity-item { display: flex; align-items: center; gap: 15px; padding-bottom: 15px; border-bottom: 1px solid #f9f9f9; }
+.activity-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.activity-icon.atendido { background: #e6fffa; color: #38b2ac; }
+.activity-icon.pendiente { background: #fffaf0; color: #ed8936; }
+.activity-details { flex: 1; }
+.activity-details p { margin: 0; font-size: 0.85rem; }
+.activity-details span { font-size: 0.75rem; color: #999; }
+.activity-amount { font-weight: 700; color: #234027; }
+
+/* ── Modern Table ──────────────────────────────────────────── */
+.section-card { background: white; border-radius: 24px; padding: 40px; margin-bottom: 40px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.section-header h2 { font-size: 1.8rem; font-family: 'Playfair Display', serif; margin: 0; }
+
+.modern-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+.modern-table th { padding: 15px 20px; text-align: left; font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+.modern-table tbody tr { background: #fff; transition: 0.2s; }
+.modern-table tbody tr:hover { transform: scale(1.01); box-shadow: 0 8px 25px rgba(0,0,0,0.05); }
+.modern-table td { padding: 20px; border-top: 1px solid #f5f5f5; border-bottom: 1px solid #f5f5f5; }
+.modern-table td:first-child { border-left: 1px solid #f5f5f5; border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
+.modern-table td:last-child { border-right: 1px solid #f5f5f5; border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
+
+.id-pill { background: #f0f0f0; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; }
+.feat-pill { background: #f0f0f0; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+.feat-pill.pinned { background: #fef3c7; color: #d97706; }
+
+.action-btn { width: 34px; height: 34px; border-radius: 10px; border: none; cursor: pointer; transition: 0.2s; background: #f9f9f9; color: #666; }
+.action-btn:hover { background: #234027; color: white; }
+.action-btn.delete:hover { background: #e76f51; }
+
+.status-select-wrapper select { border: none; background: transparent; font-weight: 700; outline: none; cursor: pointer; }
+.status-select-wrapper select.atendido { color: #38b2ac; }
+.status-select-wrapper select.pendiente { color: #ed8936; }
+
+/* ── Modal & Fixes ─────────────────────────────────────────── */
+.modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal-card { background: white; width: 700px; padding: 50px; border-radius: 32px; box-shadow: 0 30px 80px rgba(0,0,0,0.2); }
+
+/* ── Inputs & Selects Premium ─────────────────────────────── */
+.premium-inline-input, .top-search-input {
     width: 100%;
-    padding: 12px; 
-    border-radius: 12px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    gap: 10px; 
-    font-weight: 700; 
-    cursor: pointer; 
+    border: 1.5px solid var(--border-color, #eee);
+    padding: 10px 14px 10px 40px;
+    border-radius: 12px;
+    background: #fff;
+    font-size: 0.9rem;
+    color: #1C1917;
     transition: 0.3s;
 }
 
-.logout-btn:hover { background: #c53030; color: white; }
-
-/* ── Main Viewport ─────────────────────────────────────────── */
-.main-viewport {
-    flex: 1;
-    padding: 40px 60px;
-    max-width: 1400px;
-    margin: 0 auto;
-    width: 100%;
+.premium-inline-input:focus, .top-search-input:focus {
+    border-color: #234027;
+    box-shadow: 0 0 0 4px rgba(35, 64, 39, 0.08);
+    outline: none;
 }
 
-/* Stats Cards */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 25px;
-    margin-bottom: 50px;
+.modern-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: #f9f9f9;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding: 8px 30px 8px 12px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
-.stat-card {
-    background: var(--surface);
-    padding: 24px;
-    border-radius: 24px;
-    border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    transition: transform 0.3s, box-shadow 0.3s;
-    box-shadow: 0 4px 12px var(--shadow-color);
+.modern-select:hover { border-color: #234027; background-color: #fff; }
+
+.star-rating { display: flex; gap: 2px; }
+.star-filled { color: #e9c46a; }
+.star-empty { color: #eee; }
+
+.btn-secondary-outline {
+    background: white; border: 1.5px solid #234027; color: #234027;
+    padding: 8px 16px; border-radius: 10px; font-weight: 700; font-size: 0.85rem;
+    cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px;
 }
+.btn-secondary-outline:hover { background: #234027; color: white; }
 
-.stat-card:hover { 
-    transform: translateY(-5px); 
-    box-shadow: 0 10px 30px var(--shadow-color);
+.search-bar-inline { position: relative; width: 250px; }
+.search-bar-inline svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #ccc; pointer-events: none; }
+.search-bar-inline input { width: 100%; padding: 10px 15px 10px 40px; border: 1.5px solid #eee; border-radius: 10px; outline: none; font-size: 0.85rem; }
+.search-bar-inline input:focus { border-color: #234027; }
+
+.animator-fade-in { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.btn-primary-admin {
+    background: #234027; color: white; border: none; padding: 12px 24px;
+    border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px;
+    transition: 0.3s;
 }
-
-.stat-icon {
-    width: 60px; 
-    height: 60px; 
-    border-radius: 18px;
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-}
-
-.stat-icon.orders  { background: #eef2ff; color: #4338ca; }
-.stat-icon.revenue { background: #f0fdf4; color: #15803d; }
-.stat-icon.items   { background: #fff7ed; color: #c2410c; }
-.stat-icon.users   { background: #faf5ff; color: #7e22ce; }
-
-.stat-card .label { 
-    color: var(--text-muted); 
-    font-size: 0.8rem; 
-    font-weight: 700; 
-    text-transform: uppercase; 
-    letter-spacing: 1px; 
-}
-
-.stat-card .value { 
-    font-family: var(--heading-font-family);
-    font-size: 1.8rem; 
-    font-weight: 800; 
-    color: var(--text-color); 
-    display: block; 
-}
-
-/* Content Body */
-.shadow-card {
-    background: var(--surface);
-    border-radius: 32px;
-    padding: 40px;
-    box-shadow: 0 20px 60px var(--shadow-color);
-    border: 1px solid var(--border-color);
-}
-
-.table-header h2 { 
-    font-family: var(--heading-font-family); 
-    font-size: 2rem; 
-    color: var(--primary-color); 
-}
-
-.premium-table th {
-    text-align: left;
-    color: var(--text-light);
-    font-size: 0.75rem;
-    padding: 15px 20px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-}
-
-.premium-table td {
-    padding: 18px 20px;
-    background: #fdfcfb;
-    font-size: 0.95rem;
-    border-top: 1px solid var(--bg-color);
-    border-bottom: 1px solid var(--bg-color);
-}
-
-.bold { font-weight: 700; color: var(--text-color); }
-
-/* Modal */
-.modal-card { 
-    background: var(--white); 
-    width: 600px; 
-    border-radius: 32px; 
-    padding: 50px; 
-    box-shadow: 0 30px 100px rgba(0,0,0,0.2); 
-}
-
-.modal-card h3 { 
-    font-family: var(--heading-font-family); 
-    font-size: 2.2rem; 
-    margin-bottom: 10px; 
-    color: var(--primary-color); 
-}
-
-.btn-solid { 
-    background: var(--primary-color); 
-    color: white; 
-    border: none; 
-    padding: 16px 30px; 
-    border-radius: 16px; 
-    font-weight: 700; 
-    cursor: pointer; 
-    transition: 0.3s; 
-    width: 100%; 
-}
-
-.btn-solid:hover { 
-    background: var(--primary-dark); 
-    transform: translateY(-2px); 
-    box-shadow: 0 8px 20px rgba(44, 85, 48, 0.3);
-}
-
-.animator-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.btn-primary-admin:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(35, 64, 39, 0.2); }
 </style>

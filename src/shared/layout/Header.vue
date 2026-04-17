@@ -3,9 +3,7 @@
         <!-- Top Row: Brand -->
         <div class="header-brand">
             <RouterLink to="/" class="brand-link">
-                <span class="brand-leaf">🌿</span>
                 <h1 class="brand-name">Dulce Fe</h1>
-                <span class="brand-leaf">🌿</span>
             </RouterLink>
         </div>
 
@@ -16,7 +14,7 @@
                 <!-- Search Bar (Desktop) -->
                 <div class="search-bar">
                     <div class="input-wrapper">
-                        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <SearchIcon :size="16" class="search-icon" />
                         <input
                             type="text"
                             :placeholder="$t('header.search_placeholder')"
@@ -69,7 +67,7 @@
                     </template>
                     <div v-else class="user-dropdown-container">
                         <button class="icon-btn" @click="isUserMenuOpen = !isUserMenuOpen">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <User :size="22" />
                             <span class="user-name">{{ displayName }}</span>
                         </button>
                     </div>
@@ -89,26 +87,24 @@
                     
                     <div v-else class="user-dropdown-container desktop-only">
                         <button class="icon-btn" @click="toggleUserMenu" @blur="closeUserMenu">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <User :size="22" />
                             <span class="user-name">{{ displayName }}</span>
-                            <svg class="chevron" :class="{ open: isUserMenuOpen }" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                            <ChevronDown :size="14" class="chevron" :class="{ open: isUserMenuOpen }" />
                         </button>
                         
                         <div v-if="isUserMenuOpen" class="user-dropdown-menu">
-                            <!-- Always show Profile link -->
                             <RouterLink to="/cuenta" class="dropdown-item">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                <User :size="16" />
                                 Mi Perfil
                             </RouterLink>
 
-                            <!-- Show Admin link only for admins -->
                             <RouterLink v-if="authStore.isAdmin" to="/admin" class="dropdown-item admin-link">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                                <LayoutDashboard :size="16" />
                                 Panel de Control
                             </RouterLink>
 
                             <button @click="handleLogout" class="dropdown-item logout">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                <LogOut :size="16" />
                                 Cerrar Sesión
                             </button>
                         </div>
@@ -116,15 +112,14 @@
 
                     <!-- Cart -->
                     <RouterLink to="/carrito" class="icon-btn cart-btn" title="Carrito">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                        <ShoppingCart :size="22" />
                         <span v-if="cart.totalItems > 0" class="cart-badge">{{ cart.totalItems }}</span>
                     </RouterLink>
 
                     <!-- Hamburger -->
                     <button class="hamburger-btn" @click="toggleMenu" aria-label="Menu">
-                        <span :class="{ open: isMenuOpen }"></span>
-                        <span :class="{ open: isMenuOpen }"></span>
-                        <span :class="{ open: isMenuOpen }"></span>
+                        <MenuIcon v-if="!isMenuOpen" :size="24" />
+                        <X v-else :size="24" />
                     </button>
                 </div>
             </div>
@@ -142,6 +137,17 @@ import { useI18n } from 'vue-i18n';
 import { cart } from '../../domains/cart/store.js';
 import { catalog } from '../../domains/catalog/store.js';
 import { authStore } from '../../domains/auth/store.js';
+import { 
+  Leaf, 
+  Search as SearchIcon, 
+  User, 
+  ChevronDown, 
+  ShoppingCart, 
+  Menu as MenuIcon,
+  X,
+  LayoutDashboard,
+  LogOut
+} from 'lucide-vue-next';
 
 const { t, locale } = useI18n();
 const router = useRouter();

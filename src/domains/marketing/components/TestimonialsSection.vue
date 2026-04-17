@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { authStore } from '../../auth/store.js';
 import { useI18n } from 'vue-i18n';
+import { Pencil, Star } from 'lucide-vue-next';
 
 const { t } = useI18n();
 
@@ -82,7 +83,8 @@ const submitReview = async () => {
                 
                 <div class="cta-review">
                     <button v-if="user && !showForm" @click="showForm = true" class="btn-write">
-                        ✍️ {{ t('testimonials.write_review') }}
+                        <Pencil :size="16" class="icon-inline" /> 
+                        {{ t('testimonials.write_review') }}
                     </button>
                     <p v-if="!user" class="login-hint">
                         <router-link to="/login">{{ t('testimonials.login_link') }}</router-link> {{ t('testimonials.login_hint').replace('Inicia sesión ', '') }}
@@ -100,7 +102,9 @@ const submitReview = async () => {
                                 v-for="n in 5" :key="n" 
                                 @click="newReview.stars = n"
                                 :class="{ active: n <= newReview.stars }"
-                            >★</span>
+                            >
+                                <Star :size="24" :fill="n <= newReview.stars ? 'currentColor' : 'none'" />
+                            </span>
                         </div>
                         <textarea 
                             v-model="newReview.text" 
@@ -119,7 +123,7 @@ const submitReview = async () => {
             <div v-if="testimonials.length > 0" class="grid">
                 <div v-for="item in testimonials.slice(0, 6)" :key="item.id" class="review-card">
                     <div class="stars">
-                        <span v-for="n in 5" :key="n" :class="{ filled: n <= item.stars }">★</span>
+                        <Star v-for="n in 5" :key="n" :size="16" :fill="n <= item.stars ? 'currentColor' : 'none'" :class="{ filled: n <= item.stars }" />
                     </div>
                     <p class="text">"{{ item.text }}"</p>
                     <div class="author">

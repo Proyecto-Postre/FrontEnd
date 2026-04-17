@@ -2,6 +2,7 @@
 import { inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { RouterLink } from 'vue-router';
+import { Cake, Package, Sprout, Star } from 'lucide-vue-next';
 import Marquee from './Marquee.vue';
 
 const openModal = inject('openModal');
@@ -22,7 +23,7 @@ const handleOpenModal = () => {
                     <img src="/assets/ejemplo.avif" alt="Postres artesanales Dulce Fe" class="hero-img" />
                     <!-- Decorative badge -->
                     <div class="hero-badge">
-                        <span class="badge-icon">🎂</span>
+                        <span class="badge-icon"><Cake :size="28" stroke-width="1.5" /></span>
                         <div>
                             <strong>100%</strong>
                             <span>{{ $t('hero.badge_artisan') }}</span>
@@ -33,7 +34,7 @@ const handleOpenModal = () => {
 
             <!-- RIGHT: Text -->
             <div class="hero-text-col">
-                <p class="hero-eyebrow">✦ {{ $t('hero.eyebrow') }} ✦</p>
+                <p class="hero-eyebrow">{{ $t('hero.eyebrow') }}</p>
                 <h1 class="hero-title">{{ $t('hero.title') }}</h1>
                 <p class="hero-subtitle">{{ $t('hero.subtitle') }}</p>
                 <div class="hero-actions">
@@ -48,21 +49,21 @@ const handleOpenModal = () => {
                 <!-- Mini stats -->
                 <div class="hero-stats">
                     <div class="stat-chip">
-                        <span class="stat-icon">📦</span>
+                        <span class="stat-icon"><Package :size="18" /></span>
                         <div class="stat-text">
                             <strong>+500</strong>
                             <span>{{ $t('hero.stat_orders') }}</span>
                         </div>
                     </div>
                     <div class="stat-chip">
-                        <span class="stat-icon">🌿</span>
+                        <span class="stat-icon"><Sprout :size="18" /></span>
                         <div class="stat-text">
                             <strong>100%</strong>
                             <span>{{ $t('hero.stat_natural') }}</span>
                         </div>
                     </div>
                     <div class="stat-chip">
-                        <span class="stat-icon">⭐</span>
+                        <span class="stat-icon"><Star :size="18" fill="currentColor" /></span>
                         <div class="stat-text">
                             <strong>4.9</strong>
                             <span>{{ $t('hero.stat_rating') }}</span>

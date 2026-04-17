@@ -28,6 +28,6 @@ export const apiFetch = async (endpoint, options = {}) => {
         }
     };
 
-    console.log(`[API] Fetching: ${url}`, mergedOptions.method || 'GET');
+    // console.log(`[API] Fetching: ${url}`, mergedOptions.method || 'GET');
     return fetch(url, mergedOptions);
 };

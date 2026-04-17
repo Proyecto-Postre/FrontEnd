@@ -14,13 +14,13 @@ const { t } = useI18n();
                 </div>
                 <!-- Images using empty boxes with src="" as requested -->
                 <div class="about-image-wide">
-                    <img src="" alt="Imagen ancha" class="about-img-placeholder">
+                    <img src="/assets/about_wide.png" alt="Interior Pastelera" class="about-img-placeholder">
                 </div>
             </div>
 
             <div class="about-right-col">
                 <div class="about-image-tall">
-                    <img src="" alt="Imagen alta" class="about-img-placeholder">
+                    <img src="/assets/about_tall.png" alt="Decoración Artesanal" class="about-img-placeholder">
                 </div>
             </div>
         </div>
