@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { apiFetch } from '../../../api.js';
 import { authStore } from '../store.js';
 
 const { t } = useI18n();
@@ -42,72 +43,59 @@ const handleLogin = async () => {
 
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
-            console.error('[DEBUG] Login failed with status:', res.status, errorData);
-            
-            if (res.status === 401) {
-                errorMsg.value = t('auth.error_credentials');
-            } else if (res.status === 400) {
-                if (errorData.errors) {
-                    const firstKey = Object.keys(errorData.errors)[0];
-                    errorMsg.value = errorData.errors[firstKey][0];
-                } else if (Array.isArray(errorData) && errorData.length > 0) {
-                    errorMsg.value = errorData[0].errorMessage || errorData[0];
-                } else {
-                    errorMsg.value = errorData.message || 'Credenciales inválidas o formato incorrecto.';
-                }
-            } else {
-                errorMsg.value = errorData.message || 'Error del servidor al intentar entrar.';
-            }
+            console.error('[DEBUG] Login failed:', res.status, errorData);
+            errorMsg.value = errorData.message || t('auth.error_credentials');
             return;
         }
 
-        const authData = await res.json();
-        // authData is expected to be: { id, username, token, firstName, lastName, role }
+        // The interceptor in main.js ensures this is an array or unified object
+        const responseData = await res.json();
+        const authData = Array.isArray(responseData) ? responseData[0] : responseData;
         const token = authData.token || authData.Token;
         
-        // 2. Fetch full profile (RESILIENT & IMMEDIATE)
-        let userData = { 
-            id: authData.id || authData.Id, 
-            username: authData.username || authData.Username,
-            role: authData.role || authData.Role || 'customer',
-            firstName: authData.firstName || authData.FirstName,
-            lastName: authData.lastName || authData.LastName
-        };
+        if (!token) {
+            console.error('[DEBUG] No token received from backend');
+            errorMsg.value = 'Error de autenticación: No se recibió token.';
+            return;
+        }
 
-        // Try to fetch even fresher profile if possible, but don't block
+        // 2. Initial User Data construction (Resilient)
+        // Note: authStore.updateUser will handle the final normalization
+        const userData = { ...authData };
+
+        // Save token immediately so subsequent apiFetch calls (pre-store) work via localStorage/interceptor
+        localStorage.setItem('dulcefe_token', token);
+
+        // 3. Optional: Fetch fresh profile to ensure all fields (Phone, Address, etc.) are present
         try {
-            const profileRes = await fetch('/api/v1/users/me', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const profileRes = await apiFetch('/api/v1/users/me');
 
             if (profileRes.ok) {
                 const freshProfile = await profileRes.json();
-                userData = { ...userData, ...freshProfile };
+                Object.assign(userData, freshProfile);
                 console.log('[DEBUG] Profile sync successful');
             }
         } catch (e) {
             console.warn('[DEBUG] Immediate profile sync failed, using login data only');
         }
 
-        // 3. Finalize Login & Redirect based on Role
-        console.log('[DEBUG] Final User Data:', JSON.stringify(userData, null, 2));
+        // 4. Finalize Login & Redirect
+        console.log('[DEBUG] Final User Data for storage:', JSON.stringify(userData));
         authStore.login(userData, token);
         
-        // Use a small timeout to let the store settle
+        // Navigation logic based on role (standardized as string in store)
         setTimeout(() => {
-            console.log('[DEBUG] Redirection Check - IsLoggedIn:', authStore.isLoggedIn, 'IsAdmin:', authStore.isAdmin);
+            console.log('[DEBUG] Redirection Check - IsAdmin:', authStore.isAdmin);
             if (authStore.isAdmin) {
-                console.log('[DEBUG] Admin detected. Redirecting to Dashboard...');
                 router.push('/admin');
             } else {
-                console.log('[DEBUG] Customer detected. Redirecting to Profile...');
                 router.push('/para-ti');
             }
-        }, 300);
+        }, 100);
         
     } catch (error) {
-        console.error('[DEBUG] Unexpected handleLogin error:', error);
-        errorMsg.value = 'Ocurrió un error inesperado. Por favor intente más tarde.';
+        console.error('[DEBUG] Unexpected login error:', error);
+        errorMsg.value = 'Ocurrió un error inesperado.';
     } finally {
         isLoading.value = false;
     }

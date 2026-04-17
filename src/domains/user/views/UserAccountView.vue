@@ -1,7 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useI18n } from 'vue-i18n';
+import { apiFetch } from '../../../api.js';
 import { authStore } from '../../auth/store.js';
 
 const { t } = useI18n();
@@ -10,7 +8,7 @@ const router = useRouter();
 // ✅ User state comes reactively from authStore
 const user = computed(() => authStore.user);
 
-// Form State — aligned with backend field names (firstName, lastName)
+// Form State
 const isEditing = ref(false);
 const form = ref({
     firstName: '',
@@ -22,6 +20,17 @@ const form = ref({
 
 const orders = ref([]);
 
+const syncFormData = () => {
+    const u = authStore.user || {};
+    form.value = {
+        firstName: u.firstName || '',
+        lastName:  u.lastName  || '',
+        phone:     u.phone     || '',
+        email:     u.email     || u.username || '',
+        address:   u.address   || ''
+    };
+};
+
 onMounted(async () => {
     if (!authStore.isLoggedIn) {
         router.push('/login');
@@ -30,51 +39,36 @@ onMounted(async () => {
 
     // Re-fetch fresh profile from backend (always up to date)
     try {
-        const res = await fetch('/api/v1/users/me', {
-            headers: { ...authStore.authHeaders }
-        });
+        const res = await fetch('/api/v1/users/me'); // Interceptor handles headers
         
         if (res.ok) {
             const freshUser = await res.json();
             console.log('[ACCOUNT] Profile synced successfully');
             authStore.updateUser(freshUser);
         } else if (res.status === 401 || res.status === 403) {
-            // HIGHLY CONSERVATIVE: Only logout if we are explicitly sure there is no token
-            // This prevents the "flash and logout" if the server has a transient issue
-            if (!authStore.isLoggedIn) {
-                console.error('[ACCOUNT] Unauthorized access detected and no session found. Redirecting to login.');
-                authStore.logout();
-                router.push('/login');
-                return;
-            } else {
-                console.warn('[ACCOUNT] Profile fetch returned 401/403, but session exists in store. Keeping session active.');
-            }
+            console.warn('[ACCOUNT] Token might be expired. Attempting to keep session but user might need to re-login.');
         }
     } catch (e) {
         console.warn('[ACCOUNT] Could not refresh profile from backend:', e);
     }
 
-    // Init form with the BEST AVAILABLE data (resilient to SQL and API naming)
+    // Init form with the BEST AVAILABLE data (The store already normalized it)
     const u = authStore.user || {};
+    console.log('[ACCOUNT] Initializing form with:', JSON.stringify(u));
+    
+    // Use the normalized camelCase names from the store
     form.value = {
-        firstName: u.firstName || u.FirstName || u.first_name || '',
-        lastName:  u.lastName  || u.LastName  || u.last_name  || '',
-        phone:     u.phone     || u.Phone     || u.user_phone || '',
-        email:     u.email     || u.Email     || u.username || u.Username || '',
-        address:   u.address   || u.Address   || ''
+        firstName: u.firstName || '',
+        lastName:  u.lastName  || '',
+        phone:     u.phone     || '',
+        email:     u.email     || u.username || '',
+        address:   u.address   || ''
     };
 });
 
 const toggleEdit = () => {
     if (isEditing.value) {
-        // Reset on cancel
-        form.value = {
-            firstName: authStore.user.firstName || '',
-            lastName:  authStore.user.lastName  || '',
-            phone:     authStore.user.phone     || '',
-            email:     authStore.user.email     || authStore.user.username || '',
-            address:   authStore.user.address   || ''
-        };
+        syncFormData(); // Reset on cancel
     }
     isEditing.value = !isEditing.value;
 };
@@ -86,12 +80,8 @@ const saveProfile = async () => {
     }
 
     try {
-        const res = await fetch(`/api/v1/users/${authStore.user.id}`, {
+        const res = await apiFetch(`/api/v1/users/${authStore.user.id}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                ...authStore.authHeaders
-            },
             body: JSON.stringify({
                 firstName: form.value.firstName,
                 lastName:  form.value.lastName,
@@ -104,15 +94,16 @@ const saveProfile = async () => {
         if (res.ok) {
             const updated = await res.json();
             authStore.updateUser(updated);
+            syncFormData();
+            isEditing.value = false;
+            alert(t('account.success_update'));
         } else {
-            console.warn('Backend update failed:', res.status);
+            console.error('[ACCOUNT] Update failed:', res.status);
+            alert('Error al actualizar el perfil.');
         }
     } catch (e) {
-        console.warn('Could not sync with backend:', e);
+        console.error('[ACCOUNT] Update error:', e);
     }
-
-    isEditing.value = false;
-    alert(t('account.success_update'));
 };
 
 const logout = () => {

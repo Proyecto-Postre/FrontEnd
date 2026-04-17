@@ -83,42 +83,44 @@ const handleRegister = async () => {
         });
 
         if (!signInRes.ok) {
-            console.warn('[DEBUG] Auto sign-in failed after signup, redirecting to login');
+            console.warn('[DEBUG] Auto sign-in failed, redirected to login');
             router.push('/login');
             return;
         }
 
         const authData = await signInRes.json();
-        const token = authData.token;
+        // The interceptor might return an array or object
+        const finalAuthData = Array.isArray(authData) ? authData[0] : authData;
+        const token = finalAuthData.token || finalAuthData.Token;
 
-        // Step 3: Fetch profile (RESILIENT)
-        let userData = { 
-            id: authData.id, 
-            username: authData.username,
-            role: authData.role || authData.Role || 'user', // Capture role with casing resilience
-            firstName: form.value.firstName.trim(),
-            lastName: form.value.lastName.trim()
-        };
+        if (!token) {
+            router.push('/login');
+            return;
+        }
+
+        // Save token for the interceptor/store
+        localStorage.setItem('dulcefe_token', token);
+
+        // Step 3: Fetch full profile (RESILIENT)
+        let userData = { ...finalAuthData };
 
         try {
-            const profileRes = await fetch('/api/v1/users/me', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const profileRes = await fetch('/api/v1/users/me');
 
             if (profileRes.ok) {
                 const freshProfile = await profileRes.json();
-                userData = { ...userData, ...freshProfile };
+                Object.assign(userData, freshProfile);
                 console.log('[DEBUG] Profile loaded successfully after signup');
-            } else {
-                console.warn('[DEBUG] Profile fetch failed (401) after signup, logging in with form data');
             }
         } catch (e) {
             console.error('[DEBUG] Failed to fetch profile after signup:', e);
         }
 
+        // Finalize
         authStore.login(userData, token);
         console.log('[DEBUG] Registration complete. Redirecting...');
         router.push('/');
+
 
     } catch (error) {
         console.error('[DEBUG] Unexpected handleRegister error:', error);
