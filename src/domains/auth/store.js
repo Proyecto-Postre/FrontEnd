@@ -28,92 +28,60 @@ export const authStore = reactive({
 
     // ─── Getters ────────────────────────────────────────────────
     get isLoggedIn() {
-        // FOOLPROOF: Check both state and direct storage to prevent race conditions during routing
-        const hasToken = !!(this.token || localStorage.getItem(TOKEN_KEY));
-        const hasUser  = !!(this.user  || localStorage.getItem(USER_KEY));
-        return hasToken && hasUser;
+        return !!(this.token || localStorage.getItem(TOKEN_KEY));
     },
 
     get isAdmin() {
         const u = this.user || loadUser();
         if (!u) return false;
-        // Resilient role matching: handles role/Role/ROLE and 'admin'/'administrator' or index 1 from Enum
-        const rawRole = u.role ?? u.Role ?? u.ROLE ?? '';
-        
-        // Handle numeric role index from C# Enum (1 = Admin, 0 = Customer)
-        if (typeof rawRole === 'number') return rawRole === 1;
-        
-        const roleStr = rawRole.toString().toLowerCase().trim();
-        return roleStr === 'admin' || roleStr === 'administrator';
+        const r = (u.role !== undefined ? u.role : (u.Role ?? u.user_role ?? '')).toString();
+        return r === '1' || r.toLowerCase() === 'admin';
     },
 
     get isUser() {
         const u = this.user || loadUser();
         if (!u) return false;
-        const rawRole = u.role ?? u.Role ?? u.ROLE ?? '';
-        if (typeof rawRole === 'number') return rawRole === 0;
-        
-        const roleStr = rawRole.toString().toLowerCase().trim();
-        return roleStr === 'customer' || roleStr === 'user' || roleStr === 'client';
-    },
-
-    get userRole() {
-        const u = this.user || loadUser();
-        if (!u) return '';
-        return (u.role || u.Role || 'customer').toString().toLowerCase();
+        const r = (u.role !== undefined ? u.role : (u.Role ?? u.user_role ?? '')).toString();
+        return r === '0' || r.toLowerCase() === 'customer' || r.toLowerCase() === 'user';
     },
 
     get displayName() {
         const u = this.user || loadUser();
-        if (!u) return '';
+        if (!u) return 'Usuario';
         
-        // 1. Prioritize explicitly saved names
-        const first = (u.firstName || u.FirstName || '').toString().trim();
-        const last  = (u.lastName  || u.LastName  || '').toString().trim();
-        if (first || last) return `${first} ${last}`.trim();
-
-        // 2. Specific check for 'admin' string if it's an admin account
-        if (this.isAdmin) return 'Admin';
-
-        // 3. Fallback to name or username (any casing)
-        const name = (u.name || u.Name || '').toString().trim();
-        if (name) return name;
-
-        const email = (u.email || u.Email || '').toString().trim();
-        const username = (u.username || u.Username || '').toString().trim();
-        const display = username || email;
+        const first = u.firstName || u.FirstName || u.first_name || '';
+        const last  = u.lastName || u.LastName || u.last_name || '';
         
-        if (display) return display.split('@')[0]; // Return everything before @ if it's an email
-
-        return 'Usuario';
+        if (first.trim() || last.trim()) return `${first} ${last}`.trim();
+        return (u.username || u.Username || 'Usuario').split('@')[0];
     },
 
     get authHeaders() {
-        const token = this.token || loadToken();
-        if (!token) return {};
-        return { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        };
+        const t = this.token || loadToken();
+        return t ? { 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' } : {};
     },
 
     // ─── Actions ────────────────────────────────────────────────
     login(userData, token) {
-        console.log('[AUTH] Logging in user:', userData.username, 'with role:', (userData.role || userData.Role || 'user'));
-        this.user  = userData;
         this.token = token;
-        localStorage.setItem(USER_KEY,  JSON.stringify(userData));
+        this.updateUser(userData);
         localStorage.setItem(TOKEN_KEY, token);
     },
 
-    updateUser(updatedData) {
-        if (!updatedData) return;
-        // Merge without losing existing critical info if missing in update
-        this.user = { 
-            ...(this.user || {}), 
-            ...updatedData 
+    updateUser(data) {
+        if (!data) return;
+        // Normalize fields to ensure JS consistency
+        const normalized = {
+            id: data.id || data.Id || this.user?.id,
+            username: data.username || data.Username || this.user?.username,
+            firstName: data.firstName || data.FirstName || data.first_name || this.user?.firstName,
+            lastName: data.lastName || data.LastName || data.last_name || this.user?.lastName,
+            email: data.email || data.Email || data.username || this.user?.email,
+            phone: data.phone || data.Phone || data.phone_number || this.user?.phone,
+            role: data.role !== undefined ? data.role : (data.Role !== undefined ? data.Role : this.user?.role)
         };
-        localStorage.setItem(USER_KEY, JSON.stringify(this.user));
+        this.user = normalized;
+        localStorage.setItem(USER_KEY, JSON.stringify(normalized));
     },
 
     logout() {

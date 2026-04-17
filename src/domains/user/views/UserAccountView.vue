@@ -54,12 +54,12 @@ onMounted(async () => {
         console.warn('[ACCOUNT] Could not refresh profile from backend:', e);
     }
 
-    // Init form with the BEST AVAILABLE data
+    // Init form with the BEST AVAILABLE data (resilient to SQL and API naming)
     const u = authStore.user || {};
     form.value = {
-        firstName: u.firstName || u.FirstName || '',
-        lastName:  u.lastName  || u.LastName  || '',
-        phone:     u.phone     || u.Phone     || '',
+        firstName: u.firstName || u.FirstName || u.first_name || '',
+        lastName:  u.lastName  || u.LastName  || u.last_name  || '',
+        phone:     u.phone     || u.Phone     || u.user_phone || '',
         email:     u.email     || u.Email     || u.username || u.Username || '',
         address:   u.address   || u.Address   || ''
     };

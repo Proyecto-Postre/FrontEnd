@@ -48,12 +48,12 @@
                     </div>
 
                     <RouterLink to="/" class="nav-item" @click="closeMenu">{{ $t('header.home') }}</RouterLink>
-                    <RouterLink v-if="!authStore.isAdmin" to="/menu" class="nav-item nav-item--featured" @click="closeMenu">{{ $t('header.menu_btn') }}</RouterLink>
-                    <RouterLink v-if="!authStore.isAdmin" to="/servicios" class="nav-item" @click="closeMenu">{{ $t('header.services') }}</RouterLink>
+                    <RouterLink to="/menu" class="nav-item nav-item--featured" @click="closeMenu">{{ $t('header.menu_btn') }}</RouterLink>
+                    <RouterLink to="/servicios" class="nav-item" @click="closeMenu">{{ $t('header.services') }}</RouterLink>
                     <RouterLink to="/nosotros" class="nav-item" @click="closeMenu">{{ $t('header.about') }}</RouterLink>
                     <RouterLink to="/contacto" class="nav-item" @click="closeMenu">{{ $t('header.contact') }}</RouterLink>
-                    <RouterLink v-if="authStore.isAdmin" to="/admin" class="nav-item nav-item--admin" @click="closeMenu">Panel Administrador</RouterLink>
-                    <RouterLink v-if="user && !authStore.isAdmin" to="/para-ti" class="nav-item" @click="closeMenu">{{ $t('header.for_you') }}</RouterLink>
+                    <RouterLink v-if="authStore.isAdmin" to="/admin" class="nav-item nav-item--admin" @click="closeMenu">PANEL DE CONTROL</RouterLink>
+                    <RouterLink v-if="authStore.isLoggedIn && !authStore.isAdmin" to="/para-ti" class="nav-item" @click="closeMenu">{{ $t('header.for_you') }}</RouterLink>
                 </nav>
 
                 <!-- Right Icons -->
@@ -70,6 +70,7 @@
                     <RouterLink v-else :to="authStore.isAdmin ? '/admin' : '/cuenta'" class="icon-btn" :title="$t('header.account')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         <span class="user-name">{{ displayName }}</span>
+                        <span v-if="authStore.isAdmin" class="admin-badge">Admin</span>
                     </RouterLink>
                 </div>
 
